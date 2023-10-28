@@ -2,7 +2,6 @@
 pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
-import {MockV3Aggregator} from "../test/mock/MockV3Aggregator.sol";
 
 contract HelperConfig is Script {
   NetworkConfig public activeNetworkConfig;
@@ -10,7 +9,6 @@ contract HelperConfig is Script {
   int256 public constant INITIAL_PRICE = 2000e8; 
 
   struct NetworkConfig {
-    address priceFeed; // ETH/USD
     uint256 initialSupply; // can differ between chains. 
   }
 
@@ -26,23 +24,23 @@ contract HelperConfig is Script {
   function getSepoliaEthConfig() public pure returns (NetworkConfig memory) { 
     // price feed address
     NetworkConfig memory sepoliaConfig = NetworkConfig({
-      priceFeed: 0x694AA1769357215DE4FAC081bf1f309aDC325306, 
       initialSupply: 10000
     });
     return sepoliaConfig;
   }
 
 function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) { 
-    if (activeNetworkConfig.priceFeed != address(0)) {
-      return activeNetworkConfig;
-    }
-
-    vm.startBroadcast(); 
-    MockV3Aggregator mockPriceFeed = new MockV3Aggregator(DECIMALS, INITIAL_PRICE);
-    vm.stopBroadcast(); 
+    
+    // NB: code for when i need to deploy mock addresses! 
+    // if (activeNetworkConfig.initialSupply != address(0)) {
+    //   return activeNetworkConfig;
+    // }
+    // 
+    // vm.startBroadcast(); 
+    // MockV3Aggregator mockPriceFeed = new MockV3Aggregator(DECIMALS, INITIAL_PRICE);
+    // vm.stopBroadcast(); 
 
     NetworkConfig memory anvilConfig = NetworkConfig({
-      priceFeed: address(mockPriceFeed), 
       initialSupply: 10000
     });
 

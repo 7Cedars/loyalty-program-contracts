@@ -5,14 +5,12 @@ import {Script} from "forge-std/Script.sol";
 import {LoyaltyAccount} from "../src/LoyaltyAccount.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
-contract DeployFundMe is Script {
+contract DeployLoyaltyAccount is Script {
   LoyaltyAccount loyaltyAccount; 
-     
 
   function run() external returns (LoyaltyAccount, HelperConfig) {
     HelperConfig helperConfig = new HelperConfig();
-    
-    ( address priceFeed, uint256 initialSupply ) = helperConfig.activeNetworkConfig(); 
+    (uint256 initialSupply) = helperConfig.activeNetworkConfig(); 
 
     vm.startBroadcast(); 
       loyaltyAccount = new LoyaltyAccount(initialSupply); 
