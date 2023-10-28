@@ -26,5 +26,20 @@ contract LoyaltyAccountTest is Test {
     assertEq(initialSupply, loyaltyAccount.totalSupply()); //  (ownerContract));  
   }
 
+  function testOwnerCanTransferTokenstoUser() public {
+    address ownerLoyaltyAccount = loyaltyAccount.getOwner(); 
+    uint256 balanceOwner = loyaltyAccount.balanceOf(ownerLoyaltyAccount); 
+    console.log("balanceOwner: ", balanceOwner); 
+    vm.prank(ownerLoyaltyAccount); 
+    loyaltyAccount.transfer(USER, 500); 
+
+
+    uint256 balanceUser = loyaltyAccount.balanceOf(USER); 
+    console.log("balanceUser: ", balanceUser);
+    console.log("balanceOwner: ", loyaltyAccount.balanceOf(ownerLoyaltyAccount));  
+
+    // assertEq(loyaltyAccount.balanceOf(USER) == 500); // 
+  }
+
 
 } 
