@@ -9,7 +9,7 @@ For personal use only.
 - Create an open and modular blockchain based framework for loyalty programs. 
 - Aimed at small and medium sized shops and companies. 
 - eventually deploy on multiple blockchains. 
--     
+- Design of solidity backend is on Figma. 
 
 ## Development / TO DO 
 
@@ -68,7 +68,12 @@ For personal use only.
 - Implement account abstraction
   - Enables easier sign up for customers. 
 - Implement / experiment with different types of issuing and redeem logics. 
-  - Create a range of ERC-721 redeem contracts, to show off possibilities.  
+  - Create a range of ERC-721 redeem contracts, to show off possibilities.
+
+## Resources used / I am indebted to:  
+-  Patrick Collins' Learn Solidity, Blockchain Development, & Smart Contracts course. 
+   -  deploy and test templates are from his course. 
+   -    
 
 ## Foundry
 
