@@ -29,23 +29,24 @@ contract LoyaltyProgram is ERC20 {
   /* errors */
   error LoyaltyProgram__NoAccess(); 
   error LoyaltyProgram__OnlyOwner(); 
-  error LoyaltyProgram__RedeemContractNotFound(); 
+  error LoyaltyProgram__RedeemContractAbsent(); 
+
+  /* Type declarations */
+  struct Transaction {
+        uint256 points;
+        uint256 timestamp;
+        bool redeemed; 
+    }
 
   /* State variables */
   address private s_owner; 
-
-  /** 
-   * @dev note double logging of redeem contracts. 
-   * @dev this is because adding and removing does not happen very often. 
-   * @dev but calling list of all redeem contracts is a necessity for frontend + 
-   * @dev chep check if redeemContract is being tranferred to (see _update function) as well. 
-   * @dev seemed to be the most gas efficieng but sohould check later. 
-   * */ 
-  address[] private s_RedeemContracts; 
-  mapping(address => bool) private s_RedeemContractsMap; 
+  mapping(address => bool) private s_RedeemContracts; 
+  mapping(address => Transaction[] ) private s_Transactions; 
 
   /* Events */
-  
+  event AddedRedeemContract(address indexed redeemContract);  
+  event RemovedRedeemContract(address indexed redeemContract);
+
   /* Modifiers */ 
   modifier onlyOwner () {
     if (msg.sender != s_owner) {
@@ -61,27 +62,18 @@ contract LoyaltyProgram is ERC20 {
   }
 
   /* public */
-  function addRedeemContract(address redeemContract) public {
+  function addRedeemContract(address redeemContract) public onlyOwner {
     // later checks will be added here. 
-    s_RedeemContracts.push(redeemContract); 
-    s_RedeemContractsMap[redeemContract] = true; 
+    s_RedeemContracts[redeemContract] = true; 
+    emit AddedRedeemContract(redeemContract); 
   }
 
-  /** 
-   * @dev Redeem contracts needs to be a list (see getRedeemContracts function below).   
-   * @dev To delete a contract, it loops through the arrat. 
-   * @dev When element == redeemContract to be deleted, the last element of the array is moved in its place,
-   * @dev and last element is popped. 
-  */ 
-  function removeRedeemContract(address redeemContract) public {
-    s_RedeemContractsMap[redeemContract] = false; 
-    for (uint256 i = 0; i < s_RedeemContracts.length; i++) {
-          if (s_RedeemContracts[i] == redeemContract) {
-            s_RedeemContracts[i] = s_RedeemContracts[s_RedeemContracts.length - 1];
-            s_RedeemContracts.pop(); 
-          }
-        }
-    revert LoyaltyProgram__RedeemContractNotFound(); 
+  function removeRedeemContract(address redeemContract) public onlyOwner {
+    if (s_RedeemContracts[redeemContract] = false) {
+      revert LoyaltyProgram__RedeemContractAbsent();
+    }
+    s_RedeemContracts[redeemContract] = false;
+    emit RemovedRedeemContract(redeemContract); 
   }
 
   /* internal */  
@@ -92,10 +84,17 @@ contract LoyaltyProgram is ERC20 {
    * @dev All params are the same from original. 
   */ 
   function _update(address from, address to, uint256 value) internal override virtual {
-    if (msg.sender != s_owner && s_RedeemContractsMap[to] == false) {
+    if (msg.sender != s_owner && s_RedeemContracts[to] == false) {
       revert LoyaltyProgram__NoAccess(); 
     }
 
+    if (from == s_owner) {
+      Transaction memory transaction = Transaction(
+        value, block.timestamp, false
+      ); 
+      s_Transactions[to].push(transaction);
+    }
+    
     super._update(from, to, value); 
   }
 
@@ -107,9 +106,7 @@ contract LoyaltyProgram is ERC20 {
     return s_owner; 
   } 
 
-  function getRedeemContracts() external view returns (address[] memory) {
-    return s_RedeemContracts; 
-  } 
+
 
 }
 
