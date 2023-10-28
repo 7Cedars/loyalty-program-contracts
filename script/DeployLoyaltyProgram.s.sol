@@ -2,19 +2,19 @@
 pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
-import {LoyaltyAccount} from "../src/LoyaltyAccount.sol";
+import {LoyaltyProgram} from "../src/LoyaltyProgram.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
-contract DeployLoyaltyAccount is Script {
-  LoyaltyAccount loyaltyAccount; 
+contract DeployLoyaltyProgram is Script {
+  LoyaltyProgram loyaltyProgram; 
 
-  function run() external returns (LoyaltyAccount, HelperConfig) {
+  function run() external returns (LoyaltyProgram, HelperConfig) {
     HelperConfig helperConfig = new HelperConfig();
     (uint256 initialSupply) = helperConfig.activeNetworkConfig(); 
 
     vm.startBroadcast(); 
-      loyaltyAccount = new LoyaltyAccount(initialSupply); 
+      loyaltyProgram = new LoyaltyProgram(initialSupply); 
     vm.stopBroadcast(); 
-    return (loyaltyAccount, helperConfig); 
+    return (loyaltyProgram, helperConfig); 
   }
 }
