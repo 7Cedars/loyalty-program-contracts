@@ -76,6 +76,10 @@ contract LoyaltyProgram is ERC20 {
     emit RemovedRedeemContract(redeemContract); 
   }
 
+  function mintLoyaltyPoints(uint256 amount) public onlyOwner {
+    _mint(s_owner, amount); 
+  }
+
   /* internal */  
   /** 
    * @dev Only owner of Loyalty Program can transfer loyalty points freely to any address.  

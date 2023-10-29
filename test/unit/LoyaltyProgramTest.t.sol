@@ -67,6 +67,45 @@ contract LoyaltyProgramTest is Test {
     assertEq(initialSupply, loyaltyProgram.totalSupply()); //  (ownerContract));  
   }
 
+  function testOwnerCanMintTokens() public {
+    uint256 amount; 
+    uint256 totalSupplyBefore; 
+    uint256 totalSupplyAfter; 
+
+    amount = bound(amount, 10, 1e20);
+    totalSupplyBefore = loyaltyProgram.totalSupply(); 
+
+    // Act
+    vm.prank(loyaltyProgram.getOwner());  
+    loyaltyProgram.mintLoyaltyPoints(amount); 
+    totalSupplyAfter = loyaltyProgram.totalSupply(); 
+
+    // Assert 
+    assertEq(totalSupplyBefore + amount, totalSupplyAfter); 
+  }
+
+  function testUserCannotMintTokens() public {
+    uint256 amount; 
+    amount = bound(amount, 10, 1e20);
+
+    // Act
+    vm.expectRevert(LoyaltyProgram.LoyaltyProgram__OnlyOwner.selector);  
+    vm.prank(USER_1); 
+    loyaltyProgram.mintLoyaltyPoints(amount);
+  }
+
+  function testEmitsEventAfterMintTokens() public {
+    uint256 amount; 
+    amount = bound(amount, 10, 1e20);
+    vm.prank(loyaltyProgram.getOwner());  
+    loyaltyProgram.transfer(USER_1, amount); 
+    vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
+    emit Transfer(address(0), loyaltyProgram.getOwner(), amount);
+
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.mintLoyaltyPoints(amount);
+  }
+
   function testOwnerCanTransferTokenstoUser_1(uint256 amount) public {
     // Arrange
     uint256 balanceOwnerBefore = loyaltyProgram.balanceOf(loyaltyProgram.getOwner()); 
