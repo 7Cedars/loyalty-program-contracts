@@ -10,10 +10,14 @@ contract DeployLoyaltyProgram is Script {
 
   function run() external returns (LoyaltyProgram, HelperConfig) {
     HelperConfig helperConfig = new HelperConfig();
-    (uint256 initialSupply) = helperConfig.activeNetworkConfig(); 
+    (
+      uint256 initialSupply
+    ) = helperConfig.activeNetworkConfig(); 
 
     vm.startBroadcast(); 
-      loyaltyProgram = new LoyaltyProgram(initialSupply); 
+      loyaltyProgram = new LoyaltyProgram(
+        initialSupply
+      ); 
     vm.stopBroadcast(); 
     return (loyaltyProgram, helperConfig); 
   }

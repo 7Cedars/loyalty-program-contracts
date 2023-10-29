@@ -41,7 +41,7 @@ contract LoyaltyProgram is ERC20 {
   /* State variables */
   address private s_owner; 
   mapping(address => bool) private s_RedeemContracts; 
-  mapping(address => Transaction[] ) private s_Transactions; 
+  mapping(address => Transaction[]) private s_Transactions; 
 
   /* Events */
   event AddedRedeemContract(address indexed redeemContract);  
@@ -106,8 +106,13 @@ contract LoyaltyProgram is ERC20 {
     return s_owner; 
   } 
 
+  function getTransactions(address customer) external view returns (Transaction[] memory) {
+    return s_Transactions[customer]; 
+  }
 
-
+  function getRedeemContract(address redeemContract) external view returns (bool) {
+    return s_RedeemContracts[redeemContract]; 
+  }
 }
 
 
