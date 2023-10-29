@@ -7,6 +7,11 @@ import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 
 contract LoyaltyProgramTest is Test {
+  /* events */ 
+  event Transfer(address indexed from, address indexed to, uint256 value);
+  event AddedRedeemContract(address indexed redeemContract);  
+  event RemovedRedeemContract(address indexed redeemContract);
+
   LoyaltyProgram loyaltyProgram;
   HelperConfig helperConfig; 
   uint256 initialSupply;
@@ -80,10 +85,19 @@ contract LoyaltyProgramTest is Test {
     assertEq(balanceOwnerBefore - amount, balanceOwnerAfter); 
   }
 
+  function testEmitsEventOnTransferTokens() public {  
+    // Arrange
+    uint256 amount; 
+    amount = bound(amount, 15, 2500); 
+    vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
+    emit Transfer(loyaltyProgram.getOwner(), USER_1, amount);
+
+    // Act / Assert
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.transfer(USER_1, amount);
+  }
+
   function testUserCannotTransferTokenstoOtherUser(uint256 amount) public usersHaveTransactionHistory() {
-    console.log("transactions1: ", loyaltyProgram.getTransactions(USER_1).length);
-    console.log("transactions2: ", loyaltyProgram.getTransactions(USER_2).length);
-    
     // Arrange
     amount = bound(amount, 0, loyaltyProgram.balanceOf(USER_1)); 
 
@@ -122,6 +136,15 @@ contract LoyaltyProgramTest is Test {
     assertEq(loyaltyProgram.getRedeemContract(address(0)), false); 
   }
 
+  function testEmitsEventOnAddingRedeemContract() public {  
+    // Arrange
+    vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
+    emit AddedRedeemContract(REDEEM_CONTRACT_A);
+    // Act / Assert
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
+  }
+
   function testOwnerCanRemoveRedeemContracts() public {  
     // Arrange
     vm.prank(loyaltyProgram.getOwner());
@@ -136,29 +159,44 @@ contract LoyaltyProgramTest is Test {
     assertEq(loyaltyProgram.getRedeemContract(REDEEM_CONTRACT_A), false); 
   }
 
-  function testEmitsEventOnRemoveRedeemContract() public {  
+  function testEmitsEventOnRemovingRedeemContract() public {  
     // Arrange
-    vm.prank(PLAYER); 
-    vm.expectEmit(true, false, false, false, address(raffle)); 
-    emit EnteredRaffle(PLAYER); 
+    vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
+    emit RemovedRedeemContract(REDEEM_CONTRACT_A);
     // Act / Assert
-    raffle.enterRaffle{value: entranceFee}();
-
-
-    vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
-    vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_B);
-    
-    // Act
     vm.prank(loyaltyProgram.getOwner());
     loyaltyProgram.removeRedeemContract(REDEEM_CONTRACT_A);
-    
-    // Assert
-    assertEq(loyaltyProgram.getRedeemContract(REDEEM_CONTRACT_A), false); 
-    assertEq(loyaltyProgram.getRedeemContract(REDEEM_CONTRACT_B), true); 
-    assertEq(loyaltyProgram.getRedeemContract(address(0)), false); 
   }
+
+  function testUserCannotAddRedeemContracts() public {  
+    vm.expectRevert(LoyaltyProgram.LoyaltyProgram__OnlyOwner.selector);
+    vm.prank(USER_1);
+    loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
+  }
+
+  function testUserCannotRemoveRedeemContracts() public {  
+    vm.expectRevert(LoyaltyProgram.LoyaltyProgram__OnlyOwner.selector);
+    vm.prank(USER_1);
+    loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
+  }
+
+ 
+
+
+  //   vm.prank(loyaltyProgram.getOwner());
+  //   loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
+  //   vm.prank(loyaltyProgram.getOwner());
+  //   loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_B);
+    
+  //   // Act
+  //   vm.prank(loyaltyProgram.getOwner());
+  //   loyaltyProgram.removeRedeemContract(REDEEM_CONTRACT_A);
+    
+  //   // Assert
+  //   assertEq(loyaltyProgram.getRedeemContract(REDEEM_CONTRACT_A), false); 
+  //   assertEq(loyaltyProgram.getRedeemContract(REDEEM_CONTRACT_B), true); 
+  //   assertEq(loyaltyProgram.getRedeemContract(address(0)), false); 
+  // }
 
 
 } 
