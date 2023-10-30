@@ -24,7 +24,7 @@ contract HelperConfig is Script {
   function getSepoliaEthConfig() public pure returns (NetworkConfig memory) { 
     // price feed address
     NetworkConfig memory sepoliaConfig = NetworkConfig({
-      initialSupply: 1e15
+      initialSupply: 1e25
     });
     return sepoliaConfig;
   }
@@ -41,7 +41,7 @@ function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
     // vm.stopBroadcast(); 
 
     NetworkConfig memory anvilConfig = NetworkConfig({
-      initialSupply: 1e15
+      initialSupply: 1e25
     });
 
     return anvilConfig; 

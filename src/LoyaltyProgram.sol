@@ -80,6 +80,8 @@ contract LoyaltyProgram is ERC20 {
     _mint(s_owner, amount); 
   }
 
+  // NB Need to use transferFrom & allowance -- when it comes to redeem NFTs  
+
   /* internal */  
   /** 
    * @dev Only owner of Loyalty Program can transfer loyalty points freely to any address.  

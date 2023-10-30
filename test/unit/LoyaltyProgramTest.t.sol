@@ -33,16 +33,17 @@ contract LoyaltyProgramTest is Test {
   uint256 constant STARTING_BALANCE = 10 ether;  
   uint256 constant GAS_PRICE = 1; 
 
-  modifier usersHaveTransactionHistory() {
-    uint256 numberTransactions1; 
-    uint256 numberTransactions2;  
-    uint256 amount1;
-    uint256 amount2; 
-    uint256 i; 
-    numberTransactions1 = bound(numberTransactions1, 5, 50); 
-    numberTransactions2 = bound(numberTransactions2, 10, 25); 
-    amount1 = bound(amount1, 20, 750); 
-    amount2 = bound(amount2, 10, 1000); 
+  modifier usersHaveTransactionHistory(
+    ) {
+       uint256 numberTransactions1;
+      uint256 numberTransactions2; 
+      uint256 amount1;
+      uint256 amount2; 
+      uint256 i; 
+      numberTransactions1 = bound(numberTransactions1, 5, 50); 
+      numberTransactions2 = bound(numberTransactions2, 10, 25); 
+      amount1 = bound(amount1, 20, 750); 
+      amount2 = bound(amount2, 10, 1000); 
     
     for (i = 0; i < numberTransactions1; i++) { // for loop in solidity: initialisation, condition, updating. See https://dev.to/shlok2740/loops-in-solidity-2pmp.
       vm.prank(loyaltyProgram.getOwner());
@@ -67,8 +68,7 @@ contract LoyaltyProgramTest is Test {
     assertEq(initialSupply, loyaltyProgram.totalSupply()); //  (ownerContract));  
   }
 
-  function testOwnerCanMintTokens() public {
-    uint256 amount; 
+  function testOwnerCanMintTokens(uint256 amount) public { 
     uint256 totalSupplyBefore; 
     uint256 totalSupplyAfter; 
 
@@ -84,8 +84,7 @@ contract LoyaltyProgramTest is Test {
     assertEq(totalSupplyBefore + amount, totalSupplyAfter); 
   }
 
-  function testUserCannotMintTokens() public {
-    uint256 amount; 
+  function testUserCannotMintTokens(uint256 amount) public { 
     amount = bound(amount, 10, 1e20);
 
     // Act
@@ -94,8 +93,7 @@ contract LoyaltyProgramTest is Test {
     loyaltyProgram.mintLoyaltyPoints(amount);
   }
 
-  function testEmitsEventAfterMintTokens() public {
-    uint256 amount; 
+  function testEmitsEventAfterMintTokens(uint256 amount) public { 
     amount = bound(amount, 10, 1e20);
     vm.prank(loyaltyProgram.getOwner());  
     loyaltyProgram.transfer(USER_1, amount); 
@@ -124,9 +122,12 @@ contract LoyaltyProgramTest is Test {
     assertEq(balanceOwnerBefore - amount, balanceOwnerAfter); 
   }
 
-  function testEmitsEventOnTransferTokens() public {  
+  function testEmitsEventOnTransferTokens(uint256 amount) public {  
     // Arrange
-    uint256 amount; 
+    // use vm.recordLogs(); ? 
+    // after action 
+    // vm.Log[] memory entries = vm.getRecordLogs(); 
+    
     amount = bound(amount, 15, 2500); 
     vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
     emit Transfer(loyaltyProgram.getOwner(), USER_1, amount);
@@ -139,7 +140,6 @@ contract LoyaltyProgramTest is Test {
   function testUserCannotTransferTokenstoOtherUser(uint256 amount) public usersHaveTransactionHistory() {
     // Arrange
     amount = bound(amount, 0, loyaltyProgram.balanceOf(USER_1)); 
-
     // Act / Assert
     vm.expectRevert(LoyaltyProgram.LoyaltyProgram__NoAccess.selector);  
     vm.prank(USER_1);
@@ -169,6 +169,7 @@ contract LoyaltyProgramTest is Test {
     // Act
     vm.prank(loyaltyProgram.getOwner());
     loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
+    console.log("REDEEM_CONTRACT_A: ", REDEEM_CONTRACT_A); 
 
     // Assert
     assertEq(loyaltyProgram.getRedeemContract(REDEEM_CONTRACT_A), true); 
