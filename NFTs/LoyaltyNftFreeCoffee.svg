@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="100mm"
+   height="100mm"
+   viewBox="0 0 100 100"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="LoyaltyNftFreeCoffee.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#2932bc"
+     borderopacity="0.25882353"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="false"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.3273709"
+     inkscape:cx="187.58886"
+     inkscape:cy="216.59356"
+     inkscape:window-width="2560"
+     inkscape:window-height="1376"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     inkscape:showpageshadow="true" />
+  <defs
+     id="defs2">
+    <style
+       id="style846">.cls-1{fill:none;stroke:#020202;stroke-miterlimit:10;stroke-width:1.91px;}</style>
+  </defs>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Background" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="SVGRepo_bgCarrier"
+       stroke-width="0"
+       transform="matrix(2.8249534,0,0,2.5730138,21.42012,31.16171)" />
+    <g
+       id="SVGRepo_tracerCarrier"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       transform="matrix(2.8249534,0,0,2.5730138,21.42012,31.16171)" />
+    <g
+       id="SVGRepo_iconCarrier"
+       transform="matrix(3.674105,0,0,3.346435,8.7347998,10.573888)">
+      <defs
+         id="defs848">
+        <style
+           id="style871">.cls-1{fill:none;stroke:#020202;stroke-miterlimit:10;stroke-width:1.91px;}</style>
+      </defs>
+      <path
+         class="cls-1"
+         d="m 1.48,7.23 h 15.27 v 7.64 A 7.64,7.64 0 0 1 9.11,22.5 v 0 A 7.64,7.64 0 0 1 1.47,14.86 V 7.23 Z"
+         id="path850" />
+      <rect
+         class="cls-1"
+         x="16.75"
+         y="8.1800003"
+         width="5.73"
+         height="9.5500002"
+         rx="2.8599999"
+         id="rect852" />
+      <path
+         class="cls-1"
+         d="m 3.39,1.5 c 1.91,1.53 -1,2.29 0.95,3.82"
+         id="path854" />
+      <path
+         class="cls-1"
+         d="m 12.93,1.5 c 1.91,1.53 -0.95,2.29 1,3.82"
+         id="path856" />
+      <path
+         class="cls-1"
+         d="m 8.16,1.5 c 1.91,1.53 -1,2.29 0.95,3.82"
+         id="path858" />
+      <line
+         class="cls-1"
+         x1="0.51999998"
+         y1="22.5"
+         x2="17.700001"
+         y2="22.5"
+         id="line860" />
+    </g>
+    <g
+       id="SVGRepo_bgCarrier-8"
+       stroke-width="0"
+       transform="matrix(0.26458333,0,0,0.26458333,31.508277,5.4135771)" />
+    <g
+       id="SVGRepo_tracerCarrier-5"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       transform="matrix(0.26458333,0,0,0.26458333,31.508277,5.4135771)" />
+  </g>
+</svg>

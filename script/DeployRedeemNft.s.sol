@@ -2,15 +2,15 @@
 pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
-import {RedeemNft} from "../src/RedeemNft.sol";
+import {LoyaltyNft} from "../src/LoyaltyNft.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
-contract DeployRedeemNft is Script {
+contract DeployLoyaltyNft is Script {
 
-  function run() external returns (RedeemNft) {
+  function run() external returns (LoyaltyNft) {
     vm.startBroadcast(); 
-    RedeemNft redeemNft = new RedeemNft();
+    LoyaltyNft loyaltyNft = new LoyaltyNft();
     vm.stopBroadcast(); 
-    return redeemNft; 
+    return loyaltyNft; 
   }
 }

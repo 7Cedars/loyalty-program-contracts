@@ -30,13 +30,13 @@ contract RedeemNft is ERC721 {
   error RedeemNft__IncorrectRedeemContract();
 
   /* Type declarations */
-
+  struct LoyaltyNft { 
+    address program; 
+    string tokenUri; 
+  }
 
   /* State variables */ 
-  // NB: I might want to combine this into a struct. -- see later. 
-  mapping (uint256 => address) private s_tokenIdToProgram; 
-  mapping (uint256 => string) private s_tokenIdToUri; 
-  
+  mapping (uint256 => LoyaltyNft) private s_tokenIdToLoyaltyNft; 
   
   /* Events */
   event ClaimedNft(uint256 indexed tokenId);  
@@ -44,7 +44,7 @@ contract RedeemNft is ERC721 {
 
   /* Modifiers */
   modifier onlyCorrectLoyaltyProgram (uint256 tokenId) {
-    if (s_tokenIdToProgram[tokenId] != msg.sender) {
+    if (s_tokenIdToLoyaltyNft[tokenId].program != msg.sender) {
       revert RedeemNft__IncorrectRedeemContract(); 
     }
     _; 
@@ -67,9 +67,11 @@ contract RedeemNft is ERC721 {
    * 
   */ 
   function claimNft(address consumer, string memory tokenUri) public returns (uint256) {
-    uint256 tokenId = _pseudoRandomTokenId(); 
-    s_tokenIdToUri[tokenId] = tokenUri; 
-    s_tokenIdToProgram[tokenId] = msg.sender; 
+    uint256 tokenId = _pseudoRandomTokenId();
+  
+    s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNft(msg.sender, tokenUri);
+    // s_tokenIdToUri[tokenId] = tokenUri; 
+    // s_tokenIdToProgram[tokenId] = msg.sender; 
     _safeMint(consumer, tokenId); 
 
     emit ClaimedNft(tokenId); 
@@ -82,21 +84,25 @@ contract RedeemNft is ERC721 {
    * 
    * 
   */ 
-  function redeemNft(uint256 tokenId) public {
-    if (s_tokenIdToProgram[tokenId] != msg.sender) {
+  function redeemNft(uint256 tokenId) public returns (bool) {
+    bool success = false; 
+    
+    if (s_tokenIdToLoyaltyNft[tokenId].program != msg.sender) {
       revert RedeemNft__IncorrectRedeemContract(); 
     }
     
-    s_tokenIdToProgram[tokenId] = address(0); 
+    s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNft(address(0), ""); 
     _burn(tokenId); 
 
+    success = true; 
     emit RedeemedNft(tokenId); 
+    return success; 
   }
 
   function tokenURI(
     uint256 tokenId
     ) public view override returns (string memory) {
-      return s_tokenIdToUri[tokenId]; 
+      return s_tokenIdToLoyaltyNft[tokenId].tokenUri; 
     } 
 
   

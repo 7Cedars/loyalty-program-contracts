@@ -45,6 +45,9 @@ endif
 deploy:
 	@forge script script/DeployOurToken.s.sol:DeployOurToken $(NETWORK_ARGS)
 
+claim:
+	@forge script script/Interations.s.sol:ClaimNft $(NETWORK_ARGS)
+
 # cast abi-encode "constructor(uint256)" 1000000000000000000000000 -> 0x00000000000000000000000000000000000000000000d3c21bcecceda1000000
 # Update with your contract address, constructor arguments and anything else
 verify:
