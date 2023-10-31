@@ -26,16 +26,16 @@ contract LoyaltyProgramTest is Test {
     bool redeemed; 
   }
 
-  address USER_1 = makeAddr("user1"); 
-  address USER_2 = makeAddr("user2"); 
-  address REDEEM_CONTRACT_A = makeAddr("redeemContractA"); 
-  address REDEEM_CONTRACT_B = makeAddr("redeemContractB"); 
+  address public USER_1 = makeAddr("user1"); 
+  address public USER_2 = makeAddr("user2"); 
+  address public REDEEM_CONTRACT_A = makeAddr("redeemContractA"); 
+  address public REDEEM_CONTRACT_B = makeAddr("redeemContractB"); 
   uint256 constant STARTING_BALANCE = 10 ether;  
   uint256 constant GAS_PRICE = 1; 
 
   modifier usersHaveTransactionHistory(
     ) {
-       uint256 numberTransactions1;
+      uint256 numberTransactions1;
       uint256 numberTransactions2; 
       uint256 amount1;
       uint256 amount2; 
