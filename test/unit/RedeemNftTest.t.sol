@@ -2,27 +2,27 @@
 pragma solidity ^0.8.21;
 
 import {Test, console} from "forge-std/Test.sol"; 
-import {RedeemNft} from "../../src/RedeemNft.sol";
-import {DeployRedeemNft} from "../../script/DeployRedeemNft.s.sol";
+import {LoyaltyNft} from "../../src/LoyaltyNft.sol";
+import {DeployLoyaltyNft} from "../../script/DeployLoyaltyNft.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 
-contract RedeemNftTest is Test {
-  DeployRedeemNft public deployer; 
-  RedeemNft public redeemNft; 
+contract LoyaltyNftTest is Test {
+  DeployLoyaltyNft public deployer; 
+  LoyaltyNft public loyaltyNft; 
   address public LOYALTY_PROGRAM_CONTRACT = makeAddr("LoyaltyProgramContract"); 
   address public USER_1 = makeAddr("user1"); 
   address public USER_2 = makeAddr("user2"); 
-  string public constant SHIBA = "ipfs://bafybeig37ioir76s7mg5oobetncojcm3c3hxasyd4rvid4jqhy4gkaheg4/?filename=0-PUG.json"; 
+  string public constant FREE_COFFEE_URI = "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7"; 
 
 
   function setUp() public {
-    deployer = new DeployRedeemNft(); 
-    redeemNft = deployer.run();
+    deployer = new DeployLoyaltyNft(); 
+    loyaltyNft = deployer.run();
   }
 
   function testNameIsCorrect() public view {
     string memory expectedName = "FreeCoffee"; 
-    string memory actualName = redeemNft.name(); 
+    string memory actualName = loyaltyNft.name(); 
     // NB you cannot just compare strings! 
     assert(
       keccak256(abi.encodePacked(expectedName))
@@ -35,16 +35,16 @@ contract RedeemNftTest is Test {
     uint256 tokenId; 
     
     vm.prank(LOYALTY_PROGRAM_CONTRACT); 
-    tokenId = redeemNft.claimNft(USER_1, SHIBA);
+    tokenId = loyaltyNft.claimNft(USER_1);
 
     // console.log("SHIBA: ", SHIBA); 
-    // console.log("redeemNft.tokenURI(0): ", redeemNft.tokenURI(tokenId)); 
+    // console.log("LoyaltyNft.tokenURI(0): ", LoyaltyNft.tokenURI(tokenId)); 
 
-    assert(redeemNft.balanceOf(USER_1) == 1); 
+    assert(loyaltyNft.balanceOf(USER_1) == 1); 
     assert(
-      keccak256(abi.encodePacked(SHIBA)) 
+      keccak256(abi.encodePacked(FREE_COFFEE_URI)) 
       ==
-      keccak256(abi.encodePacked(redeemNft.tokenURI(tokenId)))
+      keccak256(abi.encodePacked(loyaltyNft.tokenURI(tokenId)))
     );
   }
 }

@@ -6,7 +6,6 @@ import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {LoyaltyNft} from "../src/LoyaltyNft.sol";
 
 contract ClaimNft is Script {
-  string public constant SHIBA = "ipfs://bafybeig37ioir76s7mg5oobetncojcm3c3hxasyd4rvid4jqhy4gkaheg4/?filename=0-PUG.json"; 
   address public USER_1 = makeAddr("user1"); 
 
   function run() external {
@@ -19,7 +18,7 @@ contract ClaimNft is Script {
 
   function claimNftOnContract(address contractAddress) public {
     vm.startBroadcast();
-    LoyaltyNft(contractAddress).claimNft(USER_1, SHIBA); 
+    LoyaltyNft(contractAddress).claimNft(USER_1); 
     vm.stopBroadcast(); 
   } 
 

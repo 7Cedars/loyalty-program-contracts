@@ -30,6 +30,8 @@ contract LoyaltyNft is ERC721 {
   error LoyaltyNft__IncorrectNftContract();
 
   /* Type declarations */
+  string public constant FREE_COFFEE_URI = "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7"; 
+
   struct LoyaltyNftData { 
     address program; 
     string tokenUri; 
@@ -66,10 +68,10 @@ contract LoyaltyNft is ERC721 {
    * 
    * 
   */ 
-  function claimNft(address consumer, string memory tokenUri) public returns (uint256) {
+  function claimNft(address consumer) public returns (uint256) {
     uint256 tokenId = _pseudoRandomTokenId();
   
-    s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNftData(msg.sender, tokenUri);
+    s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNftData(msg.sender, FREE_COFFEE_URI);
     // s_tokenIdToUri[tokenId] = tokenUri; 
     // s_tokenIdToProgram[tokenId] = msg.sender; 
     _safeMint(consumer, tokenId); 
