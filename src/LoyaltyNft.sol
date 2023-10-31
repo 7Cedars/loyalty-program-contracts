@@ -28,10 +28,10 @@ contract LoyaltyNft is ERC721 {
 
   /* errors */ 
   error LoyaltyNft__IncorrectNftContract();
+  error LoyaltyNft__NftNotOwnedByConsumer(); 
+  error LoyaltyNft__InsufficientPoints(); 
 
-  /* Type declarations */
-  string public constant FREE_COFFEE_URI = "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7"; 
-
+  /* Type declarations */  
   struct LoyaltyNftData { 
     address program; 
     string tokenUri; 
@@ -39,9 +39,12 @@ contract LoyaltyNft is ERC721 {
 
   /* State variables */ 
   mapping (uint256 => LoyaltyNftData) private s_tokenIdToLoyaltyNft; 
-  
+  mapping (address => uint256[]) private s_consumersToTokenIds; 
+  uint256 private s_tokenCounter;
+  uint256 public s_loyaltyNftPrice; // 2500
+  string  public s_loyaltyNftUri; //  = "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7"; 
+
   /* Events */
-  event ClaimedNft(uint256 indexed tokenId);  
   event RedeemedNft(uint256 indexed tokenId);  
 
   /* Modifiers */
@@ -54,8 +57,10 @@ contract LoyaltyNft is ERC721 {
 
   /* FUNCTIONS: */
   /* constructor */
-  constructor() ERC721("FreeCoffee", "FC") {
-
+  constructor(uint256 loyaltyNftPrice, string memory loyaltyNftUri) ERC721("FreeCoffee", "FC") {
+    s_tokenCounter = 0;
+    s_loyaltyNftPrice = loyaltyNftPrice; 
+    s_loyaltyNftUri = loyaltyNftUri; 
   }
 
   // why not have this claimNFT function take a tokenId AND loyalty program address? 
@@ -68,16 +73,15 @@ contract LoyaltyNft is ERC721 {
    * 
    * 
   */ 
-  function claimNft(address consumer) public returns (uint256) {
-    uint256 tokenId = _pseudoRandomTokenId();
-  
-    s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNftData(msg.sender, FREE_COFFEE_URI);
-    // s_tokenIdToUri[tokenId] = tokenUri; 
-    // s_tokenIdToProgram[tokenId] = msg.sender; 
-    _safeMint(consumer, tokenId); 
+ // should be internal virtual..  
+  function claimNft(address consumer, uint256 loyaltyPoints) public {
+    if (loyaltyPoints < s_loyaltyNftPrice) {
+      revert LoyaltyNft__InsufficientPoints(); 
+    }
 
-    emit ClaimedNft(tokenId); 
-    return tokenId;
+    s_tokenIdToLoyaltyNft[s_tokenCounter] = LoyaltyNftData(msg.sender, s_loyaltyNftUri);
+    _safeMint(consumer, s_tokenCounter); 
+    s_tokenCounter = s_tokenCounter + 1;
   }
 
 
@@ -86,19 +90,19 @@ contract LoyaltyNft is ERC721 {
    * 
    * 
   */ 
-  function redeemNft(uint256 tokenId) public returns (bool) {
-    bool success = false; 
-    
+  function redeemNft(uint256 tokenId, address consumer) public {
+    address owner = ownerOf(tokenId);
     if (s_tokenIdToLoyaltyNft[tokenId].program != msg.sender) {
       revert LoyaltyNft__IncorrectNftContract(); 
     }
-    
+    if (owner != consumer) {
+      revert LoyaltyNft__NftNotOwnedByConsumer(); 
+    }
+
     s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNftData(address(0), ""); 
     _burn(tokenId); 
 
-    success = true; 
     emit RedeemedNft(tokenId); 
-    return success; 
   }
 
   function tokenURI(
@@ -107,20 +111,15 @@ contract LoyaltyNft is ERC721 {
       return s_tokenIdToLoyaltyNft[tokenId].tokenUri; 
     } 
 
-  
   /* internal */
-  /** 
-   * @dev TODO
-   * 
-   * 
-  */ 
-  // from: https://medium.com/coinmonks/how-to-generate-random-numbers-in-solidity-16950cb2261d
-  function _pseudoRandomTokenId() internal view returns (uint256) {
-    return uint256(keccak256(abi.encodePacked(
-      tx.origin,
-      blockhash(block.number - 1),
-      block.timestamp
-    )));
+
+  /* getter functions */
+  function getLoyaltyNftData(uint256 tokenId) external view returns (LoyaltyNftData memory) {
+    return s_tokenIdToLoyaltyNft[tokenId]; 
+  }
+
+  function getNftIdsOf(address consumer) external view returns (uint256[] memory) {
+    return s_consumersToTokenIds[consumer]; 
   }
 
 }

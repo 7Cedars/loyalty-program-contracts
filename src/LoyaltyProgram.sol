@@ -24,6 +24,7 @@ pragma solidity ^0.8.21;
 
 /* imports */
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {LoyaltyNft} from "./LoyaltyNft.sol";
 
 contract LoyaltyProgram is ERC20 {
   /* errors */
@@ -42,6 +43,7 @@ contract LoyaltyProgram is ERC20 {
   address private s_owner; 
   mapping(address => bool) private s_RedeemContracts; 
   mapping(address => Transaction[]) private s_Transactions; 
+  LoyaltyNft public selectedLoyaltyNft; 
 
   /* Events */
   event AddedRedeemContract(address indexed redeemContract);  

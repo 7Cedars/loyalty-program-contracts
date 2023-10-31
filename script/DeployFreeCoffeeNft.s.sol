@@ -3,14 +3,15 @@ pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
 import {LoyaltyNft} from "../src/LoyaltyNft.sol";
+import {FreeCoffeeNft} from "../src/FreeCoffeeNft.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
-contract DeployLoyaltyNft is Script {
+contract DeployFreeCoffeeNft is Script {
 
-  function run() external returns (LoyaltyNft) {
+  function run() external returns (FreeCoffeeNft) {
     vm.startBroadcast(); 
-    LoyaltyNft loyaltyNft = new LoyaltyNft();
+    FreeCoffeeNft freeCoffeeNft = new FreeCoffeeNft();
     vm.stopBroadcast(); 
-    return loyaltyNft; 
+    return freeCoffeeNft; 
   }
 }
