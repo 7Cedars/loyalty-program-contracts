@@ -30,7 +30,7 @@ contract LoyaltyProgram is ERC20 {
   /* errors */
   error LoyaltyProgram__NoAccess(); 
   error LoyaltyProgram__OnlyOwner(); 
-  error LoyaltyProgram__RedeemContractAbsent(); 
+  error LoyaltyProgram__LoyaltyNftNotRecognised(); 
 
   /* Type declarations */
   struct Transaction {
@@ -41,7 +41,7 @@ contract LoyaltyProgram is ERC20 {
 
   /* State variables */
   address private s_owner; 
-  mapping(address => bool) private s_RedeemContracts; 
+  mapping(address => bool) private s_LoyaltyNfts; 
   mapping(address => Transaction[]) private s_Transactions; 
   LoyaltyNft public selectedLoyaltyNft; 
 
@@ -64,23 +64,39 @@ contract LoyaltyProgram is ERC20 {
   }
 
   /* public */
-  function addRedeemContract(address redeemContract) public onlyOwner {
-    // later checks will be added here. 
-    s_RedeemContracts[redeemContract] = true; 
-    emit AddedRedeemContract(redeemContract); 
-  }
-
-  function removeRedeemContract(address redeemContract) public onlyOwner {
-    if (s_RedeemContracts[redeemContract] = false) {
-      revert LoyaltyProgram__RedeemContractAbsent();
-    }
-    s_RedeemContracts[redeemContract] = false;
-    emit RemovedRedeemContract(redeemContract); 
-  }
-
   function mintLoyaltyPoints(uint256 amount) public onlyOwner {
     _mint(s_owner, amount); 
   }
+
+  function claimSelectedNft(address loyaltyNft, uint256 loyaltyPoints) external {
+    if (s_LoyaltyNfts[loyaltyNft] == false) {
+      revert LoyaltyProgram__LoyaltyNftNotRecognised(); 
+    }
+
+    selectedLoyaltyNft = LoyaltyNft(loyaltyNft); 
+    selectedLoyaltyNft.claimNft(msg.sender, loyaltyPoints); 
+  }
+
+  function RedeemmSelectedNft(address loyaltyNft, uint256 tokenId) external {
+    selectedLoyaltyNft = LoyaltyNft(loyaltyNft); 
+    selectedLoyaltyNft.redeemNft(msg.sender, tokenId); 
+  }
+
+  function addLoyaltyNft(address loyaltyNft) public onlyOwner {
+    // later checks will be added here. 
+    s_LoyaltyNfts[loyaltyNft] = true; 
+    emit AddedRedeemContract(loyaltyNft); 
+  }
+
+  function removeLoyaltyNft(address loyaltyNft) public onlyOwner {
+    if (s_LoyaltyNfts[loyaltyNft] = false) {
+      revert LoyaltyProgram__LoyaltyNftNotRecognised();
+    }
+    s_LoyaltyNfts[loyaltyNft] = false;
+    emit RemovedRedeemContract(loyaltyNft); 
+  }
+
+
 
   // NB Need to use transferFrom & allowance -- when it comes to redeem NFTs  
 
@@ -92,7 +108,7 @@ contract LoyaltyProgram is ERC20 {
    * @dev All params are the same from original. 
   */ 
   function _update(address from, address to, uint256 value) internal override virtual {
-    if (msg.sender != s_owner && s_RedeemContracts[to] == false) {
+    if (msg.sender != s_owner && s_LoyaltyNfts[to] == false) {
       revert LoyaltyProgram__NoAccess(); 
     }
 
@@ -118,8 +134,8 @@ contract LoyaltyProgram is ERC20 {
     return s_Transactions[customer]; 
   }
 
-  function getRedeemContract(address redeemContract) external view returns (bool) {
-    return s_RedeemContracts[redeemContract]; 
+  function getLoyaltyNft(address loyaltyNft) external view returns (bool) {
+    return s_LoyaltyNfts[loyaltyNft]; 
   }
 }
 

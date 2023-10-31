@@ -41,8 +41,8 @@ contract LoyaltyNft is ERC721 {
   mapping (uint256 => LoyaltyNftData) private s_tokenIdToLoyaltyNft; 
   mapping (address => uint256[]) private s_consumersToTokenIds; 
   uint256 private s_tokenCounter;
-  uint256 public s_loyaltyNftPrice; // 2500
-  string  public s_loyaltyNftUri; //  = "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7"; 
+  uint256 public s_loyaltyNftPrice; 
+  string  public s_loyaltyNftUri; 
 
   /* Events */
   event RedeemedNft(uint256 indexed tokenId);  
@@ -63,17 +63,12 @@ contract LoyaltyNft is ERC721 {
     s_loyaltyNftUri = loyaltyNftUri; 
   }
 
-  // why not have this claimNFT function take a tokenId AND loyalty program address? 
-  // I can add a mapping 'program' in addition to 'owner'. 
-  // This means that all existing functionality remains intact (NFTs can be traded, etc) 
-  // Except that it enables a check on what program they have been minted from... 
-  // This also enables NFTs to be redeemed from claim programs that have been discontinued.
    /** 
    * @dev TODO 
    * 
    * 
   */ 
- // should be internal virtual..  
+  // should be internal virtual..  
   function claimNft(address consumer, uint256 loyaltyPoints) public {
     if (loyaltyPoints < s_loyaltyNftPrice) {
       revert LoyaltyNft__InsufficientPoints(); 
@@ -84,13 +79,12 @@ contract LoyaltyNft is ERC721 {
     s_tokenCounter = s_tokenCounter + 1;
   }
 
-
   /** 
    * @dev TODO
    * 
    * 
   */ 
-  function redeemNft(uint256 tokenId, address consumer) public {
+  function redeemNft(address consumer, uint256 tokenId) public {
     address owner = ownerOf(tokenId);
     if (s_tokenIdToLoyaltyNft[tokenId].program != msg.sender) {
       revert LoyaltyNft__IncorrectNftContract(); 
