@@ -24,19 +24,19 @@ pragma solidity ^0.8.21;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-contract RedeemNft is ERC721 {
+contract LoyaltyNft is ERC721 {
 
   /* errors */ 
-  error RedeemNft__IncorrectRedeemContract();
+  error LoyaltyNft__IncorrectNftContract();
 
   /* Type declarations */
-  struct LoyaltyNft { 
+  struct LoyaltyNftData { 
     address program; 
     string tokenUri; 
   }
 
   /* State variables */ 
-  mapping (uint256 => LoyaltyNft) private s_tokenIdToLoyaltyNft; 
+  mapping (uint256 => LoyaltyNftData) private s_tokenIdToLoyaltyNft; 
   
   /* Events */
   event ClaimedNft(uint256 indexed tokenId);  
@@ -45,7 +45,7 @@ contract RedeemNft is ERC721 {
   /* Modifiers */
   modifier onlyCorrectLoyaltyProgram (uint256 tokenId) {
     if (s_tokenIdToLoyaltyNft[tokenId].program != msg.sender) {
-      revert RedeemNft__IncorrectRedeemContract(); 
+      revert LoyaltyNft__IncorrectNftContract(); 
     }
     _; 
   }
@@ -69,7 +69,7 @@ contract RedeemNft is ERC721 {
   function claimNft(address consumer, string memory tokenUri) public returns (uint256) {
     uint256 tokenId = _pseudoRandomTokenId();
   
-    s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNft(msg.sender, tokenUri);
+    s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNftData(msg.sender, tokenUri);
     // s_tokenIdToUri[tokenId] = tokenUri; 
     // s_tokenIdToProgram[tokenId] = msg.sender; 
     _safeMint(consumer, tokenId); 
@@ -88,10 +88,10 @@ contract RedeemNft is ERC721 {
     bool success = false; 
     
     if (s_tokenIdToLoyaltyNft[tokenId].program != msg.sender) {
-      revert RedeemNft__IncorrectRedeemContract(); 
+      revert LoyaltyNft__IncorrectNftContract(); 
     }
     
-    s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNft(address(0), ""); 
+    s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNftData(address(0), ""); 
     _burn(tokenId); 
 
     success = true; 
