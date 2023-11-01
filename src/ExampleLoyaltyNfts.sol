@@ -32,7 +32,7 @@ import {Transaction} from "./LoyaltyProgram.sol";
 /** 
  * @dev This example LoyaltyNft contract gives a free coffee for 2500 loyalty points. 
 */ 
-contract FreeCoffeeNft is LoyaltyNft {
+contract OneCoffeeFor2500 is LoyaltyNft {
 
   /** 
    * @dev the constructor defines the uri of the LoyaltyNft contract.    
@@ -58,7 +58,7 @@ contract FreeCoffeeNft is LoyaltyNft {
       uint256 nftPointsPrice = 2500; 
       
       if (loyaltyPoints < nftPointsPrice) {
-        revert LoyaltyNft__InsufficientPoints(); 
+        revert LoyaltyNft__InsufficientPoints(address(this)); 
       }
 
       super.requirementsNftMet(consumer, loyaltyPoints, transactions); 
@@ -71,7 +71,7 @@ contract FreeCoffeeNft is LoyaltyNft {
 /** 
  * @dev This example LoyaltyNft contract gives a free coffee for 2500 loyalty points. 
 */ 
-contract FreeCoffeeForSprinters is LoyaltyNft {
+contract OneCoffeeFor10BuysInWeek is LoyaltyNft {
 
   /** 
    * @dev This example gives out a free coffee if a customer has made at least 10 purchases in a week. 
@@ -98,7 +98,7 @@ contract FreeCoffeeForSprinters is LoyaltyNft {
       uint256 durationOfTransactions = transactions[numberOfTransactions - 1].timestamp - transactions[0].timestamp; 
       
       if (durationOfTransactions < oneWeek || numberOfTransactions < 10) {
-        revert LoyaltyNft__InsufficientTransactions(); 
+        revert LoyaltyNft__InsufficientTransactions(address(this)); 
       }
 
     super.requirementsNftMet(consumer, loyaltyPoints, transactions); 
@@ -111,7 +111,7 @@ contract FreeCoffeeForSprinters is LoyaltyNft {
 /** 
  * @dev This example LoyaltyNft contract is a combination of Example 1 and 2: combining transactions with points.   
 */ 
-contract FreeCoffeeForRichSprinters is LoyaltyNft {
+contract OneCoffeeFor2500And10BuysInWeek is LoyaltyNft {
 
   /** 
    * @dev This example gives out a free coffee if a customer has made at least 10 purchases in a week + transfers 2500 points. 
@@ -132,14 +132,14 @@ contract FreeCoffeeForRichSprinters is LoyaltyNft {
     address consumer, 
     uint256 loyaltyPoints, 
     Transaction[] memory transactions
-    ) public override returns (bool success) {
+    ) public override returns (bool) {
       uint256 nftPointsPrice = 2500; 
       uint256 oneWeek = 604800; // one week in seconds.
       uint256 numberOfTransactions = transactions.length; 
       uint256 durationOfTransactions = transactions[numberOfTransactions - 1].timestamp - transactions[0].timestamp; 
       
       if (durationOfTransactions < oneWeek || numberOfTransactions < 10 || loyaltyPoints < nftPointsPrice) {
-        revert LoyaltyNft__InsufficientTransactionsAndPoints();
+        revert LoyaltyNft__InsufficientTransactionsAndPoints(address(this));
       }
 
     super.requirementsNftMet(consumer, loyaltyPoints, transactions); 
