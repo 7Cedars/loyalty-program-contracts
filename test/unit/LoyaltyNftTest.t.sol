@@ -3,9 +3,10 @@ pragma solidity ^0.8.21;
 
 import {Test, console} from "forge-std/Test.sol"; 
 import {LoyaltyNft} from "../../src/LoyaltyNft.sol";
-import {FreeCoffeeNft} from "../../src/FreeCoffeeNft.sol";
-import {DeployFreeCoffeeNft} from "../../script/DeployFreeCoffeeNft.s.sol";
+import {FreeCoffeeNft} from "../../src/ExampleLoyaltyNfts.sol";
+import {DeployFreeCoffeeNft} from "../../script/DeployExampleLoyaltyNfts.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
+import {Transaction} from "../../src/LoyaltyProgram.sol" ;
 
 contract LoyaltyNftTest is Test {
   DeployFreeCoffeeNft public deployer; 
@@ -14,6 +15,7 @@ contract LoyaltyNftTest is Test {
   address public LOYALTY_PROGRAM_CONTRACT = makeAddr("LoyaltyProgramContract"); 
   address public USER_1 = makeAddr("user1"); 
   address public USER_2 = makeAddr("user2"); 
+  Transaction[] public transactions;  
   string public constant FREE_COFFEE_URI = "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7"; 
 
   modifier usersHaveNfts(
@@ -23,14 +25,15 @@ contract LoyaltyNftTest is Test {
       numberNfts1 = bound(numberNfts1, 3, 8); 
       numberNfts2 = bound(numberNfts2, 18, 21);
       
+      
       // for loop in solidity: initialisation, condition, updating. See https://dev.to/shlok2740/loops-in-solidity-2pmp.
       for (uint256 i = 0; i < numberNfts1; i++) { 
         vm.prank(LOYALTY_PROGRAM_CONTRACT);
-        freeCoffeeNft.claimNft(USER_1, 2500); 
+        freeCoffeeNft.claimNft(USER_1, 2500, transactions); 
       }  
       for (uint256 i = 0; i < numberNfts2; i++) { 
         vm.prank(LOYALTY_PROGRAM_CONTRACT);
-        freeCoffeeNft.claimNft(USER_2, 2500); 
+        freeCoffeeNft.claimNft(USER_2, 2500, transactions); 
       }
       _; 
   }
@@ -55,7 +58,7 @@ contract LoyaltyNftTest is Test {
     uint256 tokenId; 
     
     vm.prank(LOYALTY_PROGRAM_CONTRACT); 
-    freeCoffeeNft.claimNft(USER_1, 2500);
+    freeCoffeeNft.claimNft(USER_1, 2500, transactions);
 
     assert(freeCoffeeNft.balanceOf(USER_1) == 1); 
     assert(

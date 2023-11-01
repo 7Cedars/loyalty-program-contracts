@@ -26,23 +26,25 @@ pragma solidity ^0.8.21;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {LoyaltyNft} from "./LoyaltyNft.sol";
 
+/* Type declarations */
+struct Transaction {
+      uint points;
+      uint timestamp;
+      bool redeemed; 
+  } 
+
 contract LoyaltyProgram is ERC20 {
   /* errors */
   error LoyaltyProgram__NoAccess(); 
   error LoyaltyProgram__OnlyOwner(); 
   error LoyaltyProgram__LoyaltyNftNotRecognised(); 
 
-  /* Type declarations */
-  struct Transaction {
-        uint256 points;
-        uint256 timestamp;
-        bool redeemed; 
-    }
+  // Transaction[] public transactions; 
 
   /* State variables */
   address private s_owner; 
   mapping(address => bool) private s_LoyaltyNfts; 
-  mapping(address => Transaction[]) private s_Transactions; 
+  mapping(address => Transaction[] transactions) private s_Transactions; 
   LoyaltyNft public selectedLoyaltyNft; 
 
   /* Events */
@@ -68,13 +70,18 @@ contract LoyaltyProgram is ERC20 {
     _mint(s_owner, amount); 
   }
 
-  function claimSelectedNft(address loyaltyNft, uint256 loyaltyPoints) external {
-    if (s_LoyaltyNfts[loyaltyNft] == false) {
-      revert LoyaltyProgram__LoyaltyNftNotRecognised(); 
-    }
+  function claimSelectedNft(
+    address loyaltyNft, 
+    uint256 loyaltyPoints, 
+    Transaction[] memory transactions
+    ) external {
+      if (s_LoyaltyNfts[loyaltyNft] == false) {
+        revert LoyaltyProgram__LoyaltyNftNotRecognised(); 
+      }
 
     selectedLoyaltyNft = LoyaltyNft(loyaltyNft); 
-    selectedLoyaltyNft.claimNft(msg.sender, loyaltyPoints); 
+    bool success;
+    (success) = selectedLoyaltyNft.claimNft(msg.sender, loyaltyPoints, transactions); 
   }
 
   function RedeemmSelectedNft(address loyaltyNft, uint256 tokenId) external {
