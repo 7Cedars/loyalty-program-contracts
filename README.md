@@ -24,16 +24,16 @@ For personal use only.
   - [x] tracks list of whitelisted redeem contracts
     - [x] is mapping of addresses + indexed event. 
   - [x] Test if all these functions work. 
-- [ ] Build, deploy, test single ERC-721 NFT contract 
+- [x] Build, deploy, test single ERC-721 NFT contract 
   - [x] takes points from any loyalty card contract. 
   - [x] create claim funtion: issues NFTs, on the basis of particular cost (# of points for instance.) 
     - [x] should take address that calls the function. (which is ERC-20 loyalty card contract)
-    - [ ] takes points AND transaction - one OR the other can be used. 
+    - [x] takes points AND transaction - one OR the other can be used. 
   - [x] issued NFTs remain linked to loyalty card contract that issued them. - possibly through 'approved address'? 
   - [x] create redeem function: delete / burn token, returns a redeemed = true.  
-- [ ] Import and test single ERC-721 NFT contract into ERC-20 based loyalty card contract
+- [x] Import and test single ERC-721 NFT contract into ERC-20 based loyalty card contract
   - [x] whitelist ERC-721 contract
-  - [ ] Implement and test 'claim' function in ERC-20 loyalty card contract
+  - [x] Implement and test 'claim' function in ERC-20 loyalty card contract
     - [x] takes an address pointing to whitelisted list of ERC-721 NFT redeemed contracts
     - [x] calls its ERC-721 claim function   
     - [x] called by customer: sending points (implement events later).
@@ -43,9 +43,9 @@ For personal use only.
     - [ ] calls its ERC-721 redeem function
     - [ ] called by customer, approved by vendor: sending NFT, getting burned. 
     - [ ] returns redeemed = true value.  
-- [ ] Build, deploy, test ERC-721 contract Interface
-  - [ ] implement in existing ERC-721 contract. 
-  - [ ] Create two more ERC-721 contracts with different logics: one using events, one combination of the two. 
+- [ ] Build, deploy, test ERC-721 contract Inheritance
+  - [x] implement in existing ERC-721 contract. 
+  - [x] Create two more ERC-721 contracts with different logics: one using events, one combination of the two. 
   - [ ] Whitelist them in ERC-20 contract.
   - [ ] test if different logics work. 
 - [x] Build, deploy, test function to (de)select redeem contract for loyalty prgram. 

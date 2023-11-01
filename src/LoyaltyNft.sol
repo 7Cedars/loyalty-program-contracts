@@ -30,10 +30,11 @@ contract LoyaltyNft is ERC721 {
   /* errors */ 
   error LoyaltyNft__IncorrectNftContract();
   error LoyaltyNft__NftNotOwnedByConsumer(); 
+  error LoyaltyNft__NoPointsOrTransactionsReceived(); 
   error LoyaltyNft__InsufficientPoints(); 
   error LoyaltyNft__InsufficientTransactions(); 
-  error LoyaltyNft__NoPointsOrTransactionsReceived(); 
-
+  error LoyaltyNft__InsufficientTransactionsAndPoints(); 
+  
   /* Type declarations */  
   struct LoyaltyNftData { 
     address program; 
