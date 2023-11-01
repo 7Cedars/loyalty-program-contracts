@@ -28,6 +28,7 @@ import {LoyaltyNft} from "./LoyaltyNft.sol";
 
 /* Type declarations */
 struct Transaction {
+      uint index; 
       uint points;
       uint timestamp;
       bool redeemed; 
@@ -37,7 +38,9 @@ contract LoyaltyProgram is ERC20 {
   /* errors */
   error LoyaltyProgram__NoAccess(); 
   error LoyaltyProgram__OnlyOwner(); 
+  error LoyaltyProgram__InSufficientPoints(); 
   error LoyaltyProgram__LoyaltyNftNotRecognised(); 
+  error LoyaltyProgram__TransactionIndexOutOfBounds(); 
 
   // Transaction[] public transactions; 
 
@@ -66,22 +69,39 @@ contract LoyaltyProgram is ERC20 {
   }
 
   /* public */
-  function mintLoyaltyPoints(uint256 amount) public onlyOwner {
-    _mint(s_owner, amount); 
+  function mintLoyaltyPoints(uint256 amountOfPoints) public onlyOwner {
+    _mint(s_owner, amountOfPoints); 
+  }
+
+  function mintNfts(address nftAddress, uint256 numberOfNfts) public onlyOwner {
+     LoyaltyNft(nftAddress).mintNft(numberOfNfts); 
   }
 
   function claimSelectedNft(
-    address loyaltyNft, 
-    uint256 loyaltyPoints, 
-    Transaction[] memory transactions
+    address nftAddress, 
+    uint256 loyaltyPoints,
+    Transaction[] memory transactions 
     ) external {
-      if (s_LoyaltyNfts[loyaltyNft] == false) {
+      // checks
+      if (s_LoyaltyNfts[nftAddress] == false) {
         revert LoyaltyProgram__LoyaltyNftNotRecognised(); 
       }
+      if (loyaltyPoints < balanceOf(msg.sender)) {
+        revert LoyaltyProgram__InSufficientPoints(); 
+      }
+      (bool success) = LoyaltyNft(nftAddress).requirementsNftMet(msg.sender, loyaltyPoints, transactions); 
 
-    selectedLoyaltyNft = LoyaltyNft(loyaltyNft); 
-    bool success;
-    (success) = selectedLoyaltyNft.claimNft(msg.sender, loyaltyPoints, transactions); 
+      // updating balances
+      if (success) {
+        transferFrom(msg.sender, s_owner, loyaltyPoints); // payment points
+        for (uint i; i < transactions.length; i++) { // redeeming transaction 
+          uint index = transactions[i].index; 
+          s_Transactions[msg.sender][index].redeemed = true; 
+        }
+      }
+
+      // claiming Nft. 
+      LoyaltyNft(nftAddress).claimNft(msg.sender); 
   }
 
   function RedeemmSelectedNft(address loyaltyNft, uint256 tokenId) external {
@@ -116,8 +136,9 @@ contract LoyaltyProgram is ERC20 {
     }
 
     if (from == s_owner) {
+      uint index = s_Transactions[to].length; 
       Transaction memory transaction = Transaction(
-        value, block.timestamp, false
+        index, value, block.timestamp, false
       ); 
       s_Transactions[to].push(transaction);
     }

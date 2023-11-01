@@ -50,15 +50,19 @@ contract FreeCoffeeNft is LoyaltyNft {
    * See the base LoyaltyNft contract for available error statements. // TODO: need to add more. 
    * In this case it is a simple 'if not enough points -> revert' logic. 
   */ 
-  function _updateClaimNft(address consumer, uint256 loyaltyPoints, Transaction[] memory transactions) internal override virtual  {
-    uint256 nftPointsPrice = 2500; 
-    
-    if (loyaltyPoints < nftPointsPrice) {
-      revert LoyaltyNft__InsufficientPoints(); 
-    }
+  function requirementsNftMet(
+    address consumer, 
+    uint256 loyaltyPoints, 
+    Transaction[] memory transactions
+    ) public override returns (bool success) {
+      uint256 nftPointsPrice = 2500; 
+      
+      if (loyaltyPoints < nftPointsPrice) {
+        revert LoyaltyNft__InsufficientPoints(); 
+      }
 
-    super._updateClaimNft(consumer, loyaltyPoints, transactions); 
-  }
+      super.requirementsNftMet(consumer, loyaltyPoints, transactions); 
+    }
 }
 
 ///////////////////////////////////////////////
@@ -84,16 +88,20 @@ contract FreeCoffeeForSprinters is LoyaltyNft {
    * See the base LoyaltyNft contract for available error statements. // TODO: need to add more. 
    * In this case a customer needs 10 transactions within one week to claim the NFT. 
   */ 
-  function _updateClaimNft(address consumer, uint256 loyaltyPoints, Transaction[] memory transactions) internal override virtual  {
-    uint256 oneWeek = 604800; // one week in seconds.
-    uint256 numberOfTransactions = transactions.length; 
-    uint256 durationOfTransactions = transactions[numberOfTransactions - 1].timestamp - transactions[0].timestamp; 
-    
-    if (durationOfTransactions < oneWeek || numberOfTransactions < 10) {
-      revert LoyaltyNft__InsufficientTransactions(); 
-    }
+  function requirementsNftMet(
+    address consumer, 
+    uint256 loyaltyPoints, 
+    Transaction[] memory transactions
+    ) public override returns (bool success) {
+      uint256 oneWeek = 604800; // one week in seconds.
+      uint256 numberOfTransactions = transactions.length; 
+      uint256 durationOfTransactions = transactions[numberOfTransactions - 1].timestamp - transactions[0].timestamp; 
+      
+      if (durationOfTransactions < oneWeek || numberOfTransactions < 10) {
+        revert LoyaltyNft__InsufficientTransactions(); 
+      }
 
-    super._updateClaimNft(consumer, loyaltyPoints, transactions); 
+    super.requirementsNftMet(consumer, loyaltyPoints, transactions); 
   }
 }
 
@@ -120,16 +128,20 @@ contract FreeCoffeeForRichSprinters is LoyaltyNft {
    * See the base LoyaltyNft contract for available error statements. // TODO: need to add more. 
    * In this case a customer needs 10 transactions within one week to claim the NFT. 
   */ 
-  function _updateClaimNft(address consumer, uint256 loyaltyPoints, Transaction[] memory transactions) internal override virtual  {
-    uint256 nftPointsPrice = 2500; 
-    uint256 oneWeek = 604800; // one week in seconds.
-    uint256 numberOfTransactions = transactions.length; 
-    uint256 durationOfTransactions = transactions[numberOfTransactions - 1].timestamp - transactions[0].timestamp; 
-    
-    if (durationOfTransactions < oneWeek || numberOfTransactions < 10 || loyaltyPoints < nftPointsPrice) {
-      revert LoyaltyNft__InsufficientTransactionsAndPoints();
-    }
+  function requirementsNftMet(
+    address consumer, 
+    uint256 loyaltyPoints, 
+    Transaction[] memory transactions
+    ) public override returns (bool success) {
+      uint256 nftPointsPrice = 2500; 
+      uint256 oneWeek = 604800; // one week in seconds.
+      uint256 numberOfTransactions = transactions.length; 
+      uint256 durationOfTransactions = transactions[numberOfTransactions - 1].timestamp - transactions[0].timestamp; 
+      
+      if (durationOfTransactions < oneWeek || numberOfTransactions < 10 || loyaltyPoints < nftPointsPrice) {
+        revert LoyaltyNft__InsufficientTransactionsAndPoints();
+      }
 
-    super._updateClaimNft(consumer, loyaltyPoints, transactions); 
+    super.requirementsNftMet(consumer, loyaltyPoints, transactions); 
   }
 }

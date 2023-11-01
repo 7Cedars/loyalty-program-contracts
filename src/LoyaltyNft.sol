@@ -30,7 +30,8 @@ contract LoyaltyNft is ERC721 {
   /* errors */ 
   error LoyaltyNft__IncorrectNftContract();
   error LoyaltyNft__NftNotOwnedByConsumer(); 
-  error LoyaltyNft__NoPointsOrTransactionsReceived(); 
+  error LoyaltyNft__MaxNftsToMint25Exceeded();
+  error LoyaltyNft__NoNftsAvailable(address loyaltyNft); 
   error LoyaltyNft__InsufficientPoints(); 
   error LoyaltyNft__InsufficientTransactions(); 
   error LoyaltyNft__InsufficientTransactionsAndPoints(); 
@@ -91,50 +92,56 @@ contract LoyaltyNft is ERC721 {
       return s_tokenIdToLoyaltyNft[tokenId].tokenUri; 
     } 
 
-  // function claimNft(
-  //   address consumer, 
-  //   uint256 loyaltyPoints
-  //   ) public returns (bool) {
-  //     bool success = false; 
-  //     Transaction[] emptyTransactions; 
-  //     emptyTransactions = [Transaction(0, 0, false)]; 
-
-  //     _updateClaimNft(consumer, loyaltyPoints, [emptyTransactions]);
-  //     success = true;  
-  //     return success; 
-  // }
-
-  function claimNft(
-    address consumer, 
-    uint256 loyaltyPoints, 
-    Transaction[] memory selectedTansactions
-    ) public returns (bool) {
-      bool success = false; 
-      _updateClaimNft(consumer, loyaltyPoints, selectedTansactions);
-      success = true;  
-      return success; 
-  }
-
-
-  /* internal */
   /** 
    * @dev TODO 
    * 
    * 
   */ 
-  function _updateClaimNft(
-    address consumer, 
-    uint256 loyaltyPoints, 
-    Transaction[] memory selectedTansactions
-    ) internal virtual {
-      if (loyaltyPoints == 0 && selectedTansactions.length == 0) { // this should later be updated to check if ALSO no transaction events were received. 
-        revert LoyaltyNft__NoPointsOrTransactionsReceived(); 
-      }
+  function requirementsNftMet(address, uint256, Transaction[] memory
+    ) public virtual returns (bool success) {
+      
+      // Here NFT specific requirements are inserted. 
 
-      s_tokenIdToLoyaltyNft[s_tokenCounter] = LoyaltyNftData(msg.sender, s_loyaltyNftUri);
-      _safeMint(consumer, s_tokenCounter); 
-      s_tokenCounter = s_tokenCounter + 1;
+      if (balanceOf(msg.sender) == 0) {
+        revert LoyaltyNft__NoNftsAvailable(address(this)); 
+      }
+      return true; 
   }
+  
+  /** 
+   * @dev TODO 
+   * 
+   * 
+  */ 
+  function claimNft(address consumer) public {
+    uint lastIndex = s_consumersToTokenIds[msg.sender].length; 
+    uint tokenId = s_consumersToTokenIds[msg.sender][lastIndex]; 
+    
+    safeTransferFrom(msg.sender, consumer, tokenId);
+    s_consumersToTokenIds[msg.sender].pop(); 
+    s_consumersToTokenIds[consumer].push(tokenId); 
+  }
+
+  /** 
+   * @dev TODO 
+   * 
+   * 
+  */ 
+  function mintNft(uint256 numberOfNfts) public {
+    if (numberOfNfts > 25) {
+      revert LoyaltyNft__MaxNftsToMint25Exceeded(); 
+    }
+
+    for (uint i = 0; i < numberOfNfts; i++) {        
+      _safeMint(msg.sender, s_tokenCounter);
+      s_tokenIdToLoyaltyNft[s_tokenCounter] = LoyaltyNftData(msg.sender, s_loyaltyNftUri); 
+      s_consumersToTokenIds[msg.sender].push(s_tokenCounter); 
+      s_tokenCounter = s_tokenCounter + 1;
+    }
+  }
+
+  /* internal */
+
 
   /* getter functions */
   function getLoyaltyNftData(uint256 tokenId) external view returns (LoyaltyNftData memory) {
