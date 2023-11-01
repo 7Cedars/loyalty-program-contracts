@@ -30,6 +30,7 @@ contract LoyaltyNft is ERC721 {
   error LoyaltyNft__IncorrectNftContract();
   error LoyaltyNft__NftNotOwnedByConsumer(); 
   error LoyaltyNft__InsufficientPoints(); 
+  error LoyaltyNft__NoPointsOrTransactionsReceived(); 
 
   /* Type declarations */  
   struct LoyaltyNftData { 
@@ -63,22 +64,6 @@ contract LoyaltyNft is ERC721 {
     s_loyaltyNftUri = loyaltyNftUri; 
   }
 
-   /** 
-   * @dev TODO 
-   * 
-   * 
-  */ 
-  // should be internal virtual..  
-  function claimNft(address consumer, uint256 loyaltyPoints) public {
-    if (loyaltyPoints < s_loyaltyNftPrice) {
-      revert LoyaltyNft__InsufficientPoints(); 
-    }
-
-    s_tokenIdToLoyaltyNft[s_tokenCounter] = LoyaltyNftData(msg.sender, s_loyaltyNftUri);
-    _safeMint(consumer, s_tokenCounter); 
-    s_tokenCounter = s_tokenCounter + 1;
-  }
-
   /** 
    * @dev TODO
    * 
@@ -105,7 +90,28 @@ contract LoyaltyNft is ERC721 {
       return s_tokenIdToLoyaltyNft[tokenId].tokenUri; 
     } 
 
+  function claimNft(address consumer, uint256 loyaltyPoints) public returns (bool) {
+    bool success = false; 
+    _updateClaimNft(consumer,loyaltyPoints);
+    success = true;  
+    return success; 
+  }
+
   /* internal */
+  /** 
+   * @dev TODO 
+   * 
+   * 
+  */ 
+  function _updateClaimNft(address consumer, uint256 loyaltyPoints) internal virtual {
+    if (loyaltyPoints == 0) { // this should later be updated to check if ALSO no transaction events were received. 
+      revert LoyaltyNft__NoPointsOrTransactionsReceived(); 
+    }
+
+    s_tokenIdToLoyaltyNft[s_tokenCounter] = LoyaltyNftData(msg.sender, s_loyaltyNftUri);
+    _safeMint(consumer, s_tokenCounter); 
+    s_tokenCounter = s_tokenCounter + 1;
+  }
 
   /* getter functions */
   function getLoyaltyNftData(uint256 tokenId) external view returns (LoyaltyNftData memory) {

@@ -9,8 +9,8 @@ import {HelperConfig} from "../../script/HelperConfig.s.sol";
 contract LoyaltyProgramTest is Test {
   /* events */ 
   event Transfer(address indexed from, address indexed to, uint256 value);
-  event AddedRedeemContract(address indexed redeemContract);  
-  event RemovedRedeemContract(address indexed redeemContract);
+  event AddedLoyaltyNft(address indexed loyaltyNft);  
+  event RemovedLoyaltyNft(address indexed loyaltyNft);
 
   LoyaltyProgram loyaltyProgram;
   HelperConfig helperConfig; 
@@ -28,8 +28,8 @@ contract LoyaltyProgramTest is Test {
 
   address public USER_1 = makeAddr("user1"); 
   address public USER_2 = makeAddr("user2"); 
-  address public REDEEM_CONTRACT_A = makeAddr("redeemContractA"); 
-  address public REDEEM_CONTRACT_B = makeAddr("redeemContractB"); 
+  address public REDEEM_CONTRACT_A = makeAddr("loyaltyNftA"); 
+  address public REDEEM_CONTRACT_B = makeAddr("loyaltyNftB"); 
   uint256 constant STARTING_BALANCE = 10 ether;  
   uint256 constant GAS_PRICE = 1; 
 
@@ -165,77 +165,77 @@ contract LoyaltyProgramTest is Test {
     assertEq(numberTransactions, loyaltyProgram.getTransactions(USER_1).length); 
   }
 
-  function testOwnerCanAddRedeemContracts() public {  
+  function testOwnerCanAddLoyaltyNfts() public {  
     // Act
     vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
+    loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
     console.log("REDEEM_CONTRACT_A: ", REDEEM_CONTRACT_A); 
 
     // Assert
-    assertEq(loyaltyProgram.getRedeemContract(REDEEM_CONTRACT_A), true); 
-    assertEq(loyaltyProgram.getRedeemContract(address(0)), false); 
+    assertEq(loyaltyProgram.getLoyaltyNft(REDEEM_CONTRACT_A), true); 
+    assertEq(loyaltyProgram.getLoyaltyNft(address(0)), false); 
   }
 
-  function testEmitsEventOnAddingRedeemContract() public {  
+  function testEmitsEventOnAddingloyaltyNft() public {  
     // Arrange
     vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
-    emit AddedRedeemContract(REDEEM_CONTRACT_A);
+    emit AddedLoyaltyNft(REDEEM_CONTRACT_A);
     // Act / Assert
     vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
+    loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
   }
 
-  function testOwnerCanRemoveRedeemContracts() public {  
+  function testOwnerCanRemoveLoyaltyNfts() public {  
     // Arrange
     vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
-    assertEq(loyaltyProgram.getRedeemContract(REDEEM_CONTRACT_A), true); 
+    loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
+    assertEq(loyaltyProgram.getLoyaltyNft(REDEEM_CONTRACT_A), true); 
     
     // Act
     vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.removeRedeemContract(REDEEM_CONTRACT_A);
+    loyaltyProgram.removeLoyaltyNft(REDEEM_CONTRACT_A);
     
     // Assert
-    assertEq(loyaltyProgram.getRedeemContract(REDEEM_CONTRACT_A), false); 
+    assertEq(loyaltyProgram.getLoyaltyNft(REDEEM_CONTRACT_A), false); 
   }
 
-  function testEmitsEventOnRemovingRedeemContract() public {  
+  function testEmitsEventOnRemovingloyaltyNft() public {  
     // Arrange
     vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
-    emit RemovedRedeemContract(REDEEM_CONTRACT_A);
+    emit RemovedLoyaltyNft(REDEEM_CONTRACT_A);
     // Act / Assert
     vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.removeRedeemContract(REDEEM_CONTRACT_A);
+    loyaltyProgram.removeLoyaltyNft(REDEEM_CONTRACT_A);
   }
 
-  function testUserCannotAddRedeemContracts() public {  
+  function testUserCannotAddLoyaltyNfts() public {  
     vm.expectRevert(LoyaltyProgram.LoyaltyProgram__OnlyOwner.selector);
     vm.prank(USER_1);
-    loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
+    loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
   }
 
-  function testUserCannotRemoveRedeemContracts() public {  
+  function testUserCannotRemoveLoyaltyNfts() public {  
     vm.expectRevert(LoyaltyProgram.LoyaltyProgram__OnlyOwner.selector);
     vm.prank(USER_1);
-    loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
+    loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
   }
 
  
 
 
   //   vm.prank(loyaltyProgram.getOwner());
-  //   loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_A);
+  //   loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
   //   vm.prank(loyaltyProgram.getOwner());
-  //   loyaltyProgram.addRedeemContract(REDEEM_CONTRACT_B);
+  //   loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_B);
     
   //   // Act
   //   vm.prank(loyaltyProgram.getOwner());
-  //   loyaltyProgram.removeRedeemContract(REDEEM_CONTRACT_A);
+  //   loyaltyProgram.removeLoyaltyNft(REDEEM_CONTRACT_A);
     
   //   // Assert
-  //   assertEq(loyaltyProgram.getRedeemContract(REDEEM_CONTRACT_A), false); 
-  //   assertEq(loyaltyProgram.getRedeemContract(REDEEM_CONTRACT_B), true); 
-  //   assertEq(loyaltyProgram.getRedeemContract(address(0)), false); 
+  //   assertEq(loyaltyProgram.getoyaltyNft(REDEEM_CONTRACT_A), false); 
+  //   assertEq(loyaltyProgram.getoyaltyNft(REDEEM_CONTRACT_B), true); 
+  //   assertEq(loyaltyProgram.getoyaltyNft(address(0)), false); 
   // }
 
 

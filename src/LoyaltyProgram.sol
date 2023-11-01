@@ -46,8 +46,8 @@ contract LoyaltyProgram is ERC20 {
   LoyaltyNft public selectedLoyaltyNft; 
 
   /* Events */
-  event AddedRedeemContract(address indexed redeemContract);  
-  event RemovedRedeemContract(address indexed redeemContract);
+  event AddedLoyaltyNft(address indexed loyaltyNft);  
+  event RemovedLoyaltyNft(address indexed loyaltyNft);
 
   /* Modifiers */ 
   modifier onlyOwner () {
@@ -85,7 +85,7 @@ contract LoyaltyProgram is ERC20 {
   function addLoyaltyNft(address loyaltyNft) public onlyOwner {
     // later checks will be added here. 
     s_LoyaltyNfts[loyaltyNft] = true; 
-    emit AddedRedeemContract(loyaltyNft); 
+    emit AddedLoyaltyNft(loyaltyNft); 
   }
 
   function removeLoyaltyNft(address loyaltyNft) public onlyOwner {
@@ -93,12 +93,8 @@ contract LoyaltyProgram is ERC20 {
       revert LoyaltyProgram__LoyaltyNftNotRecognised();
     }
     s_LoyaltyNfts[loyaltyNft] = false;
-    emit RemovedRedeemContract(loyaltyNft); 
+    emit RemovedLoyaltyNft(loyaltyNft); 
   }
-
-
-
-  // NB Need to use transferFrom & allowance -- when it comes to redeem NFTs  
 
   /* internal */  
   /** 
