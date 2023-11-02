@@ -8,17 +8,11 @@ import {HelperConfig} from "./HelperConfig.s.sol";
 contract DeployLoyaltyProgram is Script {
   LoyaltyProgram loyaltyProgram; 
 
-  function run() external returns (LoyaltyProgram, HelperConfig) {
-    HelperConfig helperConfig = new HelperConfig();
-    (
-      uint256 initialSupply
-    ) = helperConfig.activeNetworkConfig(); 
-
+  // NB: If I need a helper config, see helperConfig.s.sol + learning/foundry-fund-me-f23
+  function run() external returns (LoyaltyProgram) { 
     vm.startBroadcast(); 
-      loyaltyProgram = new LoyaltyProgram(
-        initialSupply
-      ); 
+      loyaltyProgram = new LoyaltyProgram( ); 
     vm.stopBroadcast(); 
-    return (loyaltyProgram, helperConfig); 
+    return (loyaltyProgram);
   }
 }

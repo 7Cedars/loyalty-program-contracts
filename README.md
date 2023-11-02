@@ -30,6 +30,7 @@ For personal use only.
     - [x] should take address that calls the function. (which is ERC-20 loyalty card contract)
     - [x] takes points AND transaction - one OR the other can be used. 
   - [x] issued NFTs remain linked to loyalty card contract that issued them. - possibly through 'approved address'? 
+  - [x] The issued NFT should have description of redeemed value (e.g. a freeCoffee, attendance to party, etc); 
   - [x] create redeem function: delete / burn token, returns a redeemed = true.  
 - [x] Import and test single ERC-721 NFT contract into ERC-20 based loyalty card contract
   - [x] whitelist ERC-721 contract
@@ -39,9 +40,9 @@ For personal use only.
     - [x] called by customer: sending points (implement events later).
     - [x] issues NFT. 
   - [ ] Implement and test 'redeem' function in ERC-20 loyalty card contract
-    - [ ] takes an integer pointing to ERC-721 NFT contracts. NB: these DO NOT HAVE TO BE whitelisted! 
-    - [ ] calls its ERC-721 redeem function
-    - [ ] called by customer, approved by vendor: sending NFT, getting burned. 
+    - [x] takes an integer pointing to ERC-721 NFT contracts. NB: these DO NOT HAVE TO BE whitelisted! 
+    - [x] calls its ERC-721 redeem function
+    - [ ] called through contract: sending NFT, getting burned. 
     - [ ] returns redeemed = true value.  
 - [ ] Build, deploy, test ERC-721 contract Inheritance
   - [x] implement in existing ERC-721 contract. 
@@ -49,13 +50,8 @@ For personal use only.
   - [ ] Whitelist them in ERC-20 contract.
   - [ ] test if different logics work. 
 - [x] Build, deploy, test function to (de)select redeem contract for loyalty prgram. 
-  - [x] pretty much add and delete addresses frm whitelist addresses. 
-- [ ] Build, deploy, test ERC-20 based loyalty card contract factory
-  - [ ] Issue multiple loyalty programs. 
-  - [ ] test if different program selections can be made. 
-  - [ ] test if indeed - only selected programs can be used. 
-  - [ ] test if NFTs from one program cannot be used in NFT program of the other. 
-  - [ ] test if random N#FT cannot be redeemed.
+  - [x] pretty much add and delete addresses frm whitelist addresses.
+- [ ] 
 
 **At this stage I have a minimal PoC** 
 

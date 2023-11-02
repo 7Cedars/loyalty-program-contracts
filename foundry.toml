@@ -3,7 +3,9 @@ src = "src"
 out = "out"
 libs = ["lib"]
 remappings = ["@openzeppelin/=lib/openzeppelin-contracts/"]
+# ways to open access to filesystem. First is very generic and should be avoided.  
 # ffi = true
+# fs.permissions =[{access = "read", path = "./img/"}] 
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
 

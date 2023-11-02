@@ -1,0 +1,11 @@
+NB: These should always be svg: number of pixels should not matter. 
+
+LoyaltyProgramNFTs are vertical aligned: 
+  Height = 500
+  Width = 300
+
+LoyaltyNFTs are horizontally aligned:
+  Height = 500
+  Width = 200
+
+Image by <a href="https://www.freepik.com/free-vector/set-cafeteria-elements-flat-design_1059577.htm#page=2&query=coffee%20shop%20svg&position=11&from_view=keyword&track=ais">Freepik</a>

@@ -1,0 +1,15 @@
+{
+  "name": "FreeCoffeeNFT",
+  "description": "Get one free coffee.",
+  "image": "https://ipfs.io/ipfs/QmWZ4GarHDDwPDktNLHD1yugKMDQ6XRqTL7itd9FyJeDFH",
+  "attributes": [
+    {
+    "trait_type": "Redeem for",
+    "value": "One free coffee for to go or have in."
+    },
+    {
+      "trait_type": "Cost",
+      "value": 2500
+    }
+  ]
+}

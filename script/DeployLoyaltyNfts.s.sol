@@ -11,7 +11,6 @@ import {
 import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract DeployLoyaltyNft is Script {
-
   function run() external returns (LoyaltyNft) {
     vm.startBroadcast(); 
     LoyaltyNft loyaltyNft = new LoyaltyNft("ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7");
@@ -21,7 +20,6 @@ contract DeployLoyaltyNft is Script {
 }
 
 contract DeployOneCoffeeFor2500 is Script {
-
   function run() external returns (OneCoffeeFor2500) {
     vm.startBroadcast(); 
     OneCoffeeFor2500 oneCoffeeFor2500 = new OneCoffeeFor2500();
@@ -31,7 +29,6 @@ contract DeployOneCoffeeFor2500 is Script {
 }
 
 contract DeployOneCoffeeFor10BuysInWeek is Script {
-
   function run() external returns (OneCoffeeFor10BuysInWeek) {
     vm.startBroadcast(); 
     OneCoffeeFor10BuysInWeek oneCoffeeFor10BuysInWeek = new OneCoffeeFor10BuysInWeek();
@@ -41,7 +38,6 @@ contract DeployOneCoffeeFor10BuysInWeek is Script {
 }
 
 contract DeployOneCoffeeFor2500And10BuysInWeek is Script {
-
   function run() external returns (OneCoffeeFor2500And10BuysInWeek) {
     vm.startBroadcast(); 
     OneCoffeeFor2500And10BuysInWeek oneCoffeeFor2500And10BuysInWeek = new OneCoffeeFor2500And10BuysInWeek();

@@ -1,0 +1,11 @@
+{
+  "name": "LoyaltyProgram_CoffeeShop",
+  "description": "Get one free coffee.",
+  "image": "https://ipfs.io/ipfs/Qmaew4FA4Hj85QE5BtaqAD7uPx7tn4VJLPqiWm8yqRmtHk",
+  "attributes": [
+    {
+    "trait_type": "Vendor name",
+    "value": "My Coffeeshop around the corner"
+    }
+  ]
+}

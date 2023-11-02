@@ -45,6 +45,7 @@ contract LoyaltyProgram is ERC20 {
   // Transaction[] public transactions; 
 
   /* State variables */
+  uint256 constant INITIAL_SUPPLY = 1e25; 
   address private s_owner; 
   mapping(address => bool) private s_LoyaltyNfts; 
   mapping(address => Transaction[] transactions) private s_Transactions; 
@@ -63,9 +64,9 @@ contract LoyaltyProgram is ERC20 {
   }
 
   /* constructor */
-  constructor(uint256 initialSupply) ERC20("LoyaltyPoints", "LPX") {
+  constructor() ERC20("LoyaltyPoints", "LPX") {
       s_owner = msg.sender; 
-      _mint(msg.sender, initialSupply);
+      _mint(msg.sender, INITIAL_SUPPLY);
   }
 
   /* public */
