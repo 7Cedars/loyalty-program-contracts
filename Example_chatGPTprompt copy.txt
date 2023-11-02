@@ -1,0 +1,171 @@
+This is copy paste from https://github.com/Cyfrin/foundry-erc20-f23/blob/main/chatGPT_prompt.txt
+Adapt as needed and give credits where due. 
+
+--- 
+
+Here is my solidity ERC721 token.
+
+```
+// contracts/OurToken.sol
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.21;
+
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {Transaction} from "./LoyaltyProgram.sol";
+
+contract LoyaltyNft is ERC721 {
+
+  error LoyaltyNft__IncorrectNftContract(address loyaltyNft);
+  error LoyaltyNft__NftNotOwnedByConsumer(address loyaltyNft); 
+  error LoyaltyNft__MaxNftsToMint25Exceeded(address loyaltyNft);
+  error LoyaltyNft__NoNftsAvailable(address loyaltyNft); 
+  error LoyaltyNft__InsufficientPoints(address loyaltyNft); 
+  error LoyaltyNft__InsufficientTransactions(address loyaltyNft); 
+  error LoyaltyNft__InsufficientTransactionsAndPoints(address loyaltyNft); 
+  
+  struct LoyaltyNftData { 
+    address program; 
+    string tokenUri; 
+  }
+
+  mapping (uint256 => LoyaltyNftData) private s_tokenIdToLoyaltyNft; 
+  uint256 private s_tokenCounter;
+  string  public s_loyaltyNftUri; 
+
+  event RedeemedNft(uint256 indexed tokenId);  
+
+  modifier onlyCorrectLoyaltyProgram (uint256 tokenId) {
+    if (s_tokenIdToLoyaltyNft[tokenId].program != msg.sender) {
+      revert LoyaltyNft__IncorrectNftContract(address(this)); 
+    }
+    _; 
+  }
+
+  constructor(string memory loyaltyNftUri) ERC721("LoyaltyNft", "LPN") {
+    s_tokenCounter = 0;
+    s_loyaltyNftUri = loyaltyNftUri; 
+  }
+
+  function redeemNft(address consumer, uint256 tokenId) public {
+    address owner = ownerOf(tokenId);
+    if (s_tokenIdToLoyaltyNft[tokenId].program != msg.sender) {
+      revert LoyaltyNft__IncorrectNftContract(address(this)); 
+    }
+    if (owner != consumer) {
+      revert LoyaltyNft__NftNotOwnedByConsumer(address(this)); 
+    }
+
+    s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNftData(address(0), ""); 
+    _burn(tokenId); 
+
+    emit RedeemedNft(tokenId); 
+  }
+
+  function tokenURI(
+    uint256 tokenId
+    ) public view override returns (string memory) {
+      return s_tokenIdToLoyaltyNft[tokenId].tokenUri; 
+    } 
+
+  function requirementsNftMet(address, uint256, Transaction[] memory
+    ) public virtual returns (bool success) {
+      
+      // Here NFT specific requirements are inserted. 
+
+      if (balanceOf(msg.sender) == 0) {
+        revert LoyaltyNft__NoNftsAvailable(address(this)); 
+      }
+      return true; 
+  }
+  
+  function claimNft(address consumer) public {
+    uint tokenId = s_tokenCounter - balanceOf(msg.sender); 
+    safeTransferFrom(msg.sender, consumer, tokenId);
+  }
+
+  function mintNft(uint256 numberOfNfts) public {
+    if (numberOfNfts > 100) {
+      revert LoyaltyNft__MaxNftsToMint25Exceeded(address(this)); 
+    }
+
+    for (uint i = 0; i < numberOfNfts; i++) {        
+      _safeMint(msg.sender, s_tokenCounter);
+      s_tokenIdToLoyaltyNft[s_tokenCounter] = LoyaltyNftData(msg.sender, s_loyaltyNftUri); 
+      s_tokenCounter = s_tokenCounter + 1;
+    }
+  }
+
+  function getLoyaltyNftData(uint256 tokenId) external view returns (LoyaltyNftData memory) {
+    return s_tokenIdToLoyaltyNft[tokenId]; 
+  }
+
+}
+```
+
+And here our my first couple of tests written in solidity.
+
+```
+/// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.21;
+
+import {Test, console} from "forge-std/Test.sol"; 
+import {LoyaltyNft} from "../../src/LoyaltyNft.sol";
+import {HelperConfig} from "../../script/HelperConfig.s.sol";
+import {Transaction} from "../../src/LoyaltyProgram.sol" ;
+import {DeployLoyaltyNft}from "../../script/DeployLoyaltyNfts.s.sol";
+
+contract LoyaltyNftTest is Test {
+  DeployLoyaltyNft public deployer; 
+  LoyaltyNft public loyaltyNft;
+  address public loyaltyProgramAddress = makeAddr("LoyaltyProgramContract"); 
+  address public userOne = makeAddr("user1"); 
+  address public userTwo = makeAddr("user2"); 
+  Transaction[] public transactions;  
+  string public constant FREE_COFFEE_URI = "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7"; 
+
+  modifier usersHaveNfts(
+    uint256 numberNfts1,
+    uint256 numberNfts2
+    ) { 
+      vm.prank(loyaltyProgramAddress);
+      loyaltyNft.mintNft(75); 
+
+      numberNfts1 = bound(numberNfts1, 11, 35); 
+      numberNfts2 = bound(numberNfts2, 18, 21);
+      
+      // for loop in solidity: initialisation, condition, updating. See https://dev.to/shlok2740/loops-in-solidity-2pmp.
+      for (uint256 i = 0; i < numberNfts1; i++) { 
+        vm.prank(loyaltyProgramAddress);
+        loyaltyNft.claimNft(userOne); 
+      }  
+      for (uint256 i = 0; i < numberNfts2; i++) { 
+        vm.prank(loyaltyProgramAddress);
+        loyaltyNft.claimNft(userTwo); 
+      }
+      _; 
+  }
+
+  function setUp() public {
+    deployer = new DeployLoyaltyNft(); 
+    loyaltyNft = deployer.run();
+  }
+
+  function testNameIsCorrect() public view {
+    string memory expectedName = "LoyaltyNft"; 
+    string memory actualName = loyaltyNft.name(); 
+    // NB you cannot just compare strings! 
+    assert(
+      keccak256(abi.encodePacked(expectedName))
+      ==
+      keccak256(abi.encodePacked(actualName))
+      ); 
+  }
+}
+```
+
+Can you write the rest of the tests? Please include tests for:
+
+- Allowances
+- transfers
+- anything else that might be important
