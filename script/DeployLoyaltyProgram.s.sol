@@ -11,7 +11,7 @@ contract DeployLoyaltyProgram is Script {
   // NB: If I need a helper config, see helperConfig.s.sol + learning/foundry-fund-me-f23
   function run() external returns (LoyaltyProgram) { 
     vm.startBroadcast(); 
-      loyaltyProgram = new LoyaltyProgram( ); 
+      loyaltyProgram = new LoyaltyProgram(); 
     vm.stopBroadcast(); 
     return (loyaltyProgram);
   }

@@ -23,7 +23,7 @@
 pragma solidity ^0.8.21;
 
 /* imports */
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {LoyaltyNft} from "./LoyaltyNft.sol";
 
 /* Type declarations */
@@ -34,7 +34,7 @@ struct Transaction {
       bool redeemed; 
   } 
 
-contract LoyaltyProgram is ERC20 {
+contract LoyaltyProgram is ERC1155 {
   /* errors */
   error LoyaltyProgram__NoAccess(); 
   error LoyaltyProgram__OnlyOwner(); 
@@ -45,11 +45,15 @@ contract LoyaltyProgram is ERC20 {
   // Transaction[] public transactions; 
 
   /* State variables */
-  uint256 constant INITIAL_SUPPLY = 1e25; 
+  uint256 public constant LOYALTY_POINTS = 0;
+  uint256 public constant LOYALTY_CARDS = 1;
+
   address private s_owner; 
   mapping(address => bool) private s_LoyaltyNfts; 
   mapping(address => Transaction[] transactions) private s_Transactions; 
   LoyaltyNft public selectedLoyaltyNft; 
+  uint256[] public mintAssetType;
+  uint256[] public mintNumberOf; 
 
   /* Events */
   event AddedLoyaltyNft(address indexed loyaltyNft);  
@@ -64,19 +68,30 @@ contract LoyaltyProgram is ERC20 {
   }
 
   /* constructor */
-  constructor() ERC20("LoyaltyPoints", "LPX") {
+  constructor() ERC1155("https://ipfs.io/ipfs/QmcPwXFUayuEETYJvd3QaLU9Xtjkxte9rgBgfEjD2MBvJ5{id}.json") {
       s_owner = msg.sender; 
-      _mint(msg.sender, INITIAL_SUPPLY);
+      mintAssetType[10] = 1;
+      mintNumberOf[10] = 1; 
+      _mint(msg.sender, LOYALTY_POINTS, 1e25, "");
+      _mintBatch(msg.sender, mintAssetType, mintNumberOf, "");
   }
 
   /* public */
-  function mintLoyaltyPoints(uint256 amountOfPoints) public onlyOwner {
-    _mint(s_owner, amountOfPoints); 
+  function mintLoyaltyPoints(uint256 amountOfPoints) public onlyOwner {    
+    _mint(s_owner, LOYALTY_POINTS, amountOfPoints, "");
   }
 
-  function mintNfts(address nftAddress, uint256 numberOfNfts) public onlyOwner {
-     LoyaltyNft(nftAddress).mintNft(numberOfNfts); 
+  function mintLoyaltyCards(uint256 numberOfNfts) public onlyOwner {
+    mintAssetType[numberOfNfts] = 1;
+    mintNumberOf[numberOfNfts] = 1; 
+    _mintBatch(msg.sender, mintAssetType, mintNumberOf, "");
   }
+
+  function mintLoyaltyNfts(address nftLoyaltyAddress, uint256 numberOfNfts) public onlyOwner {
+     LoyaltyNft(nftLoyaltyAddress).mintNft(numberOfNfts); 
+  }
+
+
 
   function claimSelectedNft(
     address nftAddress, 
@@ -87,14 +102,14 @@ contract LoyaltyProgram is ERC20 {
       if (s_LoyaltyNfts[nftAddress] == false) {
         revert LoyaltyProgram__LoyaltyNftNotRecognised(); 
       }
-      if (loyaltyPoints < balanceOf(msg.sender)) {
+      if (loyaltyPoints < balanceOf(msg.sender, 0)) {
         revert LoyaltyProgram__InSufficientPoints(); 
       }
       (bool success) = LoyaltyNft(nftAddress).requirementsNftMet(msg.sender, loyaltyPoints, transactions); 
 
       // updating balances
       if (success) {
-        transferFrom(msg.sender, s_owner, loyaltyPoints); // payment points
+        // transferFrom(msg.sender, s_owner, loyaltyPoints); // payment points
         for (uint i; i < transactions.length; i++) { // redeeming transaction 
           uint index = transactions[i].index; 
           s_Transactions[msg.sender][index].redeemed = true; 
@@ -131,7 +146,7 @@ contract LoyaltyProgram is ERC20 {
    * @dev Anyone else can only transfer to redeem contracts: contracts that convert points (and later also transactionEvents) into NFTs. 
    * @dev All params are the same from original. 
   */ 
-  function _update(address from, address to, uint256 value) internal override virtual {
+  function _update(address from, address to, uint256[] memory ids, uint256[] memory value) internal override virtual {
     if (msg.sender != s_owner && s_LoyaltyNfts[to] == false) {
       revert LoyaltyProgram__NoAccess(); 
     }
@@ -139,12 +154,12 @@ contract LoyaltyProgram is ERC20 {
     if (from == s_owner) {
       uint index = s_Transactions[to].length; 
       Transaction memory transaction = Transaction(
-        index, value, block.timestamp, false
+        index, value[0], block.timestamp, false
       ); 
       s_Transactions[to].push(transaction);
     }
     
-    super._update(from, to, value); 
+    super._update(from, to, ids, value); 
   }
 
   /* private */  

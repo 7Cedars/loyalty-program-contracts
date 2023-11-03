@@ -14,7 +14,6 @@ contract LoyaltyProgramTest is Test {
 
   LoyaltyProgram loyaltyProgram;
   HelperConfig helperConfig; 
-  uint256 initialSupply;
   uint256 minCustomerInteractions; 
   uint256 maxCustomerInteractions; 
   uint256 minPointsPerInteraction; 
@@ -58,14 +57,11 @@ contract LoyaltyProgramTest is Test {
 
   function setUp() external {
     DeployLoyaltyProgram deployer = new DeployLoyaltyProgram(); 
-    (loyaltyProgram, helperConfig) = deployer.run(); 
-    (
-      initialSupply
-    ) = helperConfig.activeNetworkConfig(); 
+    loyaltyProgram = deployer.run(); 
   }
 
   function testLoyaltyProgramHasInitialSupply() public {
-    assertEq(initialSupply, loyaltyProgram.totalSupply()); //  (ownerContract));  
+    assertEq(1e25, loyaltyProgram.totalSupply()); //  (ownerContract));  
   }
 
   function testOwnerCanMintTokens(uint256 amount) public { 
