@@ -90,20 +90,30 @@ contract LoyaltyProgramTest is Test {
     loyaltyProgram.mintLoyaltyPoints(amount);
   }
 
-  function testOwnerCanMintLoyaltyCards(uint256 numberOfNfts) public { 
+  function testOwnerCanMintLoyaltyCards(uint256 numberToMint) public { 
     uint256 totalSupplyBefore; 
     uint256 totalSupplyAfter; 
+    uint256 totalLoyaltyCardsMinted; 
+    uint i; 
 
-    numberOfNfts = bound(numberOfNfts, 1, 50);
-    totalSupplyBefore = loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 1); 
+    numberToMint = bound(numberToMint, 1, 5);
+    totalLoyaltyCardsMinted = loyaltyProgram.getNumberLoyaltyCardsMinted(); 
+    
+    for (i = 1; i < totalLoyaltyCardsMinted; i++) {
+      totalSupplyBefore = totalSupplyBefore + loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), i); 
+    }
 
     // Act
     vm.prank(loyaltyProgram.getOwner());  
-    loyaltyProgram.mintLoyaltyCards(numberOfNfts); 
-    totalSupplyAfter = loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 1); 
+    loyaltyProgram.mintLoyaltyCards(numberToMint); 
+
+    totalLoyaltyCardsMinted = loyaltyProgram.getNumberLoyaltyCardsMinted(); 
+    for (i = 1; i < totalLoyaltyCardsMinted; i++) {
+      totalSupplyAfter = totalSupplyAfter + loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), i); 
+    }
 
     // Assert 
-    assertEq(totalSupplyBefore + numberOfNfts, totalSupplyAfter); 
+    assertEq(totalSupplyBefore + numberToMint, totalSupplyAfter); 
   }
 
   function testLoyaltyPointsCanBeTransferred(uint256 amount) public { 

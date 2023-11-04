@@ -49,7 +49,8 @@ contract LoyaltyProgram is ERC1155 {
   uint256 public constant LOYALTY_CARDS = 1;
 
   address private s_owner; 
-  mapping(address => bool) private s_LoyaltyNfts; 
+  mapping(address => bool) private s_LoyaltyNfts;
+  uint256 private s_loyaltyCardCounter;
   mapping(address => Transaction[] transactions) private s_Transactions; 
   LoyaltyNft public selectedLoyaltyNft; 
   uint256[] public mintAssetType;
@@ -68,14 +69,14 @@ contract LoyaltyProgram is ERC1155 {
   }
 
   /* constructor */
-  constructor() ERC1155("https://ipfs.io/ipfs/QmcPwXFUayuEETYJvd3QaLU9Xtjkxte9rgBgfEjD2MBvJ5{id}.json") {
+  constructor() ERC1155("https://ipfs.io/ipfs/QmcPwXFUayuEETYJvd3QaLU9Xtjkxte9rgBgfEjD2MBvJ5.json") { // still have to check if this indeed gives out same uri for each NFT minted. 
       s_owner = msg.sender;
-      for (uint i; i < 10; i++) {
-        mintAssetType.push(1); 
-        mintNumberOf.push(1); 
-      }
-      _mint(msg.sender, LOYALTY_POINTS, 1e25, "");
-      _mintBatch(msg.sender, mintAssetType, mintNumberOf, "");
+      s_loyaltyCardCounter = 1;
+      
+      mintLoyaltyPoints(1e25); 
+      mintLoyaltyCards(5); 
+
+      // _mintBatch(msg.sender, mintAssetType, mintNumberOf, "");
   }
 
   /* public */
@@ -83,14 +84,15 @@ contract LoyaltyProgram is ERC1155 {
     _mint(s_owner, LOYALTY_POINTS, amountOfPoints, "");
   }
 
-  function mintLoyaltyCards(uint256 numberOfNfts) public onlyOwner {
-      delete mintAssetType;
-      delete mintNumberOf; 
+  function mintLoyaltyCards(uint256 numberOfLoyaltyCards) public onlyOwner {
+    delete mintAssetType;
+    delete mintNumberOf; 
 
-      for (uint i; i < numberOfNfts; i++) {
-        mintAssetType.push(1); 
-        mintNumberOf.push(1); 
-      }
+    for (uint i; i < numberOfLoyaltyCards; i++) {
+      mintAssetType.push(s_loyaltyCardCounter + i); 
+      mintNumberOf.push(1); 
+    }
+    s_loyaltyCardCounter = s_loyaltyCardCounter + numberOfLoyaltyCards; 
     _mintBatch(msg.sender, mintAssetType, mintNumberOf, "");
   }
 
@@ -185,6 +187,10 @@ contract LoyaltyProgram is ERC1155 {
 
   function getLoyaltyNft(address loyaltyNft) external view returns (bool) {
     return s_LoyaltyNfts[loyaltyNft]; 
+  }
+
+  function getNumberLoyaltyCardsMinted() external view returns (uint256) {
+    return s_loyaltyCardCounter; 
   }
 }
 

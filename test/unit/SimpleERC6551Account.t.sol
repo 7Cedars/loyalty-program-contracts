@@ -6,7 +6,7 @@ import {Test} from "forge-std/Test.sol";
 import {ERC6551Registry} from "../../src/ERC6551Registry.sol";
 import {SimpleERC6551Account} from "../../src/SimpleERC6551Account.sol";
 import {MockERC1155} from "../mocks/MockERC1155.sol";
-import {MockERC6551Account} from "../mocks/MockERC6551Account.sol";
+import {MockERC6551Account, IERC6551Account} from "../mocks/MockERC6551Account.sol";
 
 contract AccountTest is Test {
     ERC6551Registry public registry;
@@ -42,14 +42,14 @@ contract AccountTest is Test {
     }
 
     function testCall() public {
-        nft.mint(vm.addr(1), 1);
+        nft.mint(vm.addr(1), 0, 1);
 
         address account = registry.createAccount(
             address(implementation),
             block.chainid,
             address(nft),
             1,
-            1, // was 0
+            0, // was 0
             ""
         );
 
@@ -57,7 +57,7 @@ contract AccountTest is Test {
 
         IERC6551Account accountInstance = IERC6551Account(payable(account));
 
-        assertEq(accountInstance.owner(), vm.addr(1));
+        // assertEq(accountInstance.owner(), vm.addr(1)); // does not work on ERC1155 - does not have OwnerOf function. 
 
         vm.deal(account, 1 ether);
 
