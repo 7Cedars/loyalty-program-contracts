@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
-import "../../../src/ERC6551Registry.sol";
-import "../../../src/examples/simple/SimpleERC6551Account.sol";
-import "../../mocks/MockERC721.sol";
-import "../../mocks/MockERC6551Account.sol";
+import {ERC6551Registry} from "../../src/ERC6551Registry.sol";
+import {SimpleERC6551Account} from "../../src/SimpleERC6551Account.sol";
+import {MockERC1155} from "../mocks/MockERC1155.sol";
+import {MockERC6551Account} from "../mocks/MockERC6551Account.sol";
 
 contract AccountTest is Test {
     ERC6551Registry public registry;
     SimpleERC6551Account public implementation;
-    MockERC721 nft = new MockERC721();
+    MockERC1155 nft = new MockERC1155();
 
     function setUp() public {
         registry = new ERC6551Registry();
@@ -49,7 +49,7 @@ contract AccountTest is Test {
             block.chainid,
             address(nft),
             1,
-            0,
+            1, // was 0
             ""
         );
 

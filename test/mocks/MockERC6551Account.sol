@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
-import "openzeppelin-contracts/utils/introspection/IERC165.sol";
 
-import "../../src/interfaces/IERC6551Account.sol";
-import "../../src/lib/ERC6551AccountLib.sol";
+import {IERC6551Account} from "../../src/interfaces/IERC6551Account.sol";
+import {ERC6551AccountLib} from "../../src/lib/ERC6551AccountLib.sol";
+import {IERC165} from "../../lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol"; 
 
 contract MockERC6551Account is IERC165, IERC6551Account {
     uint256 public nonce;

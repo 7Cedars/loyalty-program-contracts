@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
-import "../src/ERC6551Registry.sol";
-import "../src/lib/ERC6551AccountLib.sol";
-import "./mocks/MockERC721.sol";
-import "./mocks/MockERC6551Account.sol";
+import {ERC6551Registry} from "../../src/ERC6551Registry.sol";
+import {ERC6551AccountLib} from "../../src/lib/ERC6551AccountLib.sol";
+import {MockERC1155} from "../mocks/MockERC1155.sol";
+import {MockERC6551Account} from "../mocks/MockERC6551Account.sol";
 
 contract RegistryTest is Test {
     ERC6551Registry public registry;
