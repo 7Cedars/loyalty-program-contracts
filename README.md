@@ -51,14 +51,18 @@ For personal use only.
   - [ ] test if different logics work. 
 - [x] Build, deploy, test function to (de)select redeem contract for loyalty prgram. 
   - [x] pretty much add and delete addresses frm whitelist addresses.
-- [ ] 
+- [ ] Implement ERC-6551: Token Based Accounts. 
+  - [ ] Create mock registry on Anvil chain / in registry address 
+  - [ ] Setup registration of minted loyalty cards 
+  - [ ] integrate addresses into logic of contract: add modifier: onlyLoyaltyCards. 
+  - [ ] Setup tests: can they be transfered to and between customers. 
+- [ ] Refactor loyaltyNfts to ERC-1155.  
+  - [ ] Refactor (and simplify) batch minting loyaltyNfts
+- [ ] Need to add reentrancy guard to LoyaltyProgram. See note on safeTransferFrom in erc1155.  
 
 **At this stage I have a minimal PoC** 
 
-- Next steps - optimise functionality and UI / UX: 
-- Implement ERC-6551: Token Based Accounts. 
-  - Actually creates a loyalty card (instead of address based account.)
-  - Enables loyalty cards to be swapped, to have multiple loyalty cards of single vendor, etc etc. 
+- Next steps - optimise functionality and UI / UX:  
 - Implement indirect funding
   - Don't know the exact name, but vendor should pay for gas - not customers. 
 - Implement account abstraction

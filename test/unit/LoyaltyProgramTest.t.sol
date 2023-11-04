@@ -8,7 +8,7 @@ import {HelperConfig} from "../../script/HelperConfig.s.sol";
 
 contract LoyaltyProgramTest is Test {
   /* events */ 
-  event Transfer(address indexed from, address indexed to, uint256 value);
+  event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
   event AddedLoyaltyNft(address indexed loyaltyNft);  
   event RemovedLoyaltyNft(address indexed loyaltyNft);
 
@@ -25,10 +25,10 @@ contract LoyaltyProgramTest is Test {
     bool redeemed; 
   }
 
-  address public USER_1 = makeAddr("user1"); 
-  address public USER_2 = makeAddr("user2"); 
-  address public REDEEM_CONTRACT_A = makeAddr("loyaltyNftA"); 
-  address public REDEEM_CONTRACT_B = makeAddr("loyaltyNftB"); 
+  address public userOne = makeAddr("user1"); 
+  address public userTwo = makeAddr("user2"); 
+  address public redeemContractA = makeAddr("loyaltyNftA"); 
+  address public redeemContractB = makeAddr("loyaltyNftB"); 
   uint256 constant STARTING_BALANCE = 10 ether;  
   uint256 constant GAS_PRICE = 1; 
 
@@ -42,15 +42,16 @@ contract LoyaltyProgramTest is Test {
       numberTransactions1 = bound(numberTransactions1, 5, 50); 
       numberTransactions2 = bound(numberTransactions2, 10, 25); 
       amount1 = bound(amount1, 20, 750); 
-      amount2 = bound(amount2, 10, 1000); 
+      amount2 = bound(amount2, 10, 1000);
+      address ownerProgram = loyaltyProgram.getOwner(); 
     
     for (i = 0; i < numberTransactions1; i++) { // for loop in solidity: initialisation, condition, updating. See https://dev.to/shlok2740/loops-in-solidity-2pmp.
       vm.prank(loyaltyProgram.getOwner());
-      loyaltyProgram.transfer(USER_1, amount1); 
+      loyaltyProgram.safeTransferFrom(loyaltyProgram.getOwner(), userOne, 0, amount1, ""); 
     }  
     for (i = 0; i < numberTransactions2; i++) {
       vm.prank(loyaltyProgram.getOwner());
-      loyaltyProgram.transfer(USER_2, amount1); 
+      loyaltyProgram.safeTransferFrom(loyaltyProgram.getOwner(), userTwo, 0, amount2, ""); 
     }
     _; 
   }
@@ -61,176 +62,210 @@ contract LoyaltyProgramTest is Test {
   }
 
   function testLoyaltyProgramHasInitialSupply() public {
-    assertEq(1e25, loyaltyProgram.totalSupply()); //  (ownerContract));  
+    assertEq(1e25, loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 0)); //  (ownerContract));  
   }
 
-  function testOwnerCanMintTokens(uint256 amount) public { 
+  function testOwnerCanMintLoyaltyPoints(uint256 amount) public { 
     uint256 totalSupplyBefore; 
     uint256 totalSupplyAfter; 
 
     amount = bound(amount, 10, 1e20);
-    totalSupplyBefore = loyaltyProgram.totalSupply(); 
+    totalSupplyBefore = loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 0); 
 
     // Act
     vm.prank(loyaltyProgram.getOwner());  
     loyaltyProgram.mintLoyaltyPoints(amount); 
-    totalSupplyAfter = loyaltyProgram.totalSupply(); 
+    totalSupplyAfter = loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 0); 
 
     // Assert 
     assertEq(totalSupplyBefore + amount, totalSupplyAfter); 
   }
 
-  function testUserCannotMintTokens(uint256 amount) public { 
+  function testUserCannotMintLoyaltyPoints(uint256 amount) public { 
     amount = bound(amount, 10, 1e20);
 
     // Act
     vm.expectRevert(LoyaltyProgram.LoyaltyProgram__OnlyOwner.selector);  
-    vm.prank(USER_1); 
+    vm.prank(userOne); 
     loyaltyProgram.mintLoyaltyPoints(amount);
   }
 
-  function testEmitsEventAfterMintTokens(uint256 amount) public { 
-    amount = bound(amount, 10, 1e20);
-    vm.prank(loyaltyProgram.getOwner());  
-    loyaltyProgram.transfer(USER_1, amount); 
-    vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
-    emit Transfer(address(0), loyaltyProgram.getOwner(), amount);
+  function testOwnerCanMintLoyaltyCards(uint256 numberOfNfts) public { 
+    uint256 totalSupplyBefore; 
+    uint256 totalSupplyAfter; 
 
-    vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.mintLoyaltyPoints(amount);
-  }
-
-  function testOwnerCanTransferTokenstoUser_1(uint256 amount) public {
-    // Arrange
-    uint256 balanceOwnerBefore = loyaltyProgram.balanceOf(loyaltyProgram.getOwner()); 
-    uint256 balanceUser1Before = loyaltyProgram.balanceOf(USER_1); 
-    amount = bound(amount, 10, loyaltyProgram.totalSupply()); 
+    numberOfNfts = bound(numberOfNfts, 1, 50);
+    totalSupplyBefore = loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 1); 
 
     // Act
     vm.prank(loyaltyProgram.getOwner());  
-    loyaltyProgram.transfer(USER_1, amount); 
+    loyaltyProgram.mintLoyaltyCards(numberOfNfts); 
+    totalSupplyAfter = loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 1); 
 
     // Assert 
-    uint256 balanceOwnerAfter = loyaltyProgram.balanceOf(loyaltyProgram.getOwner()); 
-    uint256 balanceUser1After = loyaltyProgram.balanceOf(USER_1);
-    assertEq(loyaltyProgram.balanceOf(USER_1), balanceUser1Before + amount); 
-    assertEq(balanceUser1Before + amount, balanceUser1After); 
-    assertEq(balanceOwnerBefore - amount, balanceOwnerAfter); 
+    assertEq(totalSupplyBefore + numberOfNfts, totalSupplyAfter); 
   }
 
-  function testEmitsEventOnTransferTokens(uint256 amount) public {  
-    // Arrange
-    // use vm.recordLogs(); ? 
-    // after action 
-    // vm.Log[] memory entries = vm.getRecordLogs(); 
+  function testLoyaltyPointsCanBeTransferred(uint256 amount) public { 
+    amount = bound(amount, 10, 1e20);
+    vm.prank(loyaltyProgram.getOwner());  
+    loyaltyProgram.transferLoyaltyPoints(userOne, amount);
+    assertEq(loyaltyProgram.balanceOf(userOne, 0), amount); 
+  }
+
+
+
+  // function testOwnerCanTransferTokenstouserOne(uint256 amount) public {
+  //   // Arrange
+  //   uint256 balanceOwnerBefore = loyaltyProgram.balanceOf(loyaltyProgram.getOwner()); 
+  //   uint256 balanceUser1Before = loyaltyProgram.balanceOf(userOne); 
+  //   amount = bound(amount, 10, loyaltyProgram.totalSupply()); 
+
+  //   // Act
+  //   vm.prank(loyaltyProgram.getOwner());  
+  //   loyaltyProgram.transfer(userOne, amount); 
+
+  //   // Assert 
+  //   uint256 balanceOwnerAfter = loyaltyProgram.balanceOf(loyaltyProgram.getOwner()); 
+  //   uint256 balanceUser1After = loyaltyProgram.balanceOf(userOne);
+  //   assertEq(loyaltyProgram.balanceOf(userOne), balanceUser1Before + amount); 
+  //   assertEq(balanceUser1Before + amount, balanceUser1After); 
+  //   assertEq(balanceOwnerBefore - amount, balanceOwnerAfter); 
+  // }
+
+  // function testEmitsEventOnTransferTokens(uint256 amount) public {  
+  //   // Arrange
+  //   // use vm.recordLogs(); ? 
+  //   // after action 
+  //   // vm.Log[] memory entries = vm.getRecordLogs(); 
     
-    amount = bound(amount, 15, 2500); 
-    vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
-    emit Transfer(loyaltyProgram.getOwner(), USER_1, amount);
+  //   amount = bound(amount, 15, 2500); 
+  //   vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
+  //   emit Transfer(loyaltyProgram.getOwner(), userOne, amount);
 
-    // Act / Assert
-    vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.transfer(USER_1, amount);
-  }
-
-  function testUserCannotTransferTokenstoOtherUser(uint256 amount) public usersHaveTransactionHistory() {
-    // Arrange
-    amount = bound(amount, 0, loyaltyProgram.balanceOf(USER_1)); 
-    // Act / Assert
-    vm.expectRevert(LoyaltyProgram.LoyaltyProgram__NoAccess.selector);  
-    vm.prank(USER_1);
-    // vm.prank(loyaltyProgram.getOwner());  
-    loyaltyProgram.transfer(USER_2, 10); 
-  }
-
-  function testTransactionsAreLogged() public {  
-    // Arrange
-    uint256 numberTransactions;   
-    uint256 amount;
-    uint256 i;
-    numberTransactions = bound(numberTransactions, 5, 500); 
-    amount = bound(amount, 1, 2500); 
-    
-    // Act
-    for (i = 0; i < numberTransactions; i++) {
-      vm.prank(loyaltyProgram.getOwner());
-      loyaltyProgram.transfer(USER_1, amount); 
-    }
-
-    // Assert
-    assertEq(numberTransactions, loyaltyProgram.getTransactions(USER_1).length); 
-  }
-
-  function testOwnerCanAddLoyaltyNfts() public {  
-    // Act
-    vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
-    console.log("REDEEM_CONTRACT_A: ", REDEEM_CONTRACT_A); 
-
-    // Assert
-    assertEq(loyaltyProgram.getLoyaltyNft(REDEEM_CONTRACT_A), true); 
-    assertEq(loyaltyProgram.getLoyaltyNft(address(0)), false); 
-  }
-
-  function testEmitsEventOnAddingloyaltyNft() public {  
-    // Arrange
-    vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
-    emit AddedLoyaltyNft(REDEEM_CONTRACT_A);
-    // Act / Assert
-    vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
-  }
-
-  function testOwnerCanRemoveLoyaltyNfts() public {  
-    // Arrange
-    vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
-    assertEq(loyaltyProgram.getLoyaltyNft(REDEEM_CONTRACT_A), true); 
-    
-    // Act
-    vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.removeLoyaltyNft(REDEEM_CONTRACT_A);
-    
-    // Assert
-    assertEq(loyaltyProgram.getLoyaltyNft(REDEEM_CONTRACT_A), false); 
-  }
-
-  function testEmitsEventOnRemovingloyaltyNft() public {  
-    // Arrange
-    vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
-    emit RemovedLoyaltyNft(REDEEM_CONTRACT_A);
-    // Act / Assert
-    vm.prank(loyaltyProgram.getOwner());
-    loyaltyProgram.removeLoyaltyNft(REDEEM_CONTRACT_A);
-  }
-
-  function testUserCannotAddLoyaltyNfts() public {  
-    vm.expectRevert(LoyaltyProgram.LoyaltyProgram__OnlyOwner.selector);
-    vm.prank(USER_1);
-    loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
-  }
-
-  function testUserCannotRemoveLoyaltyNfts() public {  
-    vm.expectRevert(LoyaltyProgram.LoyaltyProgram__OnlyOwner.selector);
-    vm.prank(USER_1);
-    loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
-  }
-
- 
-
-
+  //   // Act / Assert
   //   vm.prank(loyaltyProgram.getOwner());
-  //   loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_A);
+  //   loyaltyProgram.transfer(userOne, amount);
+  // }
+
+  // function testUserCannotTransferTokenstoOtherUser(uint256 amount) public usersHaveTransactionHistory() {
+  //   // Arrange
+  //   amount = bound(amount, 0, loyaltyProgram.balanceOf(userOne)); 
+  //   // Act / Assert
+  //   vm.expectRevert(LoyaltyProgram.LoyaltyProgram__NoAccess.selector);  
+  //   vm.prank(userOne);
+  //   // vm.prank(loyaltyProgram.getOwner());  
+  //   loyaltyProgram.transfer(userTwo, 10); 
+  // }
+
+  // function testTransactionsAreLogged() public {  
+  //   // Arrange
+  //   uint256 numberTransactions;   
+  //   uint256 amount;
+  //   uint256 i;
+  //   numberTransactions = bound(numberTransactions, 5, 500); 
+  //   amount = bound(amount, 1, 2500); 
+    
+  //   // Act
+  //   for (i = 0; i < numberTransactions; i++) {
+  //     vm.prank(loyaltyProgram.getOwner());
+  //     loyaltyProgram.transfer(userOne, amount); 
+  //   }
+
+  //   // Assert
+  //   assertEq(numberTransactions, loyaltyProgram.getTransactions(userOne).length); 
+  // }
+
+  // function testOwnerCanAddLoyaltyNfts() public {  
+  //   // Act
   //   vm.prank(loyaltyProgram.getOwner());
-  //   loyaltyProgram.addLoyaltyNft(REDEEM_CONTRACT_B);
+  //   loyaltyProgram.addLoyaltyNft(redeemContractA);
+  //   console.log("redeemContractA: ", redeemContractA); 
+
+  //   // Assert
+  //   assertEq(loyaltyProgram.getLoyaltyNft(redeemContractA), true); 
+  //   assertEq(loyaltyProgram.getLoyaltyNft(address(0)), false); 
+  // }
+
+  // function testEmitsEventOnAddingloyaltyNft() public {  
+  //   // Arrange
+  //   vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
+  //   emit AddedLoyaltyNft(redeemContractA);
+  //   // Act / Assert
+  //   vm.prank(loyaltyProgram.getOwner());
+  //   loyaltyProgram.addLoyaltyNft(redeemContractA);
+  // }
+
+  // function testOwnerCanRemoveLoyaltyNfts() public {  
+  //   // Arrange
+  //   vm.prank(loyaltyProgram.getOwner());
+  //   loyaltyProgram.addLoyaltyNft(redeemContractA);
+  //   assertEq(loyaltyProgram.getLoyaltyNft(redeemContractA), true); 
     
   //   // Act
   //   vm.prank(loyaltyProgram.getOwner());
-  //   loyaltyProgram.removeLoyaltyNft(REDEEM_CONTRACT_A);
+  //   loyaltyProgram.removeLoyaltyNft(redeemContractA);
     
   //   // Assert
-  //   assertEq(loyaltyProgram.getoyaltyNft(REDEEM_CONTRACT_A), false); 
-  //   assertEq(loyaltyProgram.getoyaltyNft(REDEEM_CONTRACT_B), true); 
+  //   assertEq(loyaltyProgram.getLoyaltyNft(redeemContractA), false); 
+  // }
+
+  // function testEmitsEventOnRemovingloyaltyNft() public {  
+  //   // Arrange
+  //   vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
+  //   emit RemovedLoyaltyNft(redeemContractA);
+  //   // Act / Assert
+  //   vm.prank(loyaltyProgram.getOwner());
+  //   loyaltyProgram.removeLoyaltyNft(redeemContractA);
+  // }
+
+  // function testUserCannotAddLoyaltyNfts() public {  
+  //   vm.expectRevert(LoyaltyProgram.LoyaltyProgram__OnlyOwner.selector);
+  //   vm.prank(userOne);
+  //   loyaltyProgram.addLoyaltyNft(redeemContractA);
+  // }
+
+  // function testUserCannotRemoveLoyaltyNfts() public {  
+  //   vm.expectRevert(LoyaltyProgram.LoyaltyProgram__OnlyOwner.selector);
+  //   vm.prank(userOne);
+  //   loyaltyProgram.addLoyaltyNft(redeemContractA);
+  // }
+
+
+
+
+
+
+
+
+ 
+// ///////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  //   vm.prank(loyaltyProgram.getOwner());
+  //   loyaltyProgram.addLoyaltyNft(redeemContractA);
+  //   vm.prank(loyaltyProgram.getOwner());
+  //   loyaltyProgram.addLoyaltyNft(redeemContractB);
+    
+  //   // Act
+  //   vm.prank(loyaltyProgram.getOwner());
+  //   loyaltyProgram.removeLoyaltyNft(redeemContractA);
+    
+  //   // Assert
+  //   assertEq(loyaltyProgram.getoyaltyNft(redeemContractA), false); 
+  //   assertEq(loyaltyProgram.getoyaltyNft(redeemContractB), true); 
   //   assertEq(loyaltyProgram.getoyaltyNft(address(0)), false); 
   // }
 

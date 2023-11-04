@@ -28,14 +28,14 @@ contract InteractionsLoyaltyProgram is Script {
     );
 
 
-    
+
     claimNftOnContract(mostRecentlyDeployed); 
   }
 
   function claimNftOnContract(address contractAddress) public {
     
     vm.startBroadcast();
-    OneCoffeeFor2500(contractAddress).requirementsNftMet(USER_1, 2500, transactions); 
+    OneCoffeeFor2500(contractAddress).requirementsNftMet(consumerOne, 2500, transactions); 
     vm.stopBroadcast(); 
   } 
 

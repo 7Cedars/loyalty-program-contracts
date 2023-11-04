@@ -69,9 +69,11 @@ contract LoyaltyProgram is ERC1155 {
 
   /* constructor */
   constructor() ERC1155("https://ipfs.io/ipfs/QmcPwXFUayuEETYJvd3QaLU9Xtjkxte9rgBgfEjD2MBvJ5{id}.json") {
-      s_owner = msg.sender; 
-      mintAssetType[10] = 1;
-      mintNumberOf[10] = 1; 
+      s_owner = msg.sender;
+      for (uint i; i < 10; i++) {
+        mintAssetType.push(1); 
+        mintNumberOf.push(1); 
+      }
       _mint(msg.sender, LOYALTY_POINTS, 1e25, "");
       _mintBatch(msg.sender, mintAssetType, mintNumberOf, "");
   }
@@ -82,16 +84,23 @@ contract LoyaltyProgram is ERC1155 {
   }
 
   function mintLoyaltyCards(uint256 numberOfNfts) public onlyOwner {
-    mintAssetType[numberOfNfts] = 1;
-    mintNumberOf[numberOfNfts] = 1; 
+      delete mintAssetType;
+      delete mintNumberOf; 
+
+      for (uint i; i < numberOfNfts; i++) {
+        mintAssetType.push(1); 
+        mintNumberOf.push(1); 
+      }
     _mintBatch(msg.sender, mintAssetType, mintNumberOf, "");
+  }
+
+  function transferLoyaltyPoints(address customer, uint256 numberLoyaltyPoints) public {
+    _safeTransferFrom(s_owner, customer, 0, numberLoyaltyPoints, ""); 
   }
 
   function mintLoyaltyNfts(address nftLoyaltyAddress, uint256 numberOfNfts) public onlyOwner {
      LoyaltyNft(nftLoyaltyAddress).mintNft(numberOfNfts); 
   }
-
-
 
   function claimSelectedNft(
     address nftAddress, 
