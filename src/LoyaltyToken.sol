@@ -25,44 +25,44 @@ pragma solidity ^0.8.21;
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Transaction} from "./LoyaltyProgram.sol";
 
-contract LoyaltyNft is ERC721 {
+contract LoyaltyToken is ERC721 {
 
   /* errors */ 
-  error LoyaltyNft__IncorrectNftContract(address loyaltyNft);
-  error LoyaltyNft__NftNotOwnedByConsumer(address loyaltyNft); 
-  error LoyaltyNft__MaxNftsToMint25Exceeded(address loyaltyNft);
-  error LoyaltyNft__NoNftsAvailable(address loyaltyNft); 
-  error LoyaltyNft__InsufficientPoints(address loyaltyNft); 
-  error LoyaltyNft__InsufficientTransactions(address loyaltyNft); 
-  error LoyaltyNft__InsufficientTransactionsAndPoints(address loyaltyNft); 
+  error LoyaltyToken__IncorrectNftContract(address loyaltyToken);
+  error LoyaltyToken__NftNotOwnedByConsumer(address loyaltyToken); 
+  error LoyaltyToken__MaxNftsToMint25Exceeded(address loyaltyToken);
+  error LoyaltyToken__NoNftsAvailable(address loyaltyToken); 
+  error LoyaltyToken__InsufficientPoints(address loyaltyToken); 
+  error LoyaltyToken__InsufficientTransactions(address loyaltyToken); 
+  error LoyaltyToken__InsufficientTransactionsAndPoints(address loyaltyToken); 
   
   /* Type declarations */  
-  struct LoyaltyNftData { 
+  struct LoyaltyTokenData { 
     address program; 
     string tokenUri; 
   }
 
   /* State variables */ 
-  mapping (uint256 => LoyaltyNftData) private s_tokenIdToLoyaltyNft; 
+  mapping (uint256 => LoyaltyTokenData) private s_tokenIdToLoyaltyToken; 
   uint256 private s_tokenCounter;
-  string  public s_loyaltyNftUri; 
+  string  public s_loyaltyTokenUri; 
 
   /* Events */
   event RedeemedNft(uint256 indexed tokenId);  
 
   /* Modifiers */
   modifier onlyCorrectLoyaltyProgram (uint256 tokenId) {
-    if (s_tokenIdToLoyaltyNft[tokenId].program != msg.sender) {
-      revert LoyaltyNft__IncorrectNftContract(address(this)); 
+    if (s_tokenIdToLoyaltyToken[tokenId].program != msg.sender) {
+      revert LoyaltyToken__IncorrectNftContract(address(this)); 
     }
     _; 
   }
 
   /* FUNCTIONS: */
   /* constructor */
-  constructor(string memory loyaltyNftUri) ERC721("LoyaltyNft", "LPN") {
+  constructor(string memory loyaltyTokenUri) ERC721("LoyaltyToken", "LPN") {
     s_tokenCounter = 0;
-    s_loyaltyNftUri = loyaltyNftUri; 
+    s_loyaltyTokenUri = loyaltyTokenUri; 
   }
 
   /** 
@@ -72,14 +72,14 @@ contract LoyaltyNft is ERC721 {
   */ 
   function redeemNft(address consumer, uint256 tokenId) public {
     address owner = ownerOf(tokenId);
-    if (s_tokenIdToLoyaltyNft[tokenId].program != msg.sender) {
-      revert LoyaltyNft__IncorrectNftContract(address(this)); 
+    if (s_tokenIdToLoyaltyToken[tokenId].program != msg.sender) {
+      revert LoyaltyToken__IncorrectNftContract(address(this)); 
     }
     if (owner != consumer) {
-      revert LoyaltyNft__NftNotOwnedByConsumer(address(this)); 
+      revert LoyaltyToken__NftNotOwnedByConsumer(address(this)); 
     }
 
-    s_tokenIdToLoyaltyNft[tokenId] = LoyaltyNftData(address(0), ""); 
+    s_tokenIdToLoyaltyToken[tokenId] = LoyaltyTokenData(address(0), ""); 
     _burn(tokenId); 
 
     emit RedeemedNft(tokenId); 
@@ -88,7 +88,7 @@ contract LoyaltyNft is ERC721 {
   function tokenURI(
     uint256 tokenId
     ) public view override returns (string memory) {
-      return s_tokenIdToLoyaltyNft[tokenId].tokenUri; 
+      return s_tokenIdToLoyaltyToken[tokenId].tokenUri; 
     } 
 
   /** 
@@ -102,7 +102,7 @@ contract LoyaltyNft is ERC721 {
       // Here NFT specific requirements are inserted. 
 
       if (balanceOf(msg.sender) == 0) {
-        revert LoyaltyNft__NoNftsAvailable(address(this)); 
+        revert LoyaltyToken__NoNftsAvailable(address(this)); 
       }
       return true; 
   }
@@ -124,12 +124,12 @@ contract LoyaltyNft is ERC721 {
   */ 
   function mintNft(uint256 numberOfNfts) public {
     if (numberOfNfts > 100) {
-      revert LoyaltyNft__MaxNftsToMint25Exceeded(address(this)); 
+      revert LoyaltyToken__MaxNftsToMint25Exceeded(address(this)); 
     }
 
     for (uint i = 0; i < numberOfNfts; i++) {        
       _safeMint(msg.sender, s_tokenCounter);
-      s_tokenIdToLoyaltyNft[s_tokenCounter] = LoyaltyNftData(msg.sender, s_loyaltyNftUri); 
+      s_tokenIdToLoyaltyToken[s_tokenCounter] = LoyaltyTokenData(msg.sender, s_loyaltyTokenUri); 
       s_tokenCounter = s_tokenCounter + 1;
     }
   }
@@ -138,8 +138,8 @@ contract LoyaltyNft is ERC721 {
 
 
   /* getter functions */
-  function getLoyaltyNftData(uint256 tokenId) external view returns (LoyaltyNftData memory) {
-    return s_tokenIdToLoyaltyNft[tokenId]; 
+  function getLoyaltyTokenData(uint256 tokenId) external view returns (LoyaltyTokenData memory) {
+    return s_tokenIdToLoyaltyToken[tokenId]; 
   }
 
 }

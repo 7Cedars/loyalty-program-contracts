@@ -6,7 +6,8 @@ import {Test} from "forge-std/Test.sol";
 import {ERC6551Registry} from "../../src/ERC6551Registry.sol";
 import {SimpleERC6551Account} from "../../src/SimpleERC6551Account.sol";
 import {MockERC1155} from "../mocks/MockERC1155.sol";
-import {MockERC6551Account, IERC6551Account} from "../mocks/MockERC6551Account.sol";
+import {MockERC6551Account } from "../mocks/MockERC6551Account.sol";
+import {IERC6551Account} from "../../src/interfaces/IERC6551Account.sol";
 
 contract AccountTest is Test {
     ERC6551Registry public registry;
@@ -24,7 +25,7 @@ contract AccountTest is Test {
             block.chainid,
             address(0),
             0,
-            0,
+            3947539732098357,
             ""
         );
 
@@ -35,32 +36,32 @@ contract AccountTest is Test {
             block.chainid,
             address(0),
             0,
-            0
+            3947539732098357
         );
 
         assertEq(predictedAccount, deployedAccount);
     }
 
     function testCall() public {
-        nft.mint(vm.addr(1), 0, 1);
+        nft.mint(vm.addr(1), 1, 1);
 
         address account = registry.createAccount(
             address(implementation),
             block.chainid,
             address(nft),
             1,
-            0, // was 0
+            3947539732098357, 
             ""
         );
 
         assertTrue(account != address(0));
 
         IERC6551Account accountInstance = IERC6551Account(payable(account));
+        (, , uint256 tokenId) = accountInstance.token(); 
 
-        // assertEq(accountInstance.owner(), vm.addr(1)); // does not work on ERC1155 - does not have OwnerOf function. 
+        assertEq(tokenId, 1); // previous Owner function does not work on ERC1155 - ERC 1155 does not have OwnerOf function. 
 
         vm.deal(account, 1 ether);
-
         vm.prank(vm.addr(1));
         accountInstance.executeCall(payable(vm.addr(2)), 0.5 ether, "");
 

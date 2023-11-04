@@ -24,7 +24,10 @@ pragma solidity ^0.8.21;
 
 /* imports */
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {LoyaltyNft} from "./LoyaltyNft.sol";
+import {LoyaltyToken} from "./LoyaltyToken.sol";
+import {ERC6551Registry} from "./ERC6551Registry.sol";
+import {SimpleERC6551Account} from "./SimpleERC6551Account.sol";
+import {IERC6551Account}  from "../../src/interfaces/IERC6551Account.sol";
 
 /* Type declarations */
 struct Transaction {
@@ -34,13 +37,16 @@ struct Transaction {
       bool redeemed; 
   } 
 
+// NB: Will implement as ERC721 because TBAs do not play nicely with ERC1155. 
 contract LoyaltyProgram is ERC1155 {
   /* errors */
   error LoyaltyProgram__NoAccess(); 
   error LoyaltyProgram__OnlyOwner(); 
   error LoyaltyProgram__InSufficientPoints(); 
-  error LoyaltyProgram__LoyaltyNftNotRecognised(); 
+  error LoyaltyProgram__LoyaltyCardNotRecognised(); 
+  error LoyaltyProgram__LoyaltyTokenNotRecognised(); 
   error LoyaltyProgram__TransactionIndexOutOfBounds(); 
+  error LoyaltyProgram__NotOwnerLoyaltyCard(); 
 
   // Transaction[] public transactions; 
 
@@ -49,16 +55,20 @@ contract LoyaltyProgram is ERC1155 {
   uint256 public constant LOYALTY_CARDS = 1;
 
   address private s_owner; 
-  mapping(address => bool) private s_LoyaltyNfts;
-  uint256 private s_loyaltyCardCounter;
+  mapping(address => bool) private s_LoyaltyTokens;
+  mapping(address => bool) private s_LoyaltyCards;
   mapping(address => Transaction[] transactions) private s_Transactions; 
-  LoyaltyNft public selectedLoyaltyNft; 
-  uint256[] public mintAssetType;
+  uint256 private s_loyaltyCardCounter;
+  ERC6551Registry public s_erc6551Registry;
+  SimpleERC6551Account public s_erc6551Implementation;
+
+  LoyaltyToken public selectedLoyaltyToken; 
+  uint256[] public loyaltyCardId;
   uint256[] public mintNumberOf; 
 
   /* Events */
-  event AddedLoyaltyNft(address indexed loyaltyNft);  
-  event RemovedLoyaltyNft(address indexed loyaltyNft);
+  event AddedLoyaltyToken(address indexed loyaltyToken);  
+  event RemovedLoyaltyToken(address indexed loyaltyToken);
 
   /* Modifiers */ 
   modifier onlyOwner () {
@@ -72,11 +82,11 @@ contract LoyaltyProgram is ERC1155 {
   constructor() ERC1155("https://ipfs.io/ipfs/QmcPwXFUayuEETYJvd3QaLU9Xtjkxte9rgBgfEjD2MBvJ5.json") { // still have to check if this indeed gives out same uri for each NFT minted. 
       s_owner = msg.sender;
       s_loyaltyCardCounter = 1;
-      
+      s_erc6551Registry = ERC6551Registry(0x02101dfB77FDE026414827Fdc604ddAF224F0921);
+      s_erc6551Implementation = new SimpleERC6551Account(); 
+ 
       mintLoyaltyPoints(1e25); 
-      mintLoyaltyCards(5); 
-
-      // _mintBatch(msg.sender, mintAssetType, mintNumberOf, "");
+      mintLoyaltyCards(5);
   }
 
   /* public */
@@ -85,69 +95,87 @@ contract LoyaltyProgram is ERC1155 {
   }
 
   function mintLoyaltyCards(uint256 numberOfLoyaltyCards) public onlyOwner {
-    delete mintAssetType;
+    delete loyaltyCardId;
     delete mintNumberOf; 
 
     for (uint i; i < numberOfLoyaltyCards; i++) {
-      mintAssetType.push(s_loyaltyCardCounter + i); 
+      loyaltyCardId.push(s_loyaltyCardCounter + i); 
       mintNumberOf.push(1); 
     }
     s_loyaltyCardCounter = s_loyaltyCardCounter + numberOfLoyaltyCards; 
-    _mintBatch(msg.sender, mintAssetType, mintNumberOf, "");
+    _mintBatch(msg.sender, loyaltyCardId, mintNumberOf, "");
+    
+    for (uint i; i < numberOfLoyaltyCards; i++) {
+      address loyaltyCardAddress = _createTokenBoundAccount(s_loyaltyCardCounter + i);
+      s_LoyaltyCards[loyaltyCardAddress] = true; 
+    }
   }
 
-  function transferLoyaltyPoints(address customer, uint256 numberLoyaltyPoints) public {
-    _safeTransferFrom(s_owner, customer, 0, numberLoyaltyPoints, ""); 
+  function transferLoyaltyPoints(address loyaltyCardAddress, uint256 numberLoyaltyPoints) public {
+    if (s_LoyaltyCards[loyaltyCardAddress] != true) {
+      revert LoyaltyProgram__LoyaltyCardNotRecognised(); 
+    }
+    _safeTransferFrom(s_owner, loyaltyCardAddress, 0, numberLoyaltyPoints, ""); 
   }
 
-  function mintLoyaltyNfts(address nftLoyaltyAddress, uint256 numberOfNfts) public onlyOwner {
-     LoyaltyNft(nftLoyaltyAddress).mintNft(numberOfNfts); 
+  function mintLoyaltyTokens(address nftLoyaltyAddress, uint256 numberOfTokens) public onlyOwner {
+     LoyaltyToken(nftLoyaltyAddress).mintNft(numberOfTokens); 
   }
 
-  function claimSelectedNft(
-    address nftAddress, 
+  function claimLoyaltyToken(
+    address loyaltyToken, 
     uint256 loyaltyPoints,
+    uint256 loyaltyCard,
     Transaction[] memory transactions 
     ) external {
       // checks
-      if (s_LoyaltyNfts[nftAddress] == false) {
-        revert LoyaltyProgram__LoyaltyNftNotRecognised(); 
+      if (balanceOf(msg.sender, loyaltyCard) != 0) {
+        revert LoyaltyProgram__NotOwnerLoyaltyCard(); 
       }
-      if (loyaltyPoints < balanceOf(msg.sender, 0)) {
+      address loyaltyCardAddress = _retrieveTokenBoundAccount(loyaltyCard);
+      if (loyaltyPoints < balanceOf(loyaltyCardAddress, 0)) {
         revert LoyaltyProgram__InSufficientPoints(); 
       }
-      (bool success) = LoyaltyNft(nftAddress).requirementsNftMet(msg.sender, loyaltyPoints, transactions); 
+      if (s_LoyaltyTokens[loyaltyToken] == false) {
+        revert LoyaltyProgram__LoyaltyTokenNotRecognised(); 
+      }
 
-      // updating balances
+      // note: the next bit is ALSO external call. Security risk? 
+      (bool success) = LoyaltyToken(loyaltyToken).requirementsNftMet(loyaltyCardAddress, loyaltyPoints, transactions); 
+
+      // updating balances / interaction 
       if (success) {
-        // transferFrom(msg.sender, s_owner, loyaltyPoints); // payment points
-        for (uint i; i < transactions.length; i++) { // redeeming transaction 
+        _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, ""); // payment points
+        for (uint i; i < transactions.length; i++) { // redeeming transactions 
           uint index = transactions[i].index; 
-          s_Transactions[msg.sender][index].redeemed = true; 
+          s_Transactions[loyaltyCardAddress][index].redeemed = true; 
         }
       }
 
-      // claiming Nft. 
-      LoyaltyNft(nftAddress).claimNft(msg.sender); 
+      // claiming Nft / external. 
+      LoyaltyToken(loyaltyToken).claimNft(loyaltyCardAddress); 
   }
 
-  function RedeemmSelectedNft(address loyaltyNft, uint256 tokenId) external {
-    selectedLoyaltyNft = LoyaltyNft(loyaltyNft); 
-    selectedLoyaltyNft.redeemNft(msg.sender, tokenId); 
-  }
-
-  function addLoyaltyNft(address loyaltyNft) public onlyOwner {
-    // later checks will be added here. 
-    s_LoyaltyNfts[loyaltyNft] = true; 
-    emit AddedLoyaltyNft(loyaltyNft); 
-  }
-
-  function removeLoyaltyNft(address loyaltyNft) public onlyOwner {
-    if (s_LoyaltyNfts[loyaltyNft] = false) {
-      revert LoyaltyProgram__LoyaltyNftNotRecognised();
+  function RedeemmLoyaltyToken(address loyaltyToken, uint256 loyaltyTokenId, uint256 loyaltyCard) external {
+    if (balanceOf(msg.sender, loyaltyCard) != 0) {
+      revert LoyaltyProgram__NotOwnerLoyaltyCard(); 
     }
-    s_LoyaltyNfts[loyaltyNft] = false;
-    emit RemovedLoyaltyNft(loyaltyNft); 
+    address loyaltyCardAddress = _retrieveTokenBoundAccount(loyaltyCard);
+    LoyaltyToken(loyaltyToken).redeemNft(loyaltyCardAddress, loyaltyTokenId); 
+  }
+
+  function addLoyaltyToken(address loyaltyToken) public onlyOwner {
+    // later checks will be added here. 
+    s_LoyaltyTokens[loyaltyToken] = true; 
+    emit AddedLoyaltyToken(loyaltyToken); 
+  }
+
+  function removeLoyaltyToken(address loyaltyToken) public onlyOwner {
+    if (s_LoyaltyTokens[loyaltyToken] = false) {
+      revert LoyaltyProgram__LoyaltyTokenNotRecognised();
+    }
+    s_LoyaltyTokens[loyaltyToken] = false;
+    emit RemovedLoyaltyToken(loyaltyToken); 
   }
 
   /* internal */  
@@ -158,7 +186,7 @@ contract LoyaltyProgram is ERC1155 {
    * @dev All params are the same from original. 
   */ 
   function _update(address from, address to, uint256[] memory ids, uint256[] memory value) internal override virtual {
-    if (msg.sender != s_owner && s_LoyaltyNfts[to] == false) {
+    if (msg.sender != s_owner && s_LoyaltyTokens[to] == false) {
       revert LoyaltyProgram__NoAccess(); 
     }
 
@@ -173,6 +201,40 @@ contract LoyaltyProgram is ERC1155 {
     super._update(from, to, ids, value); 
   }
 
+  function _createTokenBoundAccount (uint256 _loyaltyCardId) internal returns (address tokenBoundAccount) { 
+      tokenBoundAccount = s_erc6551Registry.createAccount(
+              address(s_erc6551Implementation),
+              block.chainid,
+              address(this),
+              _loyaltyCardId,
+              3947539732098357, 
+              ""
+          );
+
+      return tokenBoundAccount; 
+  }
+
+  function _retrieveTokenBoundAccount (uint256 _loyaltyCardId) view internal returns (address tokenBoundAccount) { 
+      tokenBoundAccount = s_erc6551Registry.account(
+              address(s_erc6551Implementation),
+              block.chainid,
+              address(this),
+              _loyaltyCardId,
+              3947539732098357
+          );
+
+      return tokenBoundAccount; 
+  }
+
+  function _isOwnerTokenBoundAccount(address tokenBasedAccount, address consumer) view internal returns (bool isOwner) { 
+      
+      IERC6551Account accountInstance = IERC6551Account(payable(tokenBasedAccount));
+      (, , uint256 tokenId) = accountInstance.token(); 
+
+      return (balanceOf(consumer, tokenId) != 0);
+  }
+
+
   /* private */  
 
  
@@ -185,8 +247,8 @@ contract LoyaltyProgram is ERC1155 {
     return s_Transactions[customer]; 
   }
 
-  function getLoyaltyNft(address loyaltyNft) external view returns (bool) {
-    return s_LoyaltyNfts[loyaltyNft]; 
+  function getLoyaltyToken(address loyaltyToken) external view returns (bool) {
+    return s_LoyaltyTokens[loyaltyToken]; 
   }
 
   function getNumberLoyaltyCardsMinted() external view returns (uint256) {

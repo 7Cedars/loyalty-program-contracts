@@ -47,7 +47,8 @@ contract SimpleERC6551Account is IERC165, IERC1271, IERC6551Account {
     {
         return ERC6551AccountLib.token();
     }
-
+    
+    // this function will not work on 1155. 
     function owner() public view returns (address) {
         (uint256 chainId, address tokenContract, uint256 tokenId) = this.token();
         if (chainId != block.chainid) return address(0);

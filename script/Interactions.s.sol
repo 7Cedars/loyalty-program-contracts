@@ -26,9 +26,6 @@ contract InteractionsLoyaltyProgram is Script {
       "FreeCoffeeNft",
       block.chainid
     );
-
-
-
     claimNftOnContract(mostRecentlyDeployed); 
   }
 
