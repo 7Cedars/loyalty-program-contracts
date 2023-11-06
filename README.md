@@ -39,26 +39,36 @@ For personal use only.
     - [x] calls its ERC-721 claim function   
     - [x] called by customer: sending points (implement events later).
     - [x] issues NFT. 
-  - [ ] Implement and test 'redeem' function in ERC-20 loyalty card contract
+  - [x] Implement and test 'redeem' function in ERC-20 loyalty card contract
     - [x] takes an integer pointing to ERC-721 NFT contracts. NB: these DO NOT HAVE TO BE whitelisted! 
     - [x] calls its ERC-721 redeem function
-    - [ ] called through contract: sending NFT, getting burned. 
-    - [ ] returns redeemed = true value.  
-- [ ] Build, deploy, test ERC-721 contract Inheritance
+    - [x] called through contract: sending NFT, getting burned. 
+    - [x] returns redeemed = true value.  
+- [x] Build, deploy, test ERC-721 contract Inheritance
   - [x] implement in existing ERC-721 contract. 
   - [x] Create two more ERC-721 contracts with different logics: one using events, one combination of the two. 
-  - [ ] Whitelist them in ERC-20 contract.
-  - [ ] test if different logics work. 
+  - [x] Whitelist them in ERC-20 contract.
+  - [x] test if different logics work. 
 - [x] Build, deploy, test function to (de)select redeem contract for loyalty prgram. 
   - [x] pretty much add and delete addresses frm whitelist addresses.
 - [ ] Implement ERC-6551: Token Based Accounts. 
-  - [ ] Create mock registry on Anvil chain / in registry address 
-  - [ ] Setup registration of minted loyalty cards 
-  - [ ] integrate addresses into logic of contract: add modifier: onlyLoyaltyCards. 
+  - [x] Create mock registry on Anvil chain / in registry address 
+  - [x] Setup registration of minted loyalty cards 
+  - [x] integrate addresses into logic of contract: add modifier: onlyLoyaltyCards.  
   - [ ] Setup tests: can they be transfered to and between customers. 
 - [ ] Refactor loyaltyNfts to ERC-1155.  
   - [ ] Refactor (and simplify) batch minting loyaltyNfts
 - [ ] Need to add reentrancy guard to LoyaltyProgram. See note on safeTransferFrom in erc1155.  
+
+NB: It all becomes VERY complex. 
+- It might be an idea to NOT use ERC 1155 for loyalty program - but split it up between ERC 20 & ERC721. 
+- Make loyalty program purely ERC721 (with loyalty cards being its nft). 
+- These loyalty card get addresses. 
+- Loyalty points are relegated to their own ERC20 contract, 
+  - that is owned by loyalty program
+  - and only transfers points between loyalty cards. 
+- The only negative is that batch minting of loyalty cards is not possible. 
+- 
 
 **At this stage I have a minimal PoC** 
 

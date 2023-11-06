@@ -23,7 +23,7 @@
 pragma solidity ^0.8.21;
 
 /* imports */
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {LoyaltyToken} from "./LoyaltyToken.sol";
 import {ERC6551Registry} from "./ERC6551Registry.sol";
 import {SimpleERC6551Account} from "./SimpleERC6551Account.sol";
@@ -37,8 +37,8 @@ struct Transaction {
       bool redeemed; 
   } 
 
-// NB: Will implement as ERC721 because TBAs do not play nicely with ERC1155. 
 contract LoyaltyProgram is ERC1155 {
+  
   /* errors */
   error LoyaltyProgram__NoAccess(); 
   error LoyaltyProgram__OnlyOwner(); 
@@ -47,6 +47,7 @@ contract LoyaltyProgram is ERC1155 {
   error LoyaltyProgram__LoyaltyTokenNotRecognised(); 
   error LoyaltyProgram__TransactionIndexOutOfBounds(); 
   error LoyaltyProgram__NotOwnerLoyaltyCard(); 
+  error LoyaltyProgram__CardCanOnlyReceivePoints(); 
 
   // Transaction[] public transactions; 
 
@@ -62,13 +63,13 @@ contract LoyaltyProgram is ERC1155 {
   ERC6551Registry public s_erc6551Registry;
   SimpleERC6551Account public s_erc6551Implementation;
 
-  LoyaltyToken public selectedLoyaltyToken; 
-  uint256[] public loyaltyCardId;
-  uint256[] public mintNumberOf; 
-
   /* Events */
-  event AddedLoyaltyToken(address indexed loyaltyToken);  
-  event RemovedLoyaltyToken(address indexed loyaltyToken);
+  event AddedLoyaltyTokenContract(address indexed loyaltyToken);  
+  event RemovedLoyaltyTokenContract(address indexed loyaltyToken);
+  event MintedLoyaltyTokens(address nftLoyaltyAddress, uint256 numberOfTokens); 
+  event AddedTransaction(address loyaltyCardAddress, uint256 numberLoyaltyPoints); // rename? 
+  event ClaimedLoyaltyToken(address loyaltyToken, address loyaltyCardAddress); 
+  event RedeemedLoyaltyToken(address loyaltyToken, uint256 loyaltyTokenId, address loyaltyCardAddress); 
 
   /* Modifiers */ 
   modifier onlyOwner () {
@@ -81,12 +82,12 @@ contract LoyaltyProgram is ERC1155 {
   /* constructor */
   constructor() ERC1155("https://ipfs.io/ipfs/QmcPwXFUayuEETYJvd3QaLU9Xtjkxte9rgBgfEjD2MBvJ5.json") { // still have to check if this indeed gives out same uri for each NFT minted. 
       s_owner = msg.sender;
-      s_loyaltyCardCounter = 1;
+      s_loyaltyCardCounter = 0;
       s_erc6551Registry = ERC6551Registry(0x02101dfB77FDE026414827Fdc604ddAF224F0921);
       s_erc6551Implementation = new SimpleERC6551Account(); 
  
       mintLoyaltyPoints(1e25); 
-      mintLoyaltyCards(5);
+      mintLoyaltyCards(25);
   }
 
   /* public */
@@ -95,31 +96,60 @@ contract LoyaltyProgram is ERC1155 {
   }
 
   function mintLoyaltyCards(uint256 numberOfLoyaltyCards) public onlyOwner {
-    delete loyaltyCardId;
-    delete mintNumberOf; 
+    uint256[] memory loyaltyCardIds = new uint256[](numberOfLoyaltyCards); 
+    uint256[] memory mintNfts = new uint256[](numberOfLoyaltyCards); 
+    uint256 counter = s_loyaltyCardCounter; 
 
-    for (uint i; i < numberOfLoyaltyCards; i++) {
-      loyaltyCardId.push(s_loyaltyCardCounter + i); 
-      mintNumberOf.push(1); 
-    }
-    s_loyaltyCardCounter = s_loyaltyCardCounter + numberOfLoyaltyCards; 
-    _mintBatch(msg.sender, loyaltyCardId, mintNumberOf, "");
-    
-    for (uint i; i < numberOfLoyaltyCards; i++) {
-      address loyaltyCardAddress = _createTokenBoundAccount(s_loyaltyCardCounter + i);
+    // note that I log these addresses internally BEFORE they have actually been minted. 
+    for (uint i; i < numberOfLoyaltyCards; i++) { // i starts at 0.... right? TEST! 
+      counter = counter + 1; 
+      loyaltyCardIds[i] = counter;
+      mintNfts[i] = 1; 
+      address loyaltyCardAddress = _createTokenBoundAccount(counter);
       s_LoyaltyCards[loyaltyCardAddress] = true; 
     }
+
+    _mintBatch(msg.sender, loyaltyCardIds, mintNfts, "");
+    
+    s_loyaltyCardCounter = s_loyaltyCardCounter + numberOfLoyaltyCards; 
   }
 
-  function transferLoyaltyPoints(address loyaltyCardAddress, uint256 numberLoyaltyPoints) public {
+  function giftLoyaltyPoints(address loyaltyCardAddress, uint256 numberLoyaltyPoints) public onlyOwner {
     if (s_LoyaltyCards[loyaltyCardAddress] != true) {
       revert LoyaltyProgram__LoyaltyCardNotRecognised(); 
     }
-    _safeTransferFrom(s_owner, loyaltyCardAddress, 0, numberLoyaltyPoints, ""); 
+    _safeTransferFrom(s_owner, loyaltyCardAddress, 0, numberLoyaltyPoints, "");   
+
+    // logging transaction. 
+    uint index = s_Transactions[loyaltyCardAddress].length; 
+    Transaction memory transaction = Transaction(
+      index, 
+      numberLoyaltyPoints, 
+      block.timestamp, 
+      false
+    ); 
+    s_Transactions[loyaltyCardAddress].push(transaction);
+
+    emit AddedTransaction(loyaltyCardAddress, numberLoyaltyPoints); 
+  }
+
+  function addLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
+    // later checks will be added here. 
+    s_LoyaltyTokens[loyaltyToken] = true; 
+    emit AddedLoyaltyTokenContract(loyaltyToken); 
+  }
+
+  function removeLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
+    if (s_LoyaltyTokens[loyaltyToken] = false) {
+      revert LoyaltyProgram__LoyaltyTokenNotRecognised();
+    }
+    s_LoyaltyTokens[loyaltyToken] = false;
+    emit RemovedLoyaltyTokenContract(loyaltyToken); 
   }
 
   function mintLoyaltyTokens(address nftLoyaltyAddress, uint256 numberOfTokens) public onlyOwner {
      LoyaltyToken(nftLoyaltyAddress).mintNft(numberOfTokens); 
+     emit MintedLoyaltyTokens(nftLoyaltyAddress, numberOfTokens); 
   }
 
   function claimLoyaltyToken(
@@ -154,6 +184,8 @@ contract LoyaltyProgram is ERC1155 {
 
       // claiming Nft / external. 
       LoyaltyToken(loyaltyToken).claimNft(loyaltyCardAddress); 
+
+      emit ClaimedLoyaltyToken(loyaltyToken, loyaltyCardAddress); 
   }
 
   function RedeemmLoyaltyToken(address loyaltyToken, uint256 loyaltyTokenId, uint256 loyaltyCard) external {
@@ -162,42 +194,23 @@ contract LoyaltyProgram is ERC1155 {
     }
     address loyaltyCardAddress = _retrieveTokenBoundAccount(loyaltyCard);
     LoyaltyToken(loyaltyToken).redeemNft(loyaltyCardAddress, loyaltyTokenId); 
-  }
 
-  function addLoyaltyToken(address loyaltyToken) public onlyOwner {
-    // later checks will be added here. 
-    s_LoyaltyTokens[loyaltyToken] = true; 
-    emit AddedLoyaltyToken(loyaltyToken); 
-  }
-
-  function removeLoyaltyToken(address loyaltyToken) public onlyOwner {
-    if (s_LoyaltyTokens[loyaltyToken] = false) {
-      revert LoyaltyProgram__LoyaltyTokenNotRecognised();
-    }
-    s_LoyaltyTokens[loyaltyToken] = false;
-    emit RemovedLoyaltyToken(loyaltyToken); 
+    emit RedeemedLoyaltyToken(loyaltyToken, loyaltyTokenId, loyaltyCardAddress); 
   }
 
   /* internal */  
   /** 
-   * @dev Only owner of Loyalty Program can transfer loyalty points freely to any address.  
-   * @dev (This will later be updated to only adresses that are linked to NFT of Loyalty Program.) 
-   * @dev Anyone else can only transfer to redeem contracts: contracts that convert points (and later also transactionEvents) into NFTs. 
+   * @dev Loyalty points and tokens can only transferred to 
+   *  - the owner of Loyalty Program (the vendor).  
+   *  - loyalty token addresses.  
+   *  - other loyalty cards. 
    * @dev All params are the same from original. 
   */ 
   function _update(address from, address to, uint256[] memory ids, uint256[] memory value) internal override virtual {
-    if (msg.sender != s_owner && s_LoyaltyTokens[to] == false) {
+    if (to != s_owner && s_LoyaltyTokens[to] == false && s_LoyaltyCards[to] == false) {
       revert LoyaltyProgram__NoAccess(); 
     }
 
-    if (from == s_owner) {
-      uint index = s_Transactions[to].length; 
-      Transaction memory transaction = Transaction(
-        index, value[0], block.timestamp, false
-      ); 
-      s_Transactions[to].push(transaction);
-    }
-    
     super._update(from, to, ids, value); 
   }
 
@@ -233,10 +246,6 @@ contract LoyaltyProgram is ERC1155 {
 
       return (balanceOf(consumer, tokenId) != 0);
   }
-
-
-  /* private */  
-
  
   /* Getter functions */
   function getOwner() external view returns (address) {
