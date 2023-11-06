@@ -148,8 +148,9 @@ contract LoyaltyProgram is ERC1155 {
   }
 
   function mintLoyaltyTokens(address nftLoyaltyAddress, uint256 numberOfTokens) public onlyOwner {
-     LoyaltyToken(nftLoyaltyAddress).mintNft(numberOfTokens); 
-     emit MintedLoyaltyTokens(nftLoyaltyAddress, numberOfTokens); 
+    LoyaltyToken(nftLoyaltyAddress).mintLoyaltyTokens(numberOfTokens); 
+
+    emit MintedLoyaltyTokens(nftLoyaltyAddress, numberOfTokens); 
   }
 
   function claimLoyaltyToken(
@@ -171,7 +172,7 @@ contract LoyaltyProgram is ERC1155 {
       }
 
       // note: the next bit is ALSO external call. Security risk? 
-      (bool success) = LoyaltyToken(loyaltyToken).requirementsNftMet(loyaltyCardAddress, loyaltyPoints, transactions); 
+      (bool success) = LoyaltyToken(loyaltyToken).requirementsLoyaltyTokenMet(loyaltyCardAddress, loyaltyPoints, transactions); 
 
       // updating balances / interaction 
       if (success) {

@@ -23,7 +23,7 @@
 // NB: still need to edit these contracts and update descriptions... 
 pragma solidity ^0.8.21;
 
-import {LoyaltyNft} from "./LoyaltyNft.sol";
+import {LoyaltyToken} from "./LoyaltyToken.sol";
 import {Transaction} from "./LoyaltyProgram.sol";
 
 ///////////////////////////////////////////////
@@ -32,7 +32,7 @@ import {Transaction} from "./LoyaltyProgram.sol";
 /** 
  * @dev This example LoyaltyNft contract gives a free coffee for 2500 loyalty points. 
 */ 
-contract OneCoffeeFor2500 is LoyaltyNft {
+contract OneCoffeeFor2500 is LoyaltyToken {
 
   /** 
    * @dev the constructor defines the uri of the LoyaltyNft contract.    
@@ -40,7 +40,7 @@ contract OneCoffeeFor2500 is LoyaltyNft {
    * first value in constructor is the s_loyaltyNftPrice (2500) 
    * second value in constructor is the NFT Metadata CID. (pointing to image and description of NFT / redeem value)
   */ 
-  constructor() LoyaltyNft(
+  constructor() LoyaltyToken(
     "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7") {
   }
 
@@ -50,18 +50,18 @@ contract OneCoffeeFor2500 is LoyaltyNft {
    * See the base LoyaltyNft contract for available error statements. // TODO: need to add more. 
    * In this case it is a simple 'if not enough points -> revert' logic. 
   */ 
-  function requirementsNftMet(
-    address consumer, 
+  function requirementsLoyaltyTokenMet(
+    address loyaltyCard, 
     uint256 loyaltyPoints, 
     Transaction[] memory transactions
     ) public override returns (bool success) {
       uint256 nftPointsPrice = 2500; 
       
       if (loyaltyPoints < nftPointsPrice) {
-        revert LoyaltyNft__InsufficientPoints(address(this)); 
+        revert LoyaltyToken__InsufficientPoints(address(this)); 
       }
 
-      super.requirementsNftMet(consumer, loyaltyPoints, transactions); 
+    super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints, transactions); 
     }
 }
 
@@ -71,14 +71,14 @@ contract OneCoffeeFor2500 is LoyaltyNft {
 /** 
  * @dev This example LoyaltyNft contract gives a free coffee for 2500 loyalty points. 
 */ 
-contract OneCoffeeFor10BuysInWeek is LoyaltyNft {
+contract OneCoffeeFor10BuysInWeek is LoyaltyToken {
 
   /** 
    * @dev This example gives out a free coffee if a customer has made at least 10 purchases in a week. 
    * note that is assumes that transactions are given chronologically!  
    * The NFT Metadata CID. (pointing to image and description of NFT / redeem value)
   */ 
-  constructor() LoyaltyNft(
+  constructor() LoyaltyToken(
     "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7") { // has to still change
   }
 
@@ -88,8 +88,8 @@ contract OneCoffeeFor10BuysInWeek is LoyaltyNft {
    * See the base LoyaltyNft contract for available error statements. // TODO: need to add more. 
    * In this case a customer needs 10 transactions within one week to claim the NFT. 
   */ 
-  function requirementsNftMet(
-    address consumer, 
+  function requirementsLoyaltyTokenMet(
+    address loyaltyCard, 
     uint256 loyaltyPoints, 
     Transaction[] memory transactions
     ) public override returns (bool success) {
@@ -98,10 +98,10 @@ contract OneCoffeeFor10BuysInWeek is LoyaltyNft {
       uint256 durationOfTransactions = transactions[numberOfTransactions - 1].timestamp - transactions[0].timestamp; 
       
       if (durationOfTransactions < oneWeek || numberOfTransactions < 10) {
-        revert LoyaltyNft__InsufficientTransactions(address(this)); 
+        revert LoyaltyToken__InsufficientTransactions(address(this)); 
       }
 
-    super.requirementsNftMet(consumer, loyaltyPoints, transactions); 
+    super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints, transactions); 
   }
 }
 
@@ -111,14 +111,14 @@ contract OneCoffeeFor10BuysInWeek is LoyaltyNft {
 /** 
  * @dev This example LoyaltyNft contract is a combination of Example 1 and 2: combining transactions with points.   
 */ 
-contract OneCoffeeFor2500And10BuysInWeek is LoyaltyNft {
+contract OneCoffeeFor2500And10BuysInWeek is LoyaltyToken {
 
   /** 
    * @dev This example gives out a free coffee if a customer has made at least 10 purchases in a week + transfers 2500 points. 
    * note that is assumes that transactions are given chronologically!
    * The NFT Metadata CID. (pointing to image and description of NFT / redeem value)
   */ 
-  constructor() LoyaltyNft(
+  constructor() LoyaltyToken(
     "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7") { // has to still change
   }
 
@@ -128,8 +128,8 @@ contract OneCoffeeFor2500And10BuysInWeek is LoyaltyNft {
    * See the base LoyaltyNft contract for available error statements. // TODO: need to add more. 
    * In this case a customer needs 10 transactions within one week to claim the NFT. 
   */ 
-  function requirementsNftMet(
-    address consumer, 
+  function requirementsLoyaltyTokenMet(
+    address loyaltyCard, 
     uint256 loyaltyPoints, 
     Transaction[] memory transactions
     ) public override returns (bool) {
@@ -139,9 +139,9 @@ contract OneCoffeeFor2500And10BuysInWeek is LoyaltyNft {
       uint256 durationOfTransactions = transactions[numberOfTransactions - 1].timestamp - transactions[0].timestamp; 
       
       if (durationOfTransactions < oneWeek || numberOfTransactions < 10 || loyaltyPoints < nftPointsPrice) {
-        revert LoyaltyNft__InsufficientTransactionsAndPoints(address(this));
+        revert LoyaltyToken__InsufficientTransactionsAndPoints(address(this));
       }
 
-    super.requirementsNftMet(consumer, loyaltyPoints, transactions); 
+    super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints, transactions); 
   }
 }
