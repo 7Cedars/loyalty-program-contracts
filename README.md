@@ -13,7 +13,7 @@ For personal use only.
 
 ## Development / TO DO 
 So, minimal PoC of LoyaltyProgram is finished. Next steps 
-- [ ] Add reentrancy guard to LoyaltyProgram. See note on safeTransferFrom in erc1155. 
+- [X] Add reentrancy guard to LoyaltyProgram. See note on safeTransferFrom in erc1155. 
 - [ ] Build unit tests 
   - [ ] Do points get added to loyaltyCard (and not user address)? 
   - [ ] Do points transfer as loyaltyCards are tranfered between customers?

@@ -4,7 +4,7 @@ pragma solidity ^0.8.21;
 // NB: see ERC1155 contract from openZeppelin for good example of how to use natspecs. 
 // TODO: implement and describe accordingly.  
 
-import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol"; 
 
 contract LoyaltyToken is ERC1155 {
 
@@ -30,7 +30,6 @@ contract LoyaltyToken is ERC1155 {
   /** 
    * @dev TODO 
    * 
-   * 
   */ 
   function mintLoyaltyTokens(uint256 numberOfTokens) public {
     uint256[] memory loyaltyTokenIds = new uint256[](numberOfTokens); 
@@ -43,10 +42,12 @@ contract LoyaltyToken is ERC1155 {
       mintNfts[i] = 1;
       s_tokenIdToLoyaltyProgram[i] = msg.sender; 
     }
+
     _mintBatch(msg.sender, loyaltyTokenIds, mintNfts, ""); // emits batchtransfer event
-    
+
     s_tokenCounter = s_tokenCounter + numberOfTokens; 
     s_loyaltyProgramToTokenIds[msg.sender] = loyaltyTokenIds; 
+    
   }
 
 
@@ -77,6 +78,7 @@ contract LoyaltyToken is ERC1155 {
     }
     
     uint tokenId = s_loyaltyProgramToTokenIds[msg.sender][maxIndex - 1]; 
+
     _safeTransferFrom(msg.sender, loyaltyCard, tokenId, 1, "");
   }
 

@@ -7,8 +7,9 @@ import {LoyaltyToken} from "./LoyaltyToken.sol";
 import {ERC6551Registry} from "./ERC6551Registry.sol";
 import {SimpleERC6551Account} from "./SimpleERC6551Account.sol";
 import {IERC6551Account}  from "../../src/interfaces/IERC6551Account.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract LoyaltyProgram is ERC1155 {
+contract LoyaltyProgram is ERC1155, ReentrancyGuard {
   
   /* errors */
   error LoyaltyProgram__NoAccess(); 
@@ -84,7 +85,6 @@ contract LoyaltyProgram is ERC1155 {
       revert LoyaltyProgram__LoyaltyCardNotRecognised(); 
     }
     _safeTransferFrom(s_owner, loyaltyCardAddress, 0, numberLoyaltyPoints, "");   
-
   }
 
   function addLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
@@ -101,17 +101,19 @@ contract LoyaltyProgram is ERC1155 {
     emit RemovedLoyaltyTokenContract(loyaltyToken); 
   }
 
-  function mintLoyaltyTokens(address nftLoyaltyAddress, uint256 numberOfTokens) public onlyOwner {
-    LoyaltyToken(nftLoyaltyAddress).mintLoyaltyTokens(numberOfTokens); 
-
-    emit MintedLoyaltyTokens(nftLoyaltyAddress, numberOfTokens); 
+  function mintLoyaltyTokens(
+    address nftLoyaltyAddress, 
+    uint256 numberOfTokens
+    ) public onlyOwner nonReentrant {
+      LoyaltyToken(nftLoyaltyAddress).mintLoyaltyTokens(numberOfTokens); 
+      emit MintedLoyaltyTokens(nftLoyaltyAddress, numberOfTokens); 
   }
 
   function claimLoyaltyToken(
     address loyaltyToken, 
     uint256 loyaltyPoints,
     uint256 loyaltyCard
-    ) external {
+    ) external nonReentrant {
       // checks
       if (balanceOf(msg.sender, loyaltyCard) != 0) {
         revert LoyaltyProgram__NotOwnerLoyaltyCard(); 
@@ -124,7 +126,7 @@ contract LoyaltyProgram is ERC1155 {
         revert LoyaltyProgram__LoyaltyTokenNotRecognised(); 
       }
 
-      // note: the next bit is ALSO external call. Security risk? 
+      // note: the next bit is ALSO external call. Security risk? Hence added nonReentrant... 
       (bool success) = LoyaltyToken(loyaltyToken).requirementsLoyaltyTokenMet(loyaltyCardAddress, loyaltyPoints); 
 
       // updating balances / interaction 
@@ -136,14 +138,18 @@ contract LoyaltyProgram is ERC1155 {
       emit ClaimedLoyaltyToken(loyaltyToken, loyaltyCardAddress); 
   }
 
-  function RedeemmLoyaltyToken(address loyaltyToken, uint256 loyaltyTokenId, uint256 loyaltyCard) external {
-    if (balanceOf(msg.sender, loyaltyCard) != 0) {
-      revert LoyaltyProgram__NotOwnerLoyaltyCard(); 
-    }
-    address loyaltyCardAddress = _retrieveTokenBoundAccount(loyaltyCard);
-    LoyaltyToken(loyaltyToken).redeemNft(loyaltyCardAddress, loyaltyTokenId); 
+  function RedeemmLoyaltyToken(
+    address loyaltyToken, 
+    uint256 loyaltyTokenId, 
+    uint256 loyaltyCard
+    ) external nonReentrant {
+      if (balanceOf(msg.sender, loyaltyCard) != 0) {
+        revert LoyaltyProgram__NotOwnerLoyaltyCard(); 
+      }
+      address loyaltyCardAddress = _retrieveTokenBoundAccount(loyaltyCard);
+      LoyaltyToken(loyaltyToken).redeemNft(loyaltyCardAddress, loyaltyTokenId); 
 
-    emit RedeemedLoyaltyToken(loyaltyToken, loyaltyTokenId, loyaltyCardAddress); 
+      emit RedeemedLoyaltyToken(loyaltyToken, loyaltyTokenId, loyaltyCardAddress); 
   }
 
   /* internal */  
