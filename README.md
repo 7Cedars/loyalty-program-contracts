@@ -12,53 +12,36 @@ For personal use only.
 - Design of solidity backend is on Figma. 
 
 ## Development / TO DO 
-
-- [x] Build, deploy, test ERC-20 based loyalty card contract. 
-  - [x] tracks customer points. 
-    - [x] this is simple ERC-20 implementation. 
-    -  [x] points should be in unlimited supply. -- no inherent value. 
-  - [x] tracks customer transactions. Transaction is a struct
-    - [x] points 
-    - [x] blocknumber 
-    - [x] redeemed = false
-  - [x] tracks list of whitelisted redeem contracts
-    - [x] is mapping of addresses + indexed event. 
-  - [x] Test if all these functions work. 
-- [x] Build, deploy, test single ERC-721 NFT contract 
-  - [x] takes points from any loyalty card contract. 
-  - [x] create claim funtion: issues NFTs, on the basis of particular cost (# of points for instance.) 
-    - [x] should take address that calls the function. (which is ERC-20 loyalty card contract)
-    - [x] takes points AND transaction - one OR the other can be used. 
-  - [x] issued NFTs remain linked to loyalty card contract that issued them. - possibly through 'approved address'? 
-  - [x] The issued NFT should have description of redeemed value (e.g. a freeCoffee, attendance to party, etc); 
-  - [x] create redeem function: delete / burn token, returns a redeemed = true.  
-- [x] Import and test single ERC-721 NFT contract into ERC-20 based loyalty card contract
-  - [x] whitelist ERC-721 contract
-  - [x] Implement and test 'claim' function in ERC-20 loyalty card contract
-    - [x] takes an address pointing to whitelisted list of ERC-721 NFT redeemed contracts
-    - [x] calls its ERC-721 claim function   
-    - [x] called by customer: sending points (implement events later).
-    - [x] issues NFT. 
-  - [x] Implement and test 'redeem' function in ERC-20 loyalty card contract
-    - [x] takes an integer pointing to ERC-721 NFT contracts. NB: these DO NOT HAVE TO BE whitelisted! 
-    - [x] calls its ERC-721 redeem function
-    - [x] called through contract: sending NFT, getting burned. 
-    - [x] returns redeemed = true value.  
-- [x] Build, deploy, test ERC-721 contract Inheritance
-  - [x] implement in existing ERC-721 contract. 
-  - [x] Create two more ERC-721 contracts with different logics: one using events, one combination of the two. 
-  - [x] Whitelist them in ERC-20 contract.
-  - [x] test if different logics work. 
-- [x] Build, deploy, test function to (de)select redeem contract for loyalty prgram. 
-  - [x] pretty much add and delete addresses frm whitelist addresses.
-- [ ] Implement ERC-6551: Token Based Accounts. 
-  - [x] Create mock registry on Anvil chain / in registry address 
-  - [x] Setup registration of minted loyalty cards 
-  - [x] integrate addresses into logic of contract: add modifier: onlyLoyaltyCards.  
-  - [ ] Setup tests: can they be transfered to and between customers. 
-- [x] Refactor loyaltyNfts to ERC-1155.  
-  - [x] Refactor (and simplify) batch minting loyaltyNfts
-- [ ] Need to add reentrancy guard to LoyaltyProgram. See note on safeTransferFrom in erc1155.  
+So, minimal PoC of LoyaltyProgram is finished. Next steps 
+- [ ] Add reentrancy guard to LoyaltyProgram. See note on safeTransferFrom in erc1155. 
+- [ ] Build unit tests 
+  - [ ] Do points get added to loyaltyCard (and not user address)? 
+  - [ ] Do points transfer as loyaltyCards are tranfered between customers?
+  - [ ] Does adding and removing loyaltyTokenContract work? 
+- [ ] Build integration tests 
+  - [ ] Does Minting loyaltyTokens by vendor work? 
+  - [ ] Does claim loyaltyTokens work - do tokens get redeemd by loyaltyCards (and not customers)? 
+  - [ ] When tokens are finsihed - does it indeed stop issuing them? (are reverts bound by lotalty program)
+  - [ ] Are points and tokens bound to loyalty cards?   
+- [ ] Build interactions and scenarios 
+  - [ ] colleting points, claim and redeeming LoyaltyTokens
+  - [ ] colleting points, transfer loyaltyCard, claim tokens, transfer loyaltyCard, redeem tokens. 
+  - [ ] etc. -- come up with many different scenarios. 
+- [ ] Implement gasless transaction for loyaltyCard holdres - VENDOR should pay gas!
+- [ ] Rerun all tests - now with gas cost > 0
+- [ ] Create mutliple / more loyaltyToken contracts - also using chainlink external data. 
+  - [ ] Raffle. 
+  - [ ] at least x amoung of transactions... 
+  - [ ] etc etc . 
+- [ ] Focus on developing front end - see 'loyalty-program-next' folder.  
+- [ ] Check: on what chains is ERC6551 deployed?  
+- [ ] Run rest on forked testnets.
+  - [ ] L1: Sepolia 
+  - [ ] L2: optimus? 
+  - [ ] L2: Arbitrum? 
+  - [ ] ...? 
+- [ ] Deploy on actual testnet - and test.
+- [ ] Deploy on actual chains! 
 
 
 **At this stage I have a minimal PoC** 
