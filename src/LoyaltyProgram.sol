@@ -6,7 +6,7 @@ import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {LoyaltyToken} from "./LoyaltyToken.sol";
 import {ERC6551Registry} from "./ERC6551Registry.sol";
 import {SimpleERC6551Account} from "./SimpleERC6551Account.sol";
-import {IERC6551Account}  from "../../src/interfaces/IERC6551Account.sol";
+import {IERC6551Account}  from "../src/interfaces/IERC6551Account.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract LoyaltyProgram is ERC1155, ReentrancyGuard {
@@ -34,8 +34,8 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
   // Have to check which events I can take out because they already emit events... 
   event AddedLoyaltyTokenContract(address indexed loyaltyToken);  
   event RemovedLoyaltyTokenContract(address indexed loyaltyToken);
-  event MintedLoyaltyTokens(address nftLoyaltyAddress, uint256 numberOfTokens); 
-  event ClaimedLoyaltyToken(address loyaltyToken, address loyaltyCardAddress); 
+  event MintedLoyaltyTokens(address loyaltyTokenAddress, uint256 numberOfTokens); 
+  event ClaimedLoyaltyToken(address loyaltyToken, uint256 tokenId, address loyaltyCardAddress); 
   event RedeemedLoyaltyToken(address loyaltyToken, uint256 loyaltyTokenId, address loyaltyCardAddress); 
 
   /* Modifiers */ 
@@ -102,11 +102,11 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
   }
 
   function mintLoyaltyTokens(
-    address nftLoyaltyAddress, 
+    address loyaltyTokenAddress, 
     uint256 numberOfTokens
     ) public onlyOwner nonReentrant {
-      LoyaltyToken(nftLoyaltyAddress).mintLoyaltyTokens(numberOfTokens); 
-      emit MintedLoyaltyTokens(nftLoyaltyAddress, numberOfTokens); 
+      LoyaltyToken(loyaltyTokenAddress).mintLoyaltyTokens(numberOfTokens); 
+      emit MintedLoyaltyTokens(loyaltyTokenAddress, numberOfTokens); 
   }
 
   function claimLoyaltyToken(
@@ -133,9 +133,9 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
       if (success) { _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, ""); }
 
       // claiming Nft / external. 
-      LoyaltyToken(loyaltyToken).claimNft(loyaltyCardAddress); 
+      uint256 tokenId = LoyaltyToken(loyaltyToken).claimNft(loyaltyCardAddress); 
 
-      emit ClaimedLoyaltyToken(loyaltyToken, loyaltyCardAddress); 
+      emit ClaimedLoyaltyToken(loyaltyToken, tokenId, loyaltyCardAddress); 
   }
 
   function RedeemmLoyaltyToken(

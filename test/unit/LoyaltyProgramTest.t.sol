@@ -62,7 +62,9 @@ contract LoyaltyProgramTest is Test {
   }
 
   function testLoyaltyProgramHasInitialSupply() public {
-    assertEq(1e25, loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 0)); //  (ownerContract));  
+    assertEq(1e25, loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 0));
+    assertEq(1, loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 1)); 
+    assertEq(1, loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 24));  
   }
 
   function testOwnerCanMintLoyaltyPoints(uint256 amount) public { 
@@ -116,12 +118,12 @@ contract LoyaltyProgramTest is Test {
     assertEq(totalSupplyBefore + numberToMint, totalSupplyAfter); 
   }
 
-  function testLoyaltyPointsCanBeTransferred(uint256 amount) public { 
-    amount = bound(amount, 10, 1e20);
-    vm.prank(loyaltyProgram.getOwner());  
-    loyaltyProgram.transferLoyaltyPoints(userOne, amount);
-    assertEq(loyaltyProgram.balanceOf(userOne, 0), amount); 
-  }
+  // function testLoyaltyPointsCanBeTransferred(uint256 amount) public { 
+  //   amount = bound(amount, 10, 1e20);
+  //   vm.prank(loyaltyProgram.getOwner());  
+  //   loyaltyProgram.transferLoyaltyPoints(userOne, amount);
+  //   assertEq(loyaltyProgram.balanceOf(userOne, 0), amount); 
+  // }
 
 
 

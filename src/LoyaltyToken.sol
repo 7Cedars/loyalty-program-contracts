@@ -71,15 +71,15 @@ contract LoyaltyToken is ERC1155 {
    * 
    * 
   */ 
-  function claimNft(address loyaltyCard) public {
+  function claimNft(address loyaltyCard) public returns (uint256 tokenId) {
     uint256 maxIndex = s_loyaltyProgramToTokenIds[msg.sender].length;
     if (maxIndex == 0) {
       revert LoyaltyToken__NoTokensAvailable(address(this)); 
     }
     
-    uint tokenId = s_loyaltyProgramToTokenIds[msg.sender][maxIndex - 1]; 
-
+    tokenId = s_loyaltyProgramToTokenIds[msg.sender][maxIndex - 1]; 
     _safeTransferFrom(msg.sender, loyaltyCard, tokenId, 1, "");
+    return tokenId; 
   }
 
    /** 
