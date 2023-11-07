@@ -50,7 +50,7 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
   constructor() ERC1155("https://ipfs.io/ipfs/QmcPwXFUayuEETYJvd3QaLU9Xtjkxte9rgBgfEjD2MBvJ5.json") { // still have to check if this indeed gives out same uri for each NFT minted. 
       s_owner = msg.sender;
       s_loyaltyCardCounter = 0;
-      s_erc6551Registry = ERC6551Registry(0x02101dfB77FDE026414827Fdc604ddAF224F0921);
+      s_erc6551Registry = new ERC6551Registry();
       s_erc6551Implementation = new SimpleERC6551Account(); 
  
       mintLoyaltyPoints(1e25); 

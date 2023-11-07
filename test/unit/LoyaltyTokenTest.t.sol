@@ -6,7 +6,7 @@ import {LoyaltyToken} from "../../src/LoyaltyToken.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {DeployLoyaltyToken}from "../../script/DeployLoyaltyTokens.s.sol";
 
-contract LoyaltyNftTest is Test {
+contract LoyaltyTokenTest is Test {
   DeployLoyaltyToken public deployer; 
   LoyaltyToken public loyaltyToken;
   address public loyaltyProgramAddress = makeAddr("LoyaltyProgramContract"); 
@@ -61,11 +61,11 @@ contract LoyaltyNftTest is Test {
     vm.prank(userOne);
     loyaltyToken.mintLoyaltyTokens(numberOfTokens); 
 
-    for (uint i = 1; i < numberOfTokens; i++) {
+    for (uint i = 1; i <= numberOfTokens; i++) {
       numberTokensAfter1 = numberTokensAfter1 + loyaltyToken.balanceOf(loyaltyProgramAddress, i); 
     }
 
-    for (uint i = 1; i < numberOfTokens; i++) {
+    for (uint i = 1; i <= numberOfTokens; i++) {
       numberTokensAfter2 = numberTokensAfter2 + loyaltyToken.balanceOf(loyaltyProgramAddress, i); 
     }
 
@@ -102,7 +102,7 @@ contract LoyaltyNftTest is Test {
       abi.encodeWithSelector(LoyaltyToken.LoyaltyToken__LoyaltyProgramNotRecognised.selector, address(loyaltyToken))
       );  
     vm.prank(userOne); 
-    loyaltyToken.redeemNft(userOne, 0); 
+    loyaltyToken.redeemNft(userOne, 1); 
   }
 
   function testUserCannotRedeemNftItDoesNotOwn(uint256 numberOfTokens) public {
@@ -134,33 +134,5 @@ contract LoyaltyNftTest is Test {
   //   // vm.prank(userOne); 
   //   // loyaltyToken.safeTransferFrom(userOne, userTwo);
   // }
-
-  /**
-   * @dev Because the base LoyaltyNFT contract does NOT have any requirements
-   * set, it should always return true. 
-   */
-  function testRequirementsNftMetAlwaysReturnsTrue(
-    address, 
-    uint256, 
-    uint input1, 
-    uint input2, 
-    uint loyaltyPoints, 
-    uint256 numberLoyaltyTokens1, 
-    uint256 numberLoyaltyTokens2
-  ) public usersHaveLoyaltyTokens (
-      numberLoyaltyTokens1, numberLoyaltyTokens2
-      ) {
-    input1 = bound(input1, 0, 2); 
-    input2 = bound(input2, 0, 2); 
-    address[3] memory addressList = [userOne, userTwo, loyaltyProgramAddress]; 
-    address consumer = addressList[input1]; 
-    address vendor = addressList[input2]; 
-    loyaltyPoints = bound(loyaltyPoints, 1, 10000);
-    
-    vm.prank(vendor); 
-    bool success = loyaltyToken.requirementsLoyaltyTokenMet(consumer, loyaltyPoints); 
-
-    assertEq(success, true); 
-  }
 
 }

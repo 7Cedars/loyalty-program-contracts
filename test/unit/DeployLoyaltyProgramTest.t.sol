@@ -16,15 +16,8 @@ contract DeployLoyaltyProgramTest is Test {
   function testDeploymentLoyaltyProgramIsSuccess() public {
     LoyaltyProgram loyaltyProgram = deployer.run();
 
-    // string memory expectedName = "LoyaltyPoints"; 
-    string memory nftUri = loyaltyProgram.uri(0); 
-    // NB you cannot just compare strings! 
-
-    console.log("nftUri: ", nftUri);
-    // assert(
-    //   keccak256(abi.encodePacked(expectedName))
-    //   ==
-    //   keccak256(abi.encodePacked(actualName))
-    //   ); 
+    // constructor provides 1e25 loyalty points at initialisation. 
+    assertEq(1e25, loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 0)); 
+  
   }
 }

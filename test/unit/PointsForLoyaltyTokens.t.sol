@@ -10,7 +10,7 @@ import {
 import {Test, console} from "forge-std/Test.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 
-contract ExampleLoyaltyNftTest is Test {
+contract ExampleLoyaltyTokensTest is Test {
   DeployOneCoffeeFor2500 public deployer; 
 
 } 

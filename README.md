@@ -21,7 +21,7 @@ So, minimal PoC of LoyaltyProgram is finished. Next steps
 - [ ] Build integration tests 
   - [ ] Does Minting loyaltyTokens by vendor work? 
   - [ ] Does claim loyaltyTokens work - do tokens get redeemd by loyaltyCards (and not customers)? 
-  - [ ] When tokens are finsihed - does it indeed stop issuing them? (are reverts bound by lotalty program)
+  - [ ] When tokens are finsihed - does it indeed stop issuing them? (are reverts bound by loyalty program)
   - [ ] Are points and tokens bound to loyalty cards?   
 - [ ] Build interactions and scenarios 
   - [ ] colleting points, claim and redeeming LoyaltyTokens

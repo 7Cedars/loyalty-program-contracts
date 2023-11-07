@@ -10,22 +10,21 @@ import {
 } from "../../src/PointsForLoyaltyTokens.sol";
 
 
-contract DeployLoyaltyNftsTest is Test {
-  DeployOneCoffeeFor2500 public deployerOneCoffeeFor2500; 
+contract DeployLoyaltyTokensTest is Test {
+  DeployOneCoffeeFor2500 public deployer; 
   address public vendorOne = makeAddr("vendor1"); 
 
   function setUp() public { 
-    deployerOneCoffeeFor2500 = new DeployOneCoffeeFor2500();
+    deployer = new DeployOneCoffeeFor2500();
   }
 
   function testNameOneCoffeeFor2500IsCorrect() public {
-    OneCoffeeFor2500 oneCoffeeFor2500 = deployerOneCoffeeFor2500.run();
+    OneCoffeeFor2500 oneCoffeeFor2500 = deployer.run();
 
-
-    string memory expectedUri = "https://ipfs.io/ipfs/QmcPwXFUayuEETYJvd3QaLU9Xtjkxte9rgBgfEjD2MBvJ5.json"; 
+    string memory expectedUri = "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7"; 
+    vm.prank(vendorOne); 
     oneCoffeeFor2500.mintLoyaltyTokens(10); 
     string memory actualUri = oneCoffeeFor2500.uri(1); 
-    // NB you cannot just compare strings! 
     assert(
       keccak256(abi.encodePacked(expectedUri))
       ==
