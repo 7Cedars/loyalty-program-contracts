@@ -56,19 +56,10 @@ For personal use only.
   - [x] Setup registration of minted loyalty cards 
   - [x] integrate addresses into logic of contract: add modifier: onlyLoyaltyCards.  
   - [ ] Setup tests: can they be transfered to and between customers. 
-- [ ] Refactor loyaltyNfts to ERC-1155.  
-  - [ ] Refactor (and simplify) batch minting loyaltyNfts
+- [x] Refactor loyaltyNfts to ERC-1155.  
+  - [x] Refactor (and simplify) batch minting loyaltyNfts
 - [ ] Need to add reentrancy guard to LoyaltyProgram. See note on safeTransferFrom in erc1155.  
 
-NB: It all becomes VERY complex. 
-- It might be an idea to NOT use ERC 1155 for loyalty program - but split it up between ERC 20 & ERC721. 
-- Make loyalty program purely ERC721 (with loyalty cards being its nft). 
-- These loyalty card get addresses. 
-- Loyalty points are relegated to their own ERC20 contract, 
-  - that is owned by loyalty program
-  - and only transfers points between loyalty cards. 
-- The only negative is that batch minting of loyalty cards is not possible. 
-- 
 
 **At this stage I have a minimal PoC** 
 

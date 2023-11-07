@@ -23,6 +23,7 @@
 pragma solidity ^0.8.21;
 
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {Transaction} from "./LoyaltyProgram.sol";
 
 contract LoyaltyToken is ERC1155 {
 
@@ -30,7 +31,9 @@ contract LoyaltyToken is ERC1155 {
   error LoyaltyToken__LoyaltyProgramNotRecognised(address loyaltyToken);
   error LoyaltyToken__NftNotOwnedByloyaltyCard(address loyaltyToken); 
   error LoyaltyToken__NoTokensAvailable(address loyaltyToken); 
-  error LoyaltyToken__InsufficientPoints(address loyaltyToken);
+  error LoyaltyToken__InsufficientPoints(address loyaltyToken); 
+  error LoyaltyToken__InsufficientTransactions(address loyaltyToken); 
+  error LoyaltyToken__InsufficientTransactionsAndPoints(address loyaltyToken); 
 
   /* State variables */ 
   mapping (uint256 => address) private s_tokenIdToLoyaltyProgram; 
@@ -44,6 +47,7 @@ contract LoyaltyToken is ERC1155 {
     s_tokenCounter = 0;
     _setURI(loyaltyTokenUri); 
   }
+
 
   /** 
    * @dev TODO 
@@ -74,8 +78,9 @@ contract LoyaltyToken is ERC1155 {
    * 
   */ 
   function requirementsLoyaltyTokenMet(
-    address, // loyaltyCard
-    uint256 // loyaltypoints
+    address, 
+    uint256, 
+    Transaction[] memory
     ) public virtual returns (bool success) {
       
       // Here NFT specific requirements are inserted. 

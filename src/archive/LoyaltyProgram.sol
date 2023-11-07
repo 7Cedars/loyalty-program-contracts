@@ -29,6 +29,14 @@ import {ERC6551Registry} from "./ERC6551Registry.sol";
 import {SimpleERC6551Account} from "./SimpleERC6551Account.sol";
 import {IERC6551Account}  from "../../src/interfaces/IERC6551Account.sol";
 
+/* Type declarations */
+struct Transaction {
+      uint index; 
+      uint points;
+      uint timestamp;
+      bool redeemed; 
+  } 
+
 contract LoyaltyProgram is ERC1155 {
   
   /* errors */
@@ -37,8 +45,11 @@ contract LoyaltyProgram is ERC1155 {
   error LoyaltyProgram__InSufficientPoints(); 
   error LoyaltyProgram__LoyaltyCardNotRecognised(); 
   error LoyaltyProgram__LoyaltyTokenNotRecognised(); 
+  error LoyaltyProgram__TransactionIndexOutOfBounds(); 
   error LoyaltyProgram__NotOwnerLoyaltyCard(); 
   error LoyaltyProgram__CardCanOnlyReceivePoints(); 
+
+  // Transaction[] public transactions; 
 
   /* State variables */
   uint256 public constant LOYALTY_POINTS = 0;
@@ -46,15 +57,16 @@ contract LoyaltyProgram is ERC1155 {
   address private s_owner; 
   mapping(address => bool) private s_LoyaltyTokens;
   mapping(address => bool) private s_LoyaltyCards;
+  mapping(address => Transaction[] transactions) private s_Transactions; 
   uint256 private s_loyaltyCardCounter;
   ERC6551Registry public s_erc6551Registry;
   SimpleERC6551Account public s_erc6551Implementation;
 
   /* Events */
-  // Have to check which events I can take out because they already emit events... 
   event AddedLoyaltyTokenContract(address indexed loyaltyToken);  
   event RemovedLoyaltyTokenContract(address indexed loyaltyToken);
   event MintedLoyaltyTokens(address nftLoyaltyAddress, uint256 numberOfTokens); 
+  event AddedTransaction(address loyaltyCardAddress, uint256 numberLoyaltyPoints); // rename? 
   event ClaimedLoyaltyToken(address loyaltyToken, address loyaltyCardAddress); 
   event RedeemedLoyaltyToken(address loyaltyToken, uint256 loyaltyTokenId, address loyaltyCardAddress); 
 
@@ -92,6 +104,7 @@ contract LoyaltyProgram is ERC1155 {
     }
 
     _mintBatch(msg.sender, loyaltyCardIds, mintNfts, "");
+    
     s_loyaltyCardCounter = s_loyaltyCardCounter + numberOfLoyaltyCards; 
   }
 
@@ -106,6 +119,17 @@ contract LoyaltyProgram is ERC1155 {
     }
     _safeTransferFrom(s_owner, loyaltyCardAddress, 0, numberLoyaltyPoints, "");   
 
+    // logging transaction. 
+    uint index = s_Transactions[loyaltyCardAddress].length; 
+    Transaction memory transaction = Transaction(
+      index, 
+      numberLoyaltyPoints, 
+      block.timestamp, 
+      false
+    ); 
+    s_Transactions[loyaltyCardAddress].push(transaction);
+
+    emit AddedTransaction(loyaltyCardAddress, numberLoyaltyPoints); 
   }
 
   function addLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
@@ -131,7 +155,8 @@ contract LoyaltyProgram is ERC1155 {
   function claimLoyaltyToken(
     address loyaltyToken, 
     uint256 loyaltyPoints,
-    uint256 loyaltyCard
+    uint256 loyaltyCard,
+    Transaction[] memory transactions 
     ) external {
       // checks
       if (balanceOf(msg.sender, loyaltyCard) != 0) {
@@ -146,10 +171,16 @@ contract LoyaltyProgram is ERC1155 {
       }
 
       // note: the next bit is ALSO external call. Security risk? 
-      (bool success) = LoyaltyToken(loyaltyToken).requirementsLoyaltyTokenMet(loyaltyCardAddress, loyaltyPoints); 
+      (bool success) = LoyaltyToken(loyaltyToken).requirementsLoyaltyTokenMet(loyaltyCardAddress, loyaltyPoints, transactions); 
 
       // updating balances / interaction 
-      if (success) { _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, ""); }
+      if (success) {
+        _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, ""); // payment points
+        for (uint i; i < transactions.length; i++) { // redeeming transactions 
+          uint index = transactions[i].index; 
+          s_Transactions[loyaltyCardAddress][index].redeemed = true; 
+        }
+      }
 
       // claiming Nft / external. 
       LoyaltyToken(loyaltyToken).claimNft(loyaltyCardAddress); 
@@ -219,6 +250,10 @@ contract LoyaltyProgram is ERC1155 {
   /* Getter functions */
   function getOwner() external view returns (address) {
     return s_owner; 
+  } 
+
+  function getTransactions(address customer) external view returns (Transaction[] memory) {
+    return s_Transactions[customer]; 
   }
 
   function getLoyaltyToken(address loyaltyToken) external view returns (bool) {

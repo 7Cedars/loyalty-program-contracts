@@ -24,7 +24,6 @@
 pragma solidity ^0.8.21;
 
 import {LoyaltyToken} from "./LoyaltyToken.sol";
-import {Transaction} from "./LoyaltyProgram.sol";
 
 ///////////////////////////////////////////////
 ///                 EXAMPLE 1               ///
@@ -52,8 +51,7 @@ contract OneCoffeeFor2500 is LoyaltyToken {
   */ 
   function requirementsLoyaltyTokenMet(
     address loyaltyCard, 
-    uint256 loyaltyPoints, 
-    Transaction[] memory transactions
+    uint256 loyaltyPoints
     ) public override returns (bool success) {
       uint256 nftPointsPrice = 2500; 
       
@@ -61,87 +59,6 @@ contract OneCoffeeFor2500 is LoyaltyToken {
         revert LoyaltyToken__InsufficientPoints(address(this)); 
       }
 
-    super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints, transactions); 
+    super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints); 
     }
-}
-
-///////////////////////////////////////////////
-///                 EXAMPLE 2               ///
-///////////////////////////////////////////////
-/** 
- * @dev This example LoyaltyNft contract gives a free coffee for 2500 loyalty points. 
-*/ 
-contract OneCoffeeFor10BuysInWeek is LoyaltyToken {
-
-  /** 
-   * @dev This example gives out a free coffee if a customer has made at least 10 purchases in a week. 
-   * note that is assumes that transactions are given chronologically!  
-   * The NFT Metadata CID. (pointing to image and description of NFT / redeem value)
-  */ 
-  constructor() LoyaltyToken(
-    "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7") { // has to still change
-  }
-
-  /** 
-   * @dev This is the actual claim logic / price of the NFT. 
-   * It is coded in the form of if-revert statements. 
-   * See the base LoyaltyNft contract for available error statements. // TODO: need to add more. 
-   * In this case a customer needs 10 transactions within one week to claim the NFT. 
-  */ 
-  function requirementsLoyaltyTokenMet(
-    address loyaltyCard, 
-    uint256 loyaltyPoints, 
-    Transaction[] memory transactions
-    ) public override returns (bool success) {
-      uint256 oneWeek = 604800; // one week in seconds.
-      uint256 numberOfTransactions = transactions.length; 
-      uint256 durationOfTransactions = transactions[numberOfTransactions - 1].timestamp - transactions[0].timestamp; 
-      
-      if (durationOfTransactions < oneWeek || numberOfTransactions < 10) {
-        revert LoyaltyToken__InsufficientTransactions(address(this)); 
-      }
-
-    super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints, transactions); 
-  }
-}
-
-///////////////////////////////////////////////
-///                 EXAMPLE 3               ///
-///////////////////////////////////////////////
-/** 
- * @dev This example LoyaltyNft contract is a combination of Example 1 and 2: combining transactions with points.   
-*/ 
-contract OneCoffeeFor2500And10BuysInWeek is LoyaltyToken {
-
-  /** 
-   * @dev This example gives out a free coffee if a customer has made at least 10 purchases in a week + transfers 2500 points. 
-   * note that is assumes that transactions are given chronologically!
-   * The NFT Metadata CID. (pointing to image and description of NFT / redeem value)
-  */ 
-  constructor() LoyaltyToken(
-    "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7") { // has to still change
-  }
-
-  /** 
-   * @dev This is the actual claim logic / price of the NFT. 
-   * It is coded in the form of if-revert statements. 
-   * See the base LoyaltyNft contract for available error statements. // TODO: need to add more. 
-   * In this case a customer needs 10 transactions within one week to claim the NFT. 
-  */ 
-  function requirementsLoyaltyTokenMet(
-    address loyaltyCard, 
-    uint256 loyaltyPoints, 
-    Transaction[] memory transactions
-    ) public override returns (bool) {
-      uint256 nftPointsPrice = 2500; 
-      uint256 oneWeek = 604800; // one week in seconds.
-      uint256 numberOfTransactions = transactions.length; 
-      uint256 durationOfTransactions = transactions[numberOfTransactions - 1].timestamp - transactions[0].timestamp; 
-      
-      if (durationOfTransactions < oneWeek || numberOfTransactions < 10 || loyaltyPoints < nftPointsPrice) {
-        revert LoyaltyToken__InsufficientTransactionsAndPoints(address(this));
-      }
-
-    super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints, transactions); 
-  }
 }
