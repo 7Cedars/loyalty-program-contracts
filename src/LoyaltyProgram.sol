@@ -19,13 +19,15 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
   error LoyaltyProgram__LoyaltyTokenNotRecognised(); 
   error LoyaltyProgram__NotOwnerLoyaltyCard(); 
   error LoyaltyProgram__CardCanOnlyReceivePoints(); 
+  error LoyaltyProgram__LoyaltyCardNotAvailable(); 
 
   /* State variables */
   uint256 public constant LOYALTY_POINTS = 0;
 
   address private s_owner; 
-  mapping(address => bool) private s_LoyaltyTokens;
-  mapping(address => bool) private s_LoyaltyCards;
+  mapping(address => uint256) private s_LoyaltyTokens; // 0 = false & 1 = true. 
+  mapping(address => uint256) private s_LoyaltyCards; // 0 = false & 1 = true.
+  // NB! I can get available tokens from loyaltyTokenAddress! 
   uint256 private s_loyaltyCardCounter;
   ERC6551Registry public s_erc6551Registry;
   SimpleERC6551Account public s_erc6551Implementation;
@@ -57,6 +59,7 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
       mintLoyaltyCards(25);
   }
 
+   /* public */
   function mintLoyaltyCards(uint256 numberOfLoyaltyCards) public onlyOwner {
     uint256[] memory loyaltyCardIds = new uint256[](numberOfLoyaltyCards); 
     uint256[] memory mintNfts = new uint256[](numberOfLoyaltyCards); 
@@ -68,36 +71,42 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
       loyaltyCardIds[i] = counter;
       mintNfts[i] = 1; 
       address loyaltyCardAddress = _createTokenBoundAccount(counter);
-      s_LoyaltyCards[loyaltyCardAddress] = true; 
+      s_LoyaltyCards[loyaltyCardAddress] = 1; 
     }
 
     _mintBatch(msg.sender, loyaltyCardIds, mintNfts, "");
     s_loyaltyCardCounter = s_loyaltyCardCounter + numberOfLoyaltyCards; 
   }
 
-  /* public */
+  // function giftLoyaltyCard(address consumer, uint256 loyaltyCardId) public onlyOwner {
+  //   if (balanceOf(s_owner, loyaltyCardId) == 0) {
+  //     revert LoyaltyProgram__LoyaltyCardNotAvailable(); 
+  //   }
+  //   safeTransferFrom(s_owner, consumer, loyaltyCardId, 1, "");
+  // }
+
   function mintLoyaltyPoints(uint256 amountOfPoints) public onlyOwner {    
     _mint(s_owner, LOYALTY_POINTS, amountOfPoints, "");
   }
 
-  function giftLoyaltyPoints(address loyaltyCardAddress, uint256 numberLoyaltyPoints) public onlyOwner {
-    if (s_LoyaltyCards[loyaltyCardAddress] != true) {
-      revert LoyaltyProgram__LoyaltyCardNotRecognised(); 
-    }
-    _safeTransferFrom(s_owner, loyaltyCardAddress, 0, numberLoyaltyPoints, "");   
-  }
+  // function giftLoyaltyPoints(address loyaltyCardAddress, uint256 numberLoyaltyPoints) public onlyOwner {
+  //   if (s_LoyaltyCards[loyaltyCardAddress] != 1) {
+  //     revert LoyaltyProgram__LoyaltyCardNotRecognised(); 
+  //   }
+  //   _safeTransferFrom(s_owner, loyaltyCardAddress, 0, numberLoyaltyPoints, "");   
+  // }
 
   function addLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
     // later checks will be added here. 
-    s_LoyaltyTokens[loyaltyToken] = true; 
+    s_LoyaltyTokens[loyaltyToken] = 1; 
     emit AddedLoyaltyTokenContract(loyaltyToken); 
   }
 
   function removeLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
-    if (s_LoyaltyTokens[loyaltyToken] = false) {
+    if (s_LoyaltyTokens[loyaltyToken] == 0 ) {
       revert LoyaltyProgram__LoyaltyTokenNotRecognised();
     }
-    s_LoyaltyTokens[loyaltyToken] = false;
+    s_LoyaltyTokens[loyaltyToken] = 0;
     emit RemovedLoyaltyTokenContract(loyaltyToken); 
   }
 
@@ -122,7 +131,7 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
       if (loyaltyPoints < balanceOf(loyaltyCardAddress, 0)) {
         revert LoyaltyProgram__InSufficientPoints(); 
       }
-      if (s_LoyaltyTokens[loyaltyToken] == false) {
+      if (s_LoyaltyTokens[loyaltyToken] == 0) {
         revert LoyaltyProgram__LoyaltyTokenNotRecognised(); 
       }
 
@@ -152,17 +161,37 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
       emit RedeemedLoyaltyToken(loyaltyToken, loyaltyTokenId, loyaltyCardAddress); 
   }
 
+  // replace safeTransferFrom function. as _msgSender gave odd otuput? 
+  function safeTransferFrom (
+    address from, 
+    address to, 
+    uint256 id, 
+    uint256 value, 
+    bytes memory data) 
+    public override {
+        address sender = msg.sender;
+        if (from != sender && !isApprovedForAll(from, sender)) {
+            revert ERC1155MissingApprovalForAll(sender, from);
+        }
+        _safeTransferFrom(from, to, id, value, data);
+    }
+
   /* internal */  
   /** 
-   * @dev Loyalty points and tokens can only transferred to 
+   * @dev Loyalty points and tokens can only transferred to and from
    *  - the owner of Loyalty Program (the vendor).  
-   *  - loyalty token addresses.  
+   *  - loyalty token contracts.  
    *  - other loyalty cards. 
    * @dev All params are the same from original. 
   */ 
   function _update(address from, address to, uint256[] memory ids, uint256[] memory value) internal override virtual {
-    if (to != s_owner && s_LoyaltyTokens[to] == false && s_LoyaltyCards[to] == false) {
-      revert LoyaltyProgram__NoAccess(); 
+    if (
+      to != s_owner && 
+      from != s_owner && 
+      s_LoyaltyTokens[to] == 0 && 
+      s_LoyaltyCards[to] == 0
+      ) {
+        revert LoyaltyProgram__NoAccess(); 
     }
 
     super._update(from, to, ids, value); 
@@ -206,7 +235,7 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
     return s_owner; 
   }
 
-  function getLoyaltyToken(address loyaltyToken) external view returns (bool) {
+  function getLoyaltyToken(address loyaltyToken) external view returns (uint256) {
     return s_LoyaltyTokens[loyaltyToken]; 
   }
 
@@ -216,5 +245,23 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
 }
 
 
+// This is a keeper for myself: structure contract // 
+/* version */
+/* imports */
+/* errors */
+/* interfaces, libraries, contracts */
+/* Type declarations */
+/* State variables */
+/* Events */
+/* Modifiers */
 
-
+/* FUNCTIONS: */
+/* constructor */
+/* receive function (if exists) */
+/* fallback function (if exists) */
+/* external */
+/* public */
+/* internal */
+/* private */
+/* internal & private view & pure functions */
+/* external & public view & pure functions */

@@ -6,6 +6,10 @@ import {LoyaltyToken} from "../../src/LoyaltyToken.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {DeployLoyaltyToken}from "../../script/DeployLoyaltyTokens.s.sol";
 
+///////////////////////////////////////////////
+///                   Setup                 ///
+///////////////////////////////////////////////
+
 contract LoyaltyTokenTest is Test {
   DeployLoyaltyToken public deployer; 
   LoyaltyToken public loyaltyToken;
@@ -40,6 +44,10 @@ contract LoyaltyTokenTest is Test {
     deployer = new DeployLoyaltyToken(); 
     loyaltyToken = deployer.run();
   }
+  
+  ///////////////////////////////////////////////
+  ///         Test Minting LoyaltyPoints      ///
+  ///////////////////////////////////////////////
 
   function testAnyoneCanMintLoyaltyTokens(uint256 numberOfTokens) public {
     numberOfTokens = bound(numberOfTokens, 10, 99); 
@@ -73,6 +81,11 @@ contract LoyaltyTokenTest is Test {
     assertEq(numberTokensBefore2 + numberOfTokens, numberTokensAfter2);
   }
 
+  /////////////////////////////////////////////////////////
+  ///      Test Requirements Check Loyalty Tokens       ///  
+  ///////////////////////////////////////////////////////// 
+
+
   function testUserCanClaimAndHaveBalance() public { 
     uint256 tokenId; 
     
@@ -88,6 +101,10 @@ contract LoyaltyTokenTest is Test {
       keccak256(abi.encodePacked(loyaltyToken.uri(tokenId)))
     );
   }
+
+  /////////////////////////////////////////////////////////
+  ///     Test Claiming and Redeeming Loyalty Tokens    ///
+  ///////////////////////////////////////////////////////// 
 
   function testLoyaltyTokensBoundToLoyaltyProgram() public {
     vm.prank(loyaltyProgramAddress); 
