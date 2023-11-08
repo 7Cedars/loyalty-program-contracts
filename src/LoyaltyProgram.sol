@@ -78,23 +78,9 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
     s_loyaltyCardCounter = s_loyaltyCardCounter + numberOfLoyaltyCards; 
   }
 
-  // function giftLoyaltyCard(address consumer, uint256 loyaltyCardId) public onlyOwner {
-  //   if (balanceOf(s_owner, loyaltyCardId) == 0) {
-  //     revert LoyaltyProgram__LoyaltyCardNotAvailable(); 
-  //   }
-  //   safeTransferFrom(s_owner, consumer, loyaltyCardId, 1, "");
-  // }
-
   function mintLoyaltyPoints(uint256 amountOfPoints) public onlyOwner {    
     _mint(s_owner, LOYALTY_POINTS, amountOfPoints, "");
   }
-
-  // function giftLoyaltyPoints(address loyaltyCardAddress, uint256 numberLoyaltyPoints) public onlyOwner {
-  //   if (s_LoyaltyCards[loyaltyCardAddress] != 1) {
-  //     revert LoyaltyProgram__LoyaltyCardNotRecognised(); 
-  //   }
-  //   _safeTransferFrom(s_owner, loyaltyCardAddress, 0, numberLoyaltyPoints, "");   
-  // }
 
   function addLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
     // later checks will be added here. 
@@ -160,21 +146,6 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
 
       emit RedeemedLoyaltyToken(loyaltyToken, loyaltyTokenId, loyaltyCardAddress); 
   }
-
-  // replace safeTransferFrom function. as _msgSender gave odd otuput? 
-  function safeTransferFrom (
-    address from, 
-    address to, 
-    uint256 id, 
-    uint256 value, 
-    bytes memory data) 
-    public override {
-        address sender = msg.sender;
-        if (from != sender && !isApprovedForAll(from, sender)) {
-            revert ERC1155MissingApprovalForAll(sender, from);
-        }
-        _safeTransferFrom(from, to, id, value, data);
-    }
 
   /* internal */  
   /** 

@@ -99,14 +99,15 @@ contract LoyaltyProgramTest is Test {
   function testOwnerCanTransferLoyaltyCards(uint256 numberToMint) public { 
     uint i;
     uint256 numberLoyaltyCards; 
+    address owner = loyaltyProgram.getOwner();
 
     numberToMint = bound(numberToMint, 10, 50);
     vm.prank(loyaltyProgram.getOwner());  
     loyaltyProgram.mintLoyaltyCards(numberToMint);
 
     for (i = 1; i <= numberToMint; i++) {
-      vm.prank(loyaltyProgram.getOwner());  
-      loyaltyProgram.safeTransferFrom(loyaltyProgram.getOwner(), userOne, i, 1, ""); 
+      vm.prank(owner);  
+      loyaltyProgram.safeTransferFrom(owner, userOne, i, 1, ""); 
     }
 
     for (i = 1; i <= numberToMint; i++) {
@@ -115,6 +116,20 @@ contract LoyaltyProgramTest is Test {
 
     // Assert 
     assertEq(numberToMint, numberLoyaltyCards); 
+  }
+
+  function testOwnerCannotTransferLoyaltyCardsItDoesNotOwn(uint256 numberToMint) public {
+    address owner = loyaltyProgram.getOwner();
+
+    numberToMint = bound(numberToMint, 10, 50);
+    vm.prank(loyaltyProgram.getOwner());  
+    loyaltyProgram.mintLoyaltyCards(numberToMint);
+
+    uint numberLoyaltyCards = loyaltyProgram.getNumberLoyaltyCardsMinted(); 
+
+    vm.expectRevert(); 
+    vm.prank(owner);
+    loyaltyProgram.safeTransferFrom(owner, userOne, (numberLoyaltyCards + 5), 1, ""); 
   }
   
   //////////////////////////////////////////////////////

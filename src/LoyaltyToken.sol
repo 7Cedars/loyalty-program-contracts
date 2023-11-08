@@ -101,8 +101,8 @@ contract LoyaltyToken is ERC1155 {
 
   /* getter functions */
   
-  function getAvailableTokens() external view returns (uint256) {
-    return  s_loyaltyProgramToTokenIds[msg.sender].length; 
+  function getAvailableTokens() external view returns (uint256[] memory) {
+    return  s_loyaltyProgramToTokenIds[msg.sender]; 
   }
   // will get to some when testing. 
   // uri is already 1155 function.
