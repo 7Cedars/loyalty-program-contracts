@@ -13,7 +13,7 @@ import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Re
 import {IERC6551Account} from "./interfaces/IERC6551Account.sol";
 import {ERC6551AccountLib} from "./lib/ERC6551AccountLib.sol";
 
-contract SimpleERC6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver {
+contract ERC6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver {
     uint256 public nonce;
 
     receive() external payable {}

@@ -6,10 +6,11 @@ pragma solidity ^0.8.21;
 
 /* imports */
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {LoyaltyToken} from "./LoyaltyToken.sol";
 import {ERC6551Registry} from "./ERC6551Registry.sol";
-import {SimpleERC6551Account} from "./SimpleERC6551Account.sol";
+import {ERC6551Account} from "./ERC6551Account.sol";
 import {IERC6551Account}  from "../src/interfaces/IERC6551Account.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
@@ -36,7 +37,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
   // NB! I can get available tokens from loyaltyTokenAddress! 
   uint256 private s_loyaltyCardCounter;
   ERC6551Registry public s_erc6551Registry;
-  SimpleERC6551Account public s_erc6551Implementation;
+  ERC6551Account public s_erc6551Implementation;
 
   /* Events */
   // Have to check which events I can take out because they already emit events... 
@@ -59,7 +60,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
       s_owner = msg.sender;
       s_loyaltyCardCounter = 0;
       s_erc6551Registry = new ERC6551Registry();
-      s_erc6551Implementation = new SimpleERC6551Account(); 
+      s_erc6551Implementation = new ERC6551Account(); 
 
       mintLoyaltyCards(23);
       mintLoyaltyPoints(INITIAL_SUPPLY_POINTS); 
@@ -88,6 +89,21 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
   function mintLoyaltyPoints(uint256 numberOfPoints) public onlyOwner {
     _mint(s_owner, LOYALTY_POINTS, numberOfPoints, "");
+  }
+
+  function transferLoyaltyCards(
+    address payable tokenBoundAddress, 
+    address from, 
+    address to, 
+    uint256 id, 
+    uint256 value, 
+    bytes memory data
+  ) public returns (bytes memory result ) {
+    bool success; 
+    (success, result) = address(tokenBoundAddress).call(_encodeSafeTransferFrom(
+      from, to, id, value, data));
+
+    return result;  
   }
 
   function addLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
@@ -174,6 +190,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     return tokenBoundAccount; 
   }
 
+
+
 // I should try an delete these ones - and see what happens.. 
   function onERC1155Received(address, address, uint256, uint256, bytes memory) public virtual returns (bytes4) {
     return this.onERC1155Received.selector;
@@ -223,6 +241,18 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
           );
 
       return tokenBoundAccount; 
+  }
+
+  function _encodeSafeTransferFrom(
+    address from, 
+    address to, 
+    uint256 id, 
+    uint256 value, 
+    bytes memory data
+    ) internal returns (bytes memory) { // this should probabl;y be internal private 
+      return abi.encodeCall(
+        IERC1155.safeTransferFrom, (from, to, id, value, data)
+        ); 
   }
  
   /* Getter functions */
