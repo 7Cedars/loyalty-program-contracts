@@ -91,7 +91,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     _mint(s_owner, LOYALTY_POINTS, numberOfPoints, "");
   }
 
-  function transferLoyaltyCards(
+  function loyaltyCardTransfers(
     address payable tokenBoundAddress, 
     address from, 
     address to, 
@@ -99,11 +99,15 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     uint256 value, 
     bytes memory data
   ) public returns (bytes memory result ) {
-    bool success; 
-    (success, result) = address(tokenBoundAddress).call(_encodeSafeTransferFrom(
-      from, to, id, value, data));
 
-    return result;  
+    bytes memory callData; 
+    callData = abi.encodeCall(
+      IERC1155.safeTransferFrom, (from, to, id, value, data)
+      ); 
+
+    result = ERC6551Account(tokenBoundAddress).executeCall(address(this), 0, callData);
+    
+    return (result);  
   }
 
   function addLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
@@ -245,11 +249,11 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
   function _encodeSafeTransferFrom(
     address from, 
-    address to, 
+    address to,
     uint256 id, 
     uint256 value, 
     bytes memory data
-    ) internal returns (bytes memory) { // this should probabl;y be internal private 
+    ) public pure returns (bytes memory) { // this should probabl;y be internal private 
       return abi.encodeCall(
         IERC1155.safeTransferFrom, (from, to, id, value, data)
         ); 

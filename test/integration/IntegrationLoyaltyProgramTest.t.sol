@@ -32,10 +32,10 @@ contract IntegrationLoyaltyProgramTest is Test {
   address public customerThree = makeAddr("customer3"); 
   address public loyaltyTokenContractA = makeAddr("loyaltyTokenA"); 
   address public loyaltyTokenContractB = makeAddr("loyaltyTokenB"); 
-  address tokenOneProgramA; 
-  address tokenTwoProgramA; 
-  address tokenOneProgramB; 
-  address tokenTwoProgramB; 
+  address payable tokenOneProgramA; 
+  address payable tokenTwoProgramA; 
+  address payable tokenOneProgramB; 
+  address payable tokenTwoProgramB; 
   uint256 constant STARTING_BALANCE = 10 ether;  
   uint256 constant GAS_PRICE = 1; 
 
@@ -97,17 +97,17 @@ contract IntegrationLoyaltyProgramTest is Test {
     loyaltyProgramB.mintLoyaltyPoints(1500000); 
 
     // getting addresses of tokenBoundAccounts
-    tokenOneProgramA = loyaltyProgramA.getTokenBoundAddress(1); 
-    tokenTwoProgramA = loyaltyProgramA.getTokenBoundAddress(2); 
-    tokenOneProgramB = loyaltyProgramB.getTokenBoundAddress(1); 
-    tokenTwoProgramB = loyaltyProgramB.getTokenBoundAddress(2);       
+    tokenOneProgramA = payable (loyaltyProgramA.getTokenBoundAddress(1)); 
+    tokenTwoProgramA = payable (loyaltyProgramA.getTokenBoundAddress(2)); 
+    tokenOneProgramB = payable (loyaltyProgramB.getTokenBoundAddress(1)); 
+    tokenTwoProgramB = payable (loyaltyProgramB.getTokenBoundAddress(2));       
   }
 
   ////////////////////////////////////////////////////////////////
   /// Test Transfer LoyaltyPoints between Loyalty Card Holders ///
   ////////////////////////////////////////////////////////////////
 
-  function testLoyaltyPointsAreTransferableBetweenLoyaltyCards(
+ function testLoyaltyPointsAreTransferableBetweenLoyaltyCards(
     uint256 numberOfLoyaltyPoints
     ) public setUpContext {
       uint256 balanceBeforeSender;
@@ -118,14 +118,36 @@ contract IntegrationLoyaltyProgramTest is Test {
       numberOfLoyaltyPoints = bound(numberOfLoyaltyPoints, 1, balanceBeforeSender);
       balanceBeforeReceiver = loyaltyProgramA.getBalanceLoyaltyCard(3); 
 
-      vm.prank(customerOne);  
-      loyaltyProgramA.safeTransferFrom(
+      vm.prank(customerOne);
+      loyaltyProgramA.loyaltyCardTransfers(
+        tokenOneProgramA,
         tokenOneProgramA, // owned by customerOne
         tokenTwoProgramA, // owned by customerTwo
         0, numberOfLoyaltyPoints, ""); 
+      
       balanceAfterReceiver = loyaltyProgramA.getBalanceLoyaltyCard(3); 
       assertEq(balanceBeforeReceiver + numberOfLoyaltyPoints, balanceAfterReceiver);
   }
+
+  // function testLoyaltyPointsAreTransferableBetweenLoyaltyCards(
+  //   uint256 numberOfLoyaltyPoints
+  //   ) public setUpContext {
+  //     uint256 balanceBeforeSender;
+  //     uint256 balanceBeforeReceiver;  
+  //     uint256 balanceAfterReceiver; 
+      
+  //     balanceBeforeSender = loyaltyProgramA.getBalanceLoyaltyCard(2); 
+  //     numberOfLoyaltyPoints = bound(numberOfLoyaltyPoints, 1, balanceBeforeSender);
+  //     balanceBeforeReceiver = loyaltyProgramA.getBalanceLoyaltyCard(3); 
+
+  //     vm.prank(customerOne);  
+  //     loyaltyProgramA.safeTransferFrom(
+  //       tokenOneProgramA, // owned by customerOne
+  //       tokenTwoProgramA, // owned by customerTwo
+  //       0, numberOfLoyaltyPoints, ""); 
+  //     balanceAfterReceiver = loyaltyProgramA.getBalanceLoyaltyCard(3); 
+  //     assertEq(balanceBeforeReceiver + numberOfLoyaltyPoints, balanceAfterReceiver);
+  // }
 
 
   /////////////////////////////////////////////////////////

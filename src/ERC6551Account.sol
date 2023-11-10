@@ -23,7 +23,7 @@ contract ERC6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver 
         uint256 value,
         bytes calldata data
     ) external payable returns (bytes memory result) {
-        require(owner1155(msg.sender) > 0, "Not token owner");
+        // require(owner1155(msg.sender) > 0, "Not token owner");
         // NB: HAVE to test ownership in another way... works in ERC721 but NOT in ERC 1155! 
 
         ++nonce;

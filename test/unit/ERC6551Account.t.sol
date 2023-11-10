@@ -4,19 +4,19 @@ pragma solidity ^0.8.0;
 import {Test} from "forge-std/Test.sol";
 
 import {ERC6551Registry} from "../../src/ERC6551Registry.sol";
-import {SimpleERC6551Account} from "../../src/SimpleERC6551Account.sol";
+import {ERC6551Account} from "../../src/ERC6551Account.sol";
 import {MockERC1155} from "../mocks/MockERC1155.sol";
 import {MockERC6551Account } from "../mocks/MockERC6551Account.sol";
 import {IERC6551Account} from "../../src/interfaces/IERC6551Account.sol";
 
 contract AccountTest is Test {
     ERC6551Registry public registry;
-    SimpleERC6551Account public implementation;
+    ERC6551Account public implementation;
     MockERC1155 nft = new MockERC1155();
 
     function setUp() public {
         registry = new ERC6551Registry();
-        implementation = new SimpleERC6551Account();
+        implementation = new ERC6551Account();
     }
 
     function testDeploy() public {
