@@ -1,18 +1,22 @@
+// When reviewing this code, check: https://github.com/transmissions11/solcurity
+// see also: https://github.com/nascentxyz/simple-security-toolkit
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
 /* imports */
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {LoyaltyToken} from "./LoyaltyToken.sol";
 import {ERC6551Registry} from "./ERC6551Registry.sol";
 import {SimpleERC6551Account} from "./SimpleERC6551Account.sol";
 import {IERC6551Account}  from "../src/interfaces/IERC6551Account.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract LoyaltyProgram is ERC1155, ReentrancyGuard {
+contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
   
   /* errors */
-  error LoyaltyProgram__NoAccess(); 
+  error LoyaltyProgram__TransferDenied(); 
   error LoyaltyProgram__OnlyOwner(); 
   error LoyaltyProgram__InSufficientPoints(); 
   error LoyaltyProgram__LoyaltyCardNotRecognised(); 
@@ -20,9 +24,11 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
   error LoyaltyProgram__NotOwnerLoyaltyCard(); 
   error LoyaltyProgram__CardCanOnlyReceivePoints(); 
   error LoyaltyProgram__LoyaltyCardNotAvailable(); 
+  error LoyaltyProgram__VendorLoyaltyCardCannotBeTransferred(); 
 
   /* State variables */
   uint256 public constant LOYALTY_POINTS = 0;
+  uint256 public constant INITIAL_SUPPLY_POINTS = 1e25;
 
   address private s_owner; 
   mapping(address => uint256) private s_LoyaltyTokens; // 0 = false & 1 = true. 
@@ -54,10 +60,12 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
       s_loyaltyCardCounter = 0;
       s_erc6551Registry = new ERC6551Registry();
       s_erc6551Implementation = new SimpleERC6551Account(); 
- 
-      mintLoyaltyPoints(1e25); 
-      mintLoyaltyCards(25);
+
+      mintLoyaltyCards(23);
+      mintLoyaltyPoints(INITIAL_SUPPLY_POINTS); 
   }
+
+  receive() external payable {}
 
    /* public */
   function mintLoyaltyCards(uint256 numberOfLoyaltyCards) public onlyOwner {
@@ -78,12 +86,12 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
     s_loyaltyCardCounter = s_loyaltyCardCounter + numberOfLoyaltyCards; 
   }
 
-  function mintLoyaltyPoints(uint256 amountOfPoints) public onlyOwner {    
-    _mint(s_owner, LOYALTY_POINTS, amountOfPoints, "");
+  function mintLoyaltyPoints(uint256 numberOfPoints) public onlyOwner {
+    _mint(s_owner, LOYALTY_POINTS, numberOfPoints, "");
   }
 
   function addLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
-    // later checks will be added here. 
+    // later additional checks will be added here. 
     s_LoyaltyTokens[loyaltyToken] = 1; 
     emit AddedLoyaltyTokenContract(loyaltyToken); 
   }
@@ -104,36 +112,43 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
       emit MintedLoyaltyTokens(loyaltyTokenAddress, numberOfTokens); 
   }
 
-  function claimLoyaltyToken(
+  function redeemLoyaltyPoints(
     address loyaltyToken, 
     uint256 loyaltyPoints,
-    uint256 loyaltyCard
+    uint256 loyaltyCardId
     ) external nonReentrant {
+      address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
+
       // checks
-      if (balanceOf(msg.sender, loyaltyCard) != 0) {
-        revert LoyaltyProgram__NotOwnerLoyaltyCard(); 
+      if (balanceOf(msg.sender, loyaltyCardId) != 0) {
+        revert LoyaltyProgram__NotOwnerLoyaltyCard(); // is this necessary? or already covered by 6551account? 
       }
-      address loyaltyCardAddress = _retrieveTokenBoundAccount(loyaltyCard);
       if (loyaltyPoints < balanceOf(loyaltyCardAddress, 0)) {
         revert LoyaltyProgram__InSufficientPoints(); 
       }
       if (s_LoyaltyTokens[loyaltyToken] == 0) {
         revert LoyaltyProgram__LoyaltyTokenNotRecognised(); 
       }
-
-      // note: the next bit is ALSO external call. Security risk? Hence added nonReentrant... 
+      
+      // requirements check = external. 
       (bool success) = LoyaltyToken(loyaltyToken).requirementsLoyaltyTokenMet(loyaltyCardAddress, loyaltyPoints); 
-
       // updating balances / interaction 
-      if (success) { _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, ""); }
+      if (success) {
+        safeTransferFrom(
+          loyaltyCardAddress, 
+          address(0), // loyalty points are send to burner address.  
+          0, 
+          loyaltyPoints, 
+          ""
+          ); 
+        }
 
       // claiming Nft / external. 
       uint256 tokenId = LoyaltyToken(loyaltyToken).claimNft(loyaltyCardAddress); 
-
       emit ClaimedLoyaltyToken(loyaltyToken, tokenId, loyaltyCardAddress); 
   }
 
-  function RedeemmLoyaltyToken(
+  function RedeemLoyaltyToken(
     address loyaltyToken, 
     uint256 loyaltyTokenId, 
     uint256 loyaltyCard
@@ -141,31 +156,60 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
       if (balanceOf(msg.sender, loyaltyCard) != 0) {
         revert LoyaltyProgram__NotOwnerLoyaltyCard(); 
       }
-      address loyaltyCardAddress = _retrieveTokenBoundAccount(loyaltyCard);
+      address loyaltyCardAddress = getTokenBoundAddress(loyaltyCard);
       LoyaltyToken(loyaltyToken).redeemNft(loyaltyCardAddress, loyaltyTokenId); 
 
       emit RedeemedLoyaltyToken(loyaltyToken, loyaltyTokenId, loyaltyCardAddress); 
   }
 
+  function getTokenBoundAddress (uint256 _loyaltyCardId) public view returns (address tokenBoundAccount) { 
+    tokenBoundAccount = s_erc6551Registry.account(
+            address(s_erc6551Implementation),
+            block.chainid,
+            address(this),
+            _loyaltyCardId,
+            3947539732098357
+        );
+
+    return tokenBoundAccount; 
+  }
+
+// I should try an delete these ones - and see what happens.. 
+  function onERC1155Received(address, address, uint256, uint256, bytes memory) public virtual returns (bytes4) {
+    return this.onERC1155Received.selector;
+  }
+
+  function onERC1155BatchReceived(address, address, uint256[] memory, uint256[] memory, bytes memory) public virtual returns (bytes4) {
+      return this.onERC1155BatchReceived.selector;
+  }
+
+
+
   /* internal */  
   /** 
-   * @dev Loyalty points and tokens can only transferred to and from
-   *  - the owner of Loyalty Program (the vendor).  
-   *  - loyalty token contracts.  
-   *  - other loyalty cards. 
-   * @dev All params are the same from original. 
+   * @dev Loyalty points and tokens can only transferred to
+   * - other loyalty cards. 
+   * - loyalty token contracts. 
+   * - address(0) - to burn.
+   * - owner of this contracts, s_owner (used ofr minting points).
+   * LoyaltyCards can be transferred anywhere. 
+   * @dev All other params remain unchanged. 
   */ 
-  function _update(address from, address to, uint256[] memory ids, uint256[] memory value) internal override virtual {
-    if (
-      to != s_owner && 
-      from != s_owner && 
-      s_LoyaltyTokens[to] == 0 && 
-      s_LoyaltyCards[to] == 0
-      ) {
-        revert LoyaltyProgram__NoAccess(); 
+  function _update(address from, address to, uint256[] memory ids, uint256[] memory values) internal override virtual {
+    for (uint256 i = 0; i < ids.length; ++i) {
+      if (ids[i] == LOYALTY_POINTS) {
+        if (
+          s_LoyaltyCards[to] == 0 && // points cann be transferred to loyalty cards
+          s_LoyaltyTokens[to] == 0 && // points can be transferred to loyalty Token Contracts 
+          to != address(0) && // points can be transferred to address(0) = burn address
+          to != s_owner // points can be transferred to owner (address that minted points are transferred to)
+          ) {
+            // All other addresses are no-go.
+            revert LoyaltyProgram__TransferDenied(); 
+        }
+      } 
     }
-
-    super._update(from, to, ids, value); 
+    super._update(from, to, ids, values); 
   }
 
   function _createTokenBoundAccount (uint256 _loyaltyCardId) internal returns (address tokenBoundAccount) { 
@@ -180,26 +224,6 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
 
       return tokenBoundAccount; 
   }
-
-  function _retrieveTokenBoundAccount (uint256 _loyaltyCardId) view internal returns (address tokenBoundAccount) { 
-      tokenBoundAccount = s_erc6551Registry.account(
-              address(s_erc6551Implementation),
-              block.chainid,
-              address(this),
-              _loyaltyCardId,
-              3947539732098357
-          );
-
-      return tokenBoundAccount; 
-  }
-
-  function _isOwnerTokenBoundAccount(address tokenBasedAccount, address consumer) view internal returns (bool isOwner) { 
-      
-      IERC6551Account accountInstance = IERC6551Account(payable(tokenBasedAccount));
-      (, , uint256 tokenId) = accountInstance.token(); 
-
-      return (balanceOf(consumer, tokenId) != 0);
-  }
  
   /* Getter functions */
   function getOwner() external view returns (address) {
@@ -212,6 +236,11 @@ contract LoyaltyProgram is ERC1155, ReentrancyGuard {
 
   function getNumberLoyaltyCardsMinted() external view returns (uint256) {
     return s_loyaltyCardCounter; 
+  }
+
+  function getBalanceLoyaltyCard(uint256 loyaltyCardId) external view returns (uint256) {
+    address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
+    return balanceOf(loyaltyCardAddress, 0); 
   }
 }
 
