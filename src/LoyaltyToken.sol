@@ -82,23 +82,6 @@ contract LoyaltyToken is ERC1155 {
     return tokenId; 
   }
 
-   /** 
-   * @dev TODO
-   * 
-   * 
-  */ 
-  function redeemNft(address loyaltyCard, uint256 tokenId) public {
-    if (balanceOf(loyaltyCard, tokenId) == 0) {
-      revert LoyaltyToken__NftNotOwnedByloyaltyCard(address(this)); 
-    }
-    if (s_tokenIdToLoyaltyProgram[tokenId] != msg.sender) {
-      revert LoyaltyToken__LoyaltyProgramNotRecognised(address(this)); 
-    }
-
-    _safeTransferFrom(loyaltyCard, address(0), tokenId, 1, ""); // emits singleTransfer event. 
-  }
-
-
   /* getter functions */
   
   function getAvailableTokens() external view returns (uint256[] memory) {

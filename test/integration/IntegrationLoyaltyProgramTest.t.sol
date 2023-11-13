@@ -5,6 +5,11 @@ import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
+import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import {ERC6551Account} from "../../src/ERC6551Account.sol";
+import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
+import {DeployOneCoffeeFor2500} from "../../script/DeployLoyaltyTokens.s.sol" ;
+import {OneCoffeeFor2500} from "../../src/PointsForLoyaltyTokens.sol";
 
 contract IntegrationLoyaltyProgramTest is Test {
 
@@ -19,6 +24,7 @@ contract IntegrationLoyaltyProgramTest is Test {
 
   LoyaltyProgram loyaltyProgramA;
   LoyaltyProgram loyaltyProgramB;
+  OneCoffeeFor2500 loyaltyToken2500; 
   HelperConfig helperConfig; 
   uint256 minCustomerInteractions; 
   uint256 maxCustomerInteractions; 
@@ -36,8 +42,10 @@ contract IntegrationLoyaltyProgramTest is Test {
   address payable tokenTwoProgramA; 
   address payable tokenOneProgramB; 
   address payable tokenTwoProgramB; 
+  uint256 public constant LOYALTY_POINTS = 0;
   uint256 constant STARTING_BALANCE = 10 ether;  
   uint256 constant GAS_PRICE = 1; 
+  bytes resultTransfer;
 
 /**
    * @dev this modifier sets up a fuzzy context consisting of 
@@ -59,29 +67,15 @@ contract IntegrationLoyaltyProgramTest is Test {
       vm.prank(vendorB);
       loyaltyProgramB.safeTransferFrom(vendorB, customerThree, 2, 1, ""); 
 
-      vm.prank(vendorA);
-      loyaltyProgramA.safeTransferFrom(
-        vendorA, tokenOneProgramA, 0, 200, ""
-      );
-      vm.prank(vendorA);
-      loyaltyProgramA.safeTransferFrom(
-        vendorA, tokenTwoProgramA, 0, 400, ""
-      ); 
-      vm.prank(vendorB);
-      loyaltyProgramB.safeTransferFrom(
-        vendorB, tokenOneProgramB, 0, 250, ""
-      );
-      vm.prank(vendorB);
-      loyaltyProgramB.safeTransferFrom(
-        vendorB, tokenTwoProgramB, 0, 555, ""
-      ); 
     _;
   }
 
   function setUp() external {
-    DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
-    loyaltyProgramA = deployer.run(); 
-    loyaltyProgramB = deployer.run(); 
+    DeployLoyaltyProgram deployerProgram = new DeployLoyaltyProgram();
+    DeployOneCoffeeFor2500 deployerToken = new DeployOneCoffeeFor2500();
+    loyaltyProgramA = deployerProgram.run(); 
+    loyaltyProgramB = deployerProgram.run(); 
+    loyaltyToken2500 = deployerToken.run(); 
 
     vendorA = loyaltyProgramA.getOwner(); 
     vendorB = loyaltyProgramB.getOwner();
@@ -100,7 +94,26 @@ contract IntegrationLoyaltyProgramTest is Test {
     tokenOneProgramA = payable (loyaltyProgramA.getTokenBoundAddress(1)); 
     tokenTwoProgramA = payable (loyaltyProgramA.getTokenBoundAddress(2)); 
     tokenOneProgramB = payable (loyaltyProgramB.getTokenBoundAddress(1)); 
-    tokenTwoProgramB = payable (loyaltyProgramB.getTokenBoundAddress(2));       
+    tokenTwoProgramB = payable (loyaltyProgramB.getTokenBoundAddress(2));
+
+    // Transfer points to loyalty cards
+    // This will later be fuzzed. 
+    vm.prank(vendorA);
+      loyaltyProgramA.safeTransferFrom(
+        vendorA, tokenOneProgramA, 0, 5000, ""
+      );
+    vm.prank(vendorA);
+      loyaltyProgramA.safeTransferFrom(
+        vendorA, tokenTwoProgramA, 0, 6500, ""
+      ); 
+    vm.prank(vendorB);
+      loyaltyProgramB.safeTransferFrom(
+        vendorB, tokenOneProgramB, 0, 2500, ""
+      );
+    vm.prank(vendorB);
+      loyaltyProgramB.safeTransferFrom(
+        vendorB, tokenTwoProgramB, 0, 5550, ""
+      ); 
   }
 
   ////////////////////////////////////////////////////////////////
@@ -108,28 +121,37 @@ contract IntegrationLoyaltyProgramTest is Test {
   ////////////////////////////////////////////////////////////////
 
  function testLoyaltyPointsAreTransferableBetweenLoyaltyCards(
-    uint256 numberOfLoyaltyPoints
+    // uint256 numberOfLoyaltyPoints -- for fuzzy testing
     ) public setUpContext {
       uint256 balanceBeforeSender;
       uint256 balanceBeforeReceiver;  
       uint256 balanceAfterReceiver; 
+      uint256 numberOfLoyaltyPoints = 10; 
       
-      balanceBeforeSender = loyaltyProgramA.getBalanceLoyaltyCard(2); 
-      numberOfLoyaltyPoints = bound(numberOfLoyaltyPoints, 1, balanceBeforeSender);
-      balanceBeforeReceiver = loyaltyProgramA.getBalanceLoyaltyCard(3); 
+      balanceBeforeSender = loyaltyProgramA.getBalanceLoyaltyCard(1); 
+      balanceBeforeReceiver = loyaltyProgramA.getBalanceLoyaltyCard(2); 
 
       vm.prank(customerOne);
-      loyaltyProgramA.loyaltyCardTransfers(
-        tokenOneProgramA,
-        tokenOneProgramA, // owned by customerOne
-        tokenTwoProgramA, // owned by customerTwo
-        0, numberOfLoyaltyPoints, ""); 
-      
-      balanceAfterReceiver = loyaltyProgramA.getBalanceLoyaltyCard(3); 
+      ERC6551Account(tokenOneProgramA).executeCall(
+        payable(loyaltyProgramA), 
+        0, 
+        abi.encodeCall(
+          IERC1155.safeTransferFrom, (
+            tokenOneProgramA, 
+            tokenTwoProgramA, 
+            LOYALTY_POINTS, 
+            numberOfLoyaltyPoints, 
+            "")
+          ) 
+        );
+
+      balanceAfterReceiver = loyaltyProgramA.getBalanceLoyaltyCard(2); 
       assertEq(balanceBeforeReceiver + numberOfLoyaltyPoints, balanceAfterReceiver);
   }
 
-  // function testLoyaltyPointsAreTransferableBetweenLoyaltyCards(
+  // console.log("resultTransfer: ", resultTransfer); 
+
+  // function testLoyaltyTokensAreTransferableBetweenLoyaltyCards(
   //   uint256 numberOfLoyaltyPoints
   //   ) public setUpContext {
   //     uint256 balanceBeforeSender;
@@ -150,9 +172,105 @@ contract IntegrationLoyaltyProgramTest is Test {
   // }
 
 
+  /////////////////////////////////////////////////////////////
+  ///   Test Minting and Redeeming Loyalty Points          ////
+  ///////////////////////////////////////////////////////////// 
+
+  function testCustomerCanRedeemLoyaltyPoints () public setUpContext {
+      uint256 numberOfLoyaltyPoints = 2502;
+
+      // whitelist loyalty token contract.. 
+      vm.prank(vendorA);
+      loyaltyProgramA.addLoyaltyTokenContract(address(loyaltyToken2500)); 
+
+      // mint loyalty tokens.. 
+      vm.prank(vendorA);
+      loyaltyProgramA.mintLoyaltyTokens(address(loyaltyToken2500), 10); 
+      
+      // customer calls loyalty token contract from loyaltycard to
+      // redeem points for loyalty token. 
+      vm.prank(customerOne);
+      ERC6551Account(tokenOneProgramA).executeCall(
+        payable(loyaltyProgramA),
+        0,
+        abi.encodeCall(
+          LoyaltyProgram.redeemLoyaltyPoints, (
+            address(loyaltyToken2500), 
+            numberOfLoyaltyPoints, 
+            1)
+          )
+        );
+  }
+
   /////////////////////////////////////////////////////////
-  /// Test Minting, Claiming, Redeeming Loyalty Tokens ////
+  ///           Test Redeeming Loyalty Tokens          ////
   ///////////////////////////////////////////////////////// 
+  // this still needs to be expanded with negative tests: checinking if all reverts work. 
+  // while setting up these tests this seemed to be the case. 
+
+  function testOwnerCanMintLoyaltyTokens () public setUpContext {
+    uint256 numberOfLoyaltyTokensRequested = 10; 
+    uint256 numberOfLoyaltyTokensReceived = 0; 
+
+    // whitelist loyalty token contract.. 
+    vm.prank(vendorA);
+    loyaltyProgramA.addLoyaltyTokenContract(address(loyaltyToken2500)); 
+
+    // mint loyalty tokens.. 
+    vm.prank(vendorA);
+    loyaltyProgramA.mintLoyaltyTokens(address(loyaltyToken2500), numberOfLoyaltyTokensRequested); 
+
+    for (uint i = 1; i <= numberOfLoyaltyTokensRequested; i++) {
+      numberOfLoyaltyTokensReceived = numberOfLoyaltyTokensReceived + loyaltyToken2500.balanceOf(address(loyaltyProgramA), i); 
+    }
+
+    assertEq(numberOfLoyaltyTokensRequested, numberOfLoyaltyTokensReceived); 
+  }
+
+
+  function testCustomerCanRedeemLoyaltyTokens() public setUpContext {
+    // Setup: 
+    // First mint tokens and redeem loyalty points 
+    uint256 numberOfLoyaltyPoints = 2502;
+
+    // whitelist loyalty token contract.. 
+    vm.prank(vendorA);
+    loyaltyProgramA.addLoyaltyTokenContract(address(loyaltyToken2500)); 
+
+    // mint loyalty tokens.. 
+    vm.prank(vendorA);
+    loyaltyProgramA.mintLoyaltyTokens(address(loyaltyToken2500), 10); 
+    
+    // customer calls loyalty token contract from loyaltycard to
+    // redeem points for loyalty token. 
+    vm.prank(customerOne);
+    ERC6551Account(tokenOneProgramA).executeCall(
+      payable(loyaltyProgramA),
+      0,
+      abi.encodeCall(
+        LoyaltyProgram.redeemLoyaltyPoints, (
+          address(loyaltyToken2500), 
+          numberOfLoyaltyPoints, 
+          1)
+        )
+      );
+
+    uint256 balanceToken10 = loyaltyToken2500.balanceOf(tokenOneProgramA, 10); 
+    console.log("balanceToken10", balanceToken10); 
+
+    // now try and redeem this token... 
+    vm.prank(customerOne);
+    ERC6551Account(tokenOneProgramA).executeCall(
+      payable(loyaltyProgramA),
+      0,
+      abi.encodeCall(
+        LoyaltyProgram.redeemLoyaltyToken, (
+          address(loyaltyToken2500), 
+          10, 
+          1)
+        )
+      );
+  }
 
 
   // function testOwnerCanTransferTokenstouserOne(uint256 amount) public {

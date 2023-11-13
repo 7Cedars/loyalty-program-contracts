@@ -22,10 +22,12 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
   error LoyaltyProgram__InSufficientPoints(); 
   error LoyaltyProgram__LoyaltyCardNotRecognised(); 
   error LoyaltyProgram__LoyaltyTokenNotRecognised(); 
-  error LoyaltyProgram__NotOwnerLoyaltyCard(); 
+  // error LoyaltyProgram__NotOwnerLoyaltyCard(); 
   error LoyaltyProgram__CardCanOnlyReceivePoints(); 
   error LoyaltyProgram__LoyaltyCardNotAvailable(); 
   error LoyaltyProgram__VendorLoyaltyCardCannotBeTransferred(); 
+  error LoyaltyProgram__InSufficientPointsOnCard(); 
+  error LoyaltyProgram__LoyaltyTokenNotOnCard(); 
 
   /* State variables */
   uint256 public constant LOYALTY_POINTS = 0;
@@ -44,7 +46,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
   event AddedLoyaltyTokenContract(address indexed loyaltyToken);  
   event RemovedLoyaltyTokenContract(address indexed loyaltyToken);
   event MintedLoyaltyTokens(address loyaltyTokenAddress, uint256 numberOfTokens); 
-  event ClaimedLoyaltyToken(address loyaltyToken, uint256 tokenId, address loyaltyCardAddress); 
   event RedeemedLoyaltyToken(address loyaltyToken, uint256 loyaltyTokenId, address loyaltyCardAddress); 
 
   /* Modifiers */ 
@@ -91,25 +92,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     _mint(s_owner, LOYALTY_POINTS, numberOfPoints, "");
   }
 
-  function loyaltyCardTransfers(
-    address payable tokenBoundAddress, 
-    address from, 
-    address to, 
-    uint256 id, 
-    uint256 value, 
-    bytes memory data
-  ) public returns (bytes memory result ) {
-
-    bytes memory callData; 
-    callData = abi.encodeCall(
-      IERC1155.safeTransferFrom, (from, to, id, value, data)
-      ); 
-
-    result = ERC6551Account(tokenBoundAddress).executeCall(address(this), 0, callData);
-    
-    return (result);  
-  }
-
   function addLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
     // later additional checks will be added here. 
     s_LoyaltyTokens[loyaltyToken] = 1; 
@@ -140,11 +122,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
       address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
 
       // checks
-      if (balanceOf(msg.sender, loyaltyCardId) != 0) {
-        revert LoyaltyProgram__NotOwnerLoyaltyCard(); // is this necessary? or already covered by 6551account? 
-      }
-      if (loyaltyPoints < balanceOf(loyaltyCardAddress, 0)) {
-        revert LoyaltyProgram__InSufficientPoints(); 
+      if (loyaltyPoints >= balanceOf(loyaltyCardAddress, 0)) {
+        revert LoyaltyProgram__InSufficientPointsOnCard(); 
       }
       if (s_LoyaltyTokens[loyaltyToken] == 0) {
         revert LoyaltyProgram__LoyaltyTokenNotRecognised(); 
@@ -153,6 +132,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
       // requirements check = external. 
       (bool success) = LoyaltyToken(loyaltyToken).requirementsLoyaltyTokenMet(loyaltyCardAddress, loyaltyPoints); 
       // updating balances / interaction 
+
       if (success) {
         safeTransferFrom(
           loyaltyCardAddress, 
@@ -164,20 +144,28 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         }
 
       // claiming Nft / external. 
-      uint256 tokenId = LoyaltyToken(loyaltyToken).claimNft(loyaltyCardAddress); 
-      emit ClaimedLoyaltyToken(loyaltyToken, tokenId, loyaltyCardAddress); 
+      LoyaltyToken(loyaltyToken).claimNft(loyaltyCardAddress); 
+      // emits a TransferSingle event
   }
 
-  function RedeemLoyaltyToken(
+  function redeemLoyaltyToken(
     address loyaltyToken, 
     uint256 loyaltyTokenId, 
     uint256 loyaltyCard
     ) external nonReentrant {
-      if (balanceOf(msg.sender, loyaltyCard) != 0) {
-        revert LoyaltyProgram__NotOwnerLoyaltyCard(); 
-      }
       address loyaltyCardAddress = getTokenBoundAddress(loyaltyCard);
-      LoyaltyToken(loyaltyToken).redeemNft(loyaltyCardAddress, loyaltyTokenId); 
+      if (LoyaltyToken(loyaltyToken).balanceOf(loyaltyCardAddress, loyaltyTokenId) == 0) {
+        revert LoyaltyProgram__LoyaltyTokenNotOnCard(); 
+      }
+
+      /// Token is send to 
+      safeTransferFrom(
+        loyaltyCardAddress, 
+        address(1), // loyalty points are send to burner address.
+        loyaltyTokenId, 
+        0, 
+        ""
+        ); 
 
       emit RedeemedLoyaltyToken(loyaltyToken, loyaltyTokenId, loyaltyCardAddress); 
   }
@@ -194,8 +182,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     return tokenBoundAccount; 
   }
 
-
-
 // I should try an delete these ones - and see what happens.. 
   function onERC1155Received(address, address, uint256, uint256, bytes memory) public virtual returns (bytes4) {
     return this.onERC1155Received.selector;
@@ -204,8 +190,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
   function onERC1155BatchReceived(address, address, uint256[] memory, uint256[] memory, bytes memory) public virtual returns (bytes4) {
       return this.onERC1155BatchReceived.selector;
   }
-
-
 
   /* internal */  
   /** 
@@ -245,18 +229,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
           );
 
       return tokenBoundAccount; 
-  }
-
-  function _encodeSafeTransferFrom(
-    address from, 
-    address to,
-    uint256 id, 
-    uint256 value, 
-    bytes memory data
-    ) public pure returns (bytes memory) { // this should probabl;y be internal private 
-      return abi.encodeCall(
-        IERC1155.safeTransferFrom, (from, to, id, value, data)
-        ); 
   }
  
   /* Getter functions */

@@ -106,35 +106,8 @@ contract LoyaltyTokenTest is Test {
   ///     Test Claiming and Redeeming Loyalty Tokens    ///
   ///////////////////////////////////////////////////////// 
 
-  function testLoyaltyTokensBoundToLoyaltyProgram() public {
-    vm.prank(loyaltyProgramAddress); 
-    loyaltyToken.mintLoyaltyTokens(1); 
-    console.log("Balance Program before transfer: ", loyaltyToken.balanceOf(loyaltyProgramAddress, 1)); 
+  // TODO
 
-    vm.prank(loyaltyProgramAddress); 
-    loyaltyToken.claimNft(userOne); 
-    console.log("Balance UserOne After transfer: ", loyaltyToken.balanceOf(userOne, 1));
-
-    vm.expectRevert(
-      abi.encodeWithSelector(LoyaltyToken.LoyaltyToken__LoyaltyProgramNotRecognised.selector, address(loyaltyToken))
-      );  
-    vm.prank(userOne); 
-    loyaltyToken.redeemNft(userOne, 1); 
-  }
-
-  function testUserCannotRedeemNftItDoesNotOwn(uint256 numberOfTokens) public {
-    numberOfTokens = bound(numberOfTokens, 11, 25);
-    vm.prank(loyaltyProgramAddress); 
-    loyaltyToken.mintLoyaltyTokens(numberOfTokens); 
-    vm.prank(loyaltyProgramAddress); 
-    loyaltyToken.claimNft(userOne); 
-    
-    vm.expectRevert(
-      abi.encodeWithSelector(LoyaltyToken.LoyaltyToken__NftNotOwnedByloyaltyCard.selector, address(loyaltyToken))
-      );  
-    vm.prank(userOne); 
-    loyaltyToken.redeemNft(userOne, 10); 
-  }
 
   // function testLoyaltyTokensCanBeTransferredFreely(
   //   uint256 numberLoyaltyTokens1, 

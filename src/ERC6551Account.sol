@@ -23,8 +23,8 @@ contract ERC6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver 
         uint256 value,
         bytes calldata data
     ) external payable returns (bytes memory result) {
-        // require(owner1155(msg.sender) > 0, "Not token owner");
-        // NB: HAVE to test ownership in another way... works in ERC721 but NOT in ERC 1155! 
+
+        require(owner1155() == false, "Not token owner");
 
         ++nonce;
 
@@ -60,12 +60,12 @@ contract ERC6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver 
         return IERC721(tokenContract).ownerOf(tokenId);
     }
 
-    function owner1155(address account) public view returns (uint256) {
+    // see https://forum.openzeppelin.com/t/erc1155-check-if-token-owner/8503/2
+    function owner1155() public view returns (bool) {
         (uint256 chainId, address tokenContract, uint256 tokenId) = this.token();
-        if (chainId != block.chainid) return 0;
-        uint256 id = tokenId; 
-
-        return IERC1155(tokenContract).balanceOf(account, id);
+        if (chainId != block.chainid) return false;
+        if (IERC1155(tokenContract).balanceOf(msg.sender, tokenId) == 0) return false;
+        return true; 
     }
 
     function supportsInterface(bytes4 interfaceId) public pure returns (bool) {
