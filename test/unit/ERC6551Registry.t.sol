@@ -43,22 +43,12 @@ contract RegistryTest is Test {
             abi.encodeWithSignature("initialize(bool)", true)
         );
 
-        address registryComputedAddress = registry.account(
-            address(implementation),
-            chainId,
-            tokenAddress,
-            tokenId,
-            salt
-        );
+        address registryComputedAddress =
+            registry.account(address(implementation), chainId, tokenAddress, tokenId, salt);
         assertEq(deployedAccount, registryComputedAddress);
 
         address libraryComputedAddress = ERC6551AccountLib.computeAddress(
-            address(registry),
-            address(implementation),
-            chainId,
-            tokenAddress,
-            tokenId,
-            salt
+            address(registry), address(implementation), chainId, tokenAddress, tokenId, salt
         );
         assertEq(deployedAccount, libraryComputedAddress);
 

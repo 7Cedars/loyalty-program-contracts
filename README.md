@@ -13,13 +13,13 @@ For personal use only.
 
 ## Development / TO DO 
 So, minimal PoC of LoyaltyProgram is finished. Next steps 
-- [X] Add reentrancy guard to LoyaltyProgram. See note on safeTransferFrom in erc1155. 
-- [ ] Build unit tests 
-  - [ ] Do points get added to loyaltyCard (and not user address)? 
-  - [ ] Do points transfer as loyaltyCards are tranfered between customers?
-  - [ ] Does adding and removing loyaltyTokenContract work? 
+- [x] Add reentrancy guard to LoyaltyProgram. See note on safeTransferFrom in erc1155. 
+- [x] Build unit tests 
+  - [x] Do points get added to loyaltyCard (and not user address)? 
+  - [x] Does adding and removing loyaltyTokenContract work? 
+  - [ ] Are loyalty cards freely transferrable to any contract address? 
 - [ ] Build integration tests 
-  - [ ] Does Minting loyaltyTokens by vendor work? 
+  - [x] Does Minting loyaltyTokens by vendor work? 
   - [ ] Does claim loyaltyTokens work - do tokens get redeemd by loyaltyCards (and not customers)? 
   - [ ] When tokens are finsihed - does it indeed stop issuing them? (are reverts bound by loyalty program)
   - [ ] Are points and tokens bound to loyalty cards?   

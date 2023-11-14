@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {IERC6551Account} from "../../src/interfaces/IERC6551Account.sol";
 import {ERC6551AccountLib} from "../../src/lib/ERC6551AccountLib.sol";
-import {IERC165} from "../../lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol"; 
+import {IERC165} from "../../lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol";
 
 contract MockERC6551Account is IERC165, IERC6551Account {
     uint256 public nonce;
@@ -18,23 +18,11 @@ contract MockERC6551Account is IERC165, IERC6551Account {
         _initialized = val;
     }
 
-    function executeCall(
-        address,
-        uint256,
-        bytes calldata
-    ) external payable returns (bytes memory) {
+    function executeCall(address, uint256, bytes calldata) external payable returns (bytes memory) {
         revert("disabled");
     }
 
-    function token()
-        external
-        view
-        returns (
-            uint256,
-            address,
-            uint256
-        )
-    {
+    function token() external view returns (uint256, address, uint256) {
         return ERC6551AccountLib.token();
     }
 

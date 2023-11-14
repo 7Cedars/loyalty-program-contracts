@@ -1,93 +1,95 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-// NB: see ERC1155 contract from openZeppelin for good example of how to use natspecs. 
-// TODO: implement and describe accordingly.  
+// NB: see ERC1155 contract from openZeppelin for good example of how to use natspecs.
+// TODO: implement and describe accordingly.
 
-import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol"; 
+import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
+/**
+ * @title
+ * @author
+ * @notice
+ */
 contract LoyaltyToken is ERC1155 {
+    /* errors */
+    error LoyaltyToken__LoyaltyProgramNotRecognised(address loyaltyToken);
+    error LoyaltyToken__NftNotOwnedByloyaltyCard(address loyaltyToken);
+    error LoyaltyToken__NoTokensAvailable(address loyaltyToken);
+    error LoyaltyToken__InsufficientPoints(address loyaltyToken);
 
-  /* errors */ 
-  error LoyaltyToken__LoyaltyProgramNotRecognised(address loyaltyToken);
-  error LoyaltyToken__NftNotOwnedByloyaltyCard(address loyaltyToken); 
-  error LoyaltyToken__NoTokensAvailable(address loyaltyToken); 
-  error LoyaltyToken__InsufficientPoints(address loyaltyToken);
+    /* State variables */
+    mapping(uint256 => address) private s_tokenIdToLoyaltyProgram;
+    mapping(address => uint256[]) private s_loyaltyProgramToTokenIds;
+    uint256 private s_tokenCounter;
 
-  /* State variables */ 
-  mapping (uint256 => address) private s_tokenIdToLoyaltyProgram; 
-  mapping (address => uint256[]) private s_loyaltyProgramToTokenIds; 
-  uint256 private s_tokenCounter;
+    /* Events */
+    // NB: should all functions be external here?!
 
-  /* Events */
-
-  /* FUNCTIONS: */
-  constructor(string memory loyaltyTokenUri) ERC1155("") {
-    s_tokenCounter = 0;
-    _setURI(loyaltyTokenUri); 
-  }
-
-  /** 
-   * @dev TODO 
-   * 
-  */ 
-  function mintLoyaltyTokens(uint256 numberOfTokens) public {
-    uint256[] memory loyaltyTokenIds = new uint256[](numberOfTokens); 
-    uint256[] memory mintNfts = new uint256[](numberOfTokens); 
-    uint256 counter = s_tokenCounter; 
-
-    for (uint i; i < numberOfTokens; i++) { // i starts at 0.... right? TEST! 
-      counter = counter + 1; 
-      loyaltyTokenIds[i] = counter;
-      mintNfts[i] = 1;
-      s_tokenIdToLoyaltyProgram[i] = msg.sender; 
+    /* FUNCTIONS: */
+    constructor(string memory loyaltyTokenUri) ERC1155("") {
+        s_tokenCounter = 0;
+        _setURI(loyaltyTokenUri);
     }
 
-    _mintBatch(msg.sender, loyaltyTokenIds, mintNfts, ""); // emits batchtransfer event
+    /**
+     * @dev TODO
+     *
+     */
+    function mintLoyaltyTokens(uint256 numberOfTokens) public {
+        uint256[] memory loyaltyTokenIds = new uint256[](numberOfTokens);
+        uint256[] memory mintNfts = new uint256[](numberOfTokens);
+        uint256 counter = s_tokenCounter;
 
-    s_tokenCounter = s_tokenCounter + numberOfTokens; 
-    s_loyaltyProgramToTokenIds[msg.sender] = loyaltyTokenIds; 
-    
-  }
+        for (uint256 i; i < numberOfTokens; i++) {
+            // i starts at 0.... right? TEST!
+            counter = counter + 1;
+            loyaltyTokenIds[i] = counter;
+            mintNfts[i] = 1;
+            s_tokenIdToLoyaltyProgram[i] = msg.sender;
+        }
 
+        _mintBatch(msg.sender, loyaltyTokenIds, mintNfts, ""); // emits batchtransfer event
 
-  /** 
-   * @dev TODO 
-   * 
-   * 
-  */ 
-  function requirementsLoyaltyTokenMet(
-    address, // loyaltyCard
-    uint256 // loyaltypoints
+        s_tokenCounter = s_tokenCounter + numberOfTokens;
+        s_loyaltyProgramToTokenIds[msg.sender] = loyaltyTokenIds;
+    }
+
+    /**
+     * @dev TODO
+     *
+     *
+     */
+    function requirementsLoyaltyTokenMet(
+        address, // loyaltyCard
+        uint256 // loyaltypoints
     ) public virtual returns (bool success) {
-      
-      // Here NFT specific requirements are inserted. 
+        // Here NFT specific requirements are inserted.
 
-      return true; 
-  }
-  
-  /** 
-   * @dev 
-   * 
-   * 
-  */ 
-  function claimNft(address loyaltyCard) public returns (uint256 tokenId) {
-    uint256 maxIndex = s_loyaltyProgramToTokenIds[msg.sender].length;
-    if (maxIndex == 0) {
-      revert LoyaltyToken__NoTokensAvailable(address(this)); 
+        return true;
     }
-    
-    tokenId = s_loyaltyProgramToTokenIds[msg.sender][maxIndex - 1]; 
-    _safeTransferFrom(msg.sender, loyaltyCard, tokenId, 1, "");
-    return tokenId; 
-  }
 
-  /* getter functions */
-  
-  function getAvailableTokens() external view returns (uint256[] memory) {
-    return  s_loyaltyProgramToTokenIds[msg.sender]; 
-  }
-  // will get to some when testing. 
-  // uri is already 1155 function.
+    /**
+     * @dev
+     *
+     *
+     */
+    function claimNft(address loyaltyCard) public returns (uint256 tokenId) {
+        uint256 maxIndex = s_loyaltyProgramToTokenIds[msg.sender].length;
+        if (maxIndex == 0) {
+            revert LoyaltyToken__NoTokensAvailable(address(this));
+        }
 
+        tokenId = s_loyaltyProgramToTokenIds[msg.sender][maxIndex - 1];
+        _safeTransferFrom(msg.sender, loyaltyCard, tokenId, 1, "");
+        return tokenId;
+    }
+
+    /* getter functions */
+
+    function getAvailableTokens() external view returns (uint256[] memory) {
+        return s_loyaltyProgramToTokenIds[msg.sender];
+    }
+    // will get to some when testing.
+    // uri is already 1155 function.
 }

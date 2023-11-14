@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
-// NB! I MADE CHANGE TO get check of token ownership in 1155 (instead of 721) assets. 
-// See if I can propose change in contract? 
- 
+// NB! I MADE CHANGE TO get check of token ownership in 1155 (instead of 721) assets.
+// See if I can propose change in contract?
+
 pragma solidity ^0.8.0;
 
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
@@ -19,12 +19,11 @@ contract ERC6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver 
     receive() external payable {}
 
     function executeCall(
-        address to,
+        address to, // this becomes the msg.sender? should that not be 'from??'
         uint256 value,
         bytes calldata data
     ) external payable returns (bytes memory result) {
-
-        require(owner1155() == false, "Not token owner");
+        require(owner1155() == true, "Not token owner");
 
         ++nonce;
 
@@ -40,19 +39,11 @@ contract ERC6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver 
         }
     }
 
-    function token()
-        external
-        view
-        returns (
-            uint256,
-            address,
-            uint256
-        )
-    {
+    function token() external view returns (uint256, address, uint256) {
         return ERC6551AccountLib.token();
     }
-    
-    // this function will not work on 1155. 
+
+    // this function will not work on 1155.
     function owner() public view returns (address) {
         (uint256 chainId, address tokenContract, uint256 tokenId) = this.token();
         if (chainId != block.chainid) return address(0);
@@ -65,19 +56,14 @@ contract ERC6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver 
         (uint256 chainId, address tokenContract, uint256 tokenId) = this.token();
         if (chainId != block.chainid) return false;
         if (IERC1155(tokenContract).balanceOf(msg.sender, tokenId) == 0) return false;
-        return true; 
+        return true;
     }
 
     function supportsInterface(bytes4 interfaceId) public pure returns (bool) {
-        return (interfaceId == type(IERC165).interfaceId ||
-            interfaceId == type(IERC6551Account).interfaceId);
+        return (interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC6551Account).interfaceId);
     }
 
-    function isValidSignature(bytes32 hash, bytes memory signature)
-        external
-        view
-        returns (bytes4 magicValue)
-    {
+    function isValidSignature(bytes32 hash, bytes memory signature) external view returns (bytes4 magicValue) {
         bool isValid = SignatureChecker.isValidSignatureNow(owner(), hash, signature);
 
         if (isValid) {
@@ -91,7 +77,11 @@ contract ERC6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver 
         return this.onERC1155Received.selector;
     }
 
-    function onERC1155BatchReceived(address, address, uint256[] memory, uint256[] memory, bytes memory) public virtual returns (bytes4) {
+    function onERC1155BatchReceived(address, address, uint256[] memory, uint256[] memory, bytes memory)
+        public
+        virtual
+        returns (bytes4)
+    {
         return this.onERC1155BatchReceived.selector;
     }
 }
