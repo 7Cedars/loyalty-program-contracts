@@ -115,7 +115,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * @notice no limit to the amount of cards to mint. 
      * @notice each address of Token Bound Account (TBA) is stored in s_LoyaltyCards. 
      * 
-     * - emits a mintBatch event.  
+     * - emits a transferBatch event.  
      */
     function mintLoyaltyCards(uint256 numberOfLoyaltyCards) public onlyOwner {
         uint256[] memory loyaltyCardIds = new uint256[](numberOfLoyaltyCards);
@@ -143,7 +143,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * @notice only owner can mint loyalty points. 
      * @notice no limit to the amount of points to mint. 
      * 
-     * - emits singleTransfer event. 
+     * - emits transferSingle event. 
      */
     function mintLoyaltyPoints(uint256 numberOfPoints) public onlyOwner {
         _mint(s_owner, LOYALTY_POINTS, numberOfPoints, "");
@@ -154,7 +154,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * These contracts should follow the LoyaltyToken contract.  
      * The interface for this has not been written yet. 
      * 
-     * @param loyaltyToken address of contract to be whitelisted. 
+     * @param loyaltyToken address of contract to be whitelisted.
+     * @notice only owner can whitelist contracts.  
      * @notice at the moment it lacks interface test. To do. 
      * 
      * - emits a AddedLoyaltyTokenContract event
@@ -168,7 +169,15 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     }
 
     /**
+     * @dev remove a loyalty contract from whitelist to redeem loyalty points for a token. 
+     * i.e. After calling this function, customers will not be able to 'claim' token.
+     * @param loyaltyToken address of loyaltyToken to be removed from whitelist. 
      * 
+     * @notice after calling this function customers can still redeem this token at vendor to 
+     * receive gift, event, etc. Token cannot be claimed, but can still be redeemed. 
+     * @notice only owner can remove contracts from whitelist. 
+     * 
+     * - emits an RemovedLoyaltyTokenClaimable event. 
      */
     function removeLoyaltyTokenClaimable(address loyaltyToken) public onlyOwner {
         if (s_LoyaltyTokensClaimable[loyaltyToken] == 0) {
@@ -178,19 +187,61 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         emit RemovedLoyaltyTokenClaimable(loyaltyToken);
     }
 
+    /**
+     * @dev remove a loyalty contract from whitelist for its tokens to be redeemable. 
+     * i.e. After calling this function, customers will not be able to 'redeem' this token.
+     * @param loyaltyToken address of loyaltyToken to be removed from whitelist. 
+     * 
+     * @notice after calling this function customers cannot redeem this token at vendor to 
+     * receive gift, event, etc. 
+     * @notice it also removes token from claimable whitelist, avoiding scenario where token 
+     * can be claimed but not redeemed. 
+     * @notice only owner can remove contracts from whitelist. 
+     * 
+     * - emits an RemovedLoyaltyTokenRedeemable event. 
+     */
     function removeLoyaltyTokenRedeemable(address loyaltyToken) public onlyOwner {
         if (s_LoyaltyTokensRedeemable[loyaltyToken] == 0) {
             revert LoyaltyProgram__LoyaltyTokenNotRecognised();
         }
-        s_LoyaltyTokensClaimable[loyaltyToken] = 0;
+        if (s_LoyaltyTokensClaimable[loyaltyToken] == 1) {
+          s_LoyaltyTokensClaimable[loyaltyToken] = 0;
+        }
+        s_LoyaltyTokensRedeemable[loyaltyToken] = 0;
         emit RemovedLoyaltyTokenRedeemable(loyaltyToken);
     }
 
+    /** 
+     * @dev mint loyaltyTokens at external loyaltyToken contract. 
+     * @param loyaltyTokenAddress address of loyalty token contract. 
+     * @param numberOfTokens amount of tokens to be minted. 
+     * 
+     * @notice the limit of loyalty tokens that customers can claim is limited by 
+     * the amount of tokens minted by the owner of loyalty program. 
+     * @notice only owner can remove contracts from whitelist. 
+     * @notice added nonReentrant guard. 
+     * 
+     * - emits transferBatch event --  #REALLY? not transferSingle? double check! 
+     */
     function mintLoyaltyTokens(address loyaltyTokenAddress, uint256 numberOfTokens) public onlyOwner nonReentrant {
         LoyaltyToken(loyaltyTokenAddress).mintLoyaltyTokens(numberOfTokens);
-        // emits transferBatch event  
     }
 
+
+    /** 
+     * @dev redeem loyaltyPoints for loyaltyToken by a Token Bound Account (the loyalty card). 
+     * The loyalty card calls the requirement function of external loyaltyToken contract. 
+     * @param loyaltyToken address of loyalty token contract. 
+     * @param loyaltyPoints number of points send to claim token.  
+     * @param loyaltyCardId id of the loyalty card used to call this function. 
+     * 
+     * @notice only one token can be claimed per call. 
+     * @notice any loyaltyCard minted through loyalty program can redeem loyalty points. 
+     * @notice added nonReentrant guard as CEI structure could not be 100% followed. 
+     * @notice if customer does not own TBA / loyalty card it will revert at ERC6551 account.  
+     * 
+     * - emits a TransferSingle event 
+     */
     function redeemLoyaltyPoints(address loyaltyToken, uint256 loyaltyPoints, uint256 loyaltyCardId)
         external
         nonReentrant
@@ -221,8 +272,9 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
         // claiming Nft / external.
         LoyaltyToken(loyaltyToken).claimNft(loyaltyCardAddress);
-        // emits a TransferSingle event
     }
+
+    
 
     function redeemLoyaltyToken(address loyaltyToken, uint256 loyaltyTokenId, uint256 loyaltyCard)
         external

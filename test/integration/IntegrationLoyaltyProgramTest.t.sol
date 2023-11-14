@@ -11,7 +11,9 @@ import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {DeployOneCoffeeFor2500} from "../../script/DeployLoyaltyTokens.s.sol";
 import {OneCoffeeFor2500} from "../../src/PointsForLoyaltyTokens.sol";
 
-// NB: invariant testing in foundry see PC course at 3:23 - Implement! 
+// NB: invariant (stateful fuzz) testing in foundry see PC course at 3:23 - Implement! 
+// at 3.45: handlers. 
+
 
 contract IntegrationLoyaltyProgramTest is Test {
     /* events */
