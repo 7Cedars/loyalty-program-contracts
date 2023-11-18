@@ -6,7 +6,7 @@ import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 
-contract LoyaltyProgramATest is Test {
+contract LoyaltyProgramTest is Test {
     /* events */
     event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
     event AddedLoyaltyTokenContract(address indexed loyaltyToken);
@@ -137,6 +137,11 @@ contract LoyaltyProgramATest is Test {
 
     function testOwnerCanTransferLoyaltyCards(uint256 idToTransfer) public setUpContext {
         uint256 i;
+        vm.prank(vendorA); 
+        loyaltyProgramA.mintLoyaltyPoints(1e25); 
+        vm.prank(vendorA); 
+        loyaltyProgramA.mintLoyaltyCards(50); 
+
         idToTransfer = bound(idToTransfer, 3, 5);
 
         for (i = 3; i <= idToTransfer; i++) {

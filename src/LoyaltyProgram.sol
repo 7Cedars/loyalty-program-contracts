@@ -66,7 +66,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
     /* State variables */
     uint256 public constant LOYALTY_POINTS = 0;
-    uint256 public constant INITIAL_SUPPLY_POINTS = 1e25;
 
     address private s_owner;
     mapping(address loyaltyTokenAddress => uint256 active) private s_LoyaltyTokensClaimable;
@@ -90,19 +89,14 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     }
 
     /**
-     * 
+     * This emits a URI event. 
      */
-    constructor() ERC1155("https://ipfs.io/ipfs/QmcPwXFUayuEETYJvd3QaLU9Xtjkxte9rgBgfEjD2MBvJ5.json") {
+    constructor(string memory uri) ERC1155(uri) {
         // still have to check if this indeed gives out same uri for each NFT minted.
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
         s_erc6551Registry = new ERC6551Registry();
         s_erc6551Implementation = new ERC6551Account();
-
-        // inserted these for testing. Will refactor soon. 
-        // should start empty I think (for me to see )
-        mintLoyaltyCards(25);
-        mintLoyaltyPoints(INITIAL_SUPPLY_POINTS);
     }
 
     receive() external payable {}
@@ -227,7 +221,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         LoyaltyToken(loyaltyTokenAddress).mintLoyaltyTokens(numberOfTokens);
     }
 
-
     /** 
      * @dev redeem loyaltyPoints for loyaltyToken by a Token Bound Account (the loyalty card). 
      * The loyalty card calls the requirement function of external loyaltyToken contract. 
@@ -274,7 +267,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         LoyaltyToken(loyaltyToken).claimNft(loyaltyCardAddress);
     }
 
-    
+
 
     function redeemLoyaltyToken(address loyaltyToken, uint256 loyaltyTokenId, uint256 loyaltyCard)
         external
