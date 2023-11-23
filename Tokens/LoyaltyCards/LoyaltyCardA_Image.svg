@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="300"
-   height="500"
-   viewBox="0 0 79.374999 132.29166"
+   width="600"
+   height="1000"
+   viewBox="0 0 158.75 264.58332"
    version="1.1"
    id="svg5"
    inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
@@ -26,11 +26,11 @@
      showgrid="false"
      units="px"
      width="300px"
-     inkscape:zoom="1.877186"
-     inkscape:cx="137.43976"
-     inkscape:cy="100.14991"
-     inkscape:window-width="1920"
-     inkscape:window-height="1043"
+     inkscape:zoom="0.938593"
+     inkscape:cx="287.66462"
+     inkscape:cy="640.85285"
+     inkscape:window-width="2560"
+     inkscape:window-height="1376"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
@@ -42,7 +42,7 @@
        inkscape:collect="always"
        xlink:href="#pattern9536"
        id="pattern9565"
-       patternTransform="matrix(0.07111492,-1.1612456e-4,1.9450615e-4,0.11912487,39.588878,96.976135)" />
+       patternTransform="matrix(0.14249099,-2.3267555e-4,3.8972657e-4,0.23868719,79.857303,194.57569)" />
     <pattern
        patternUnits="userSpaceOnUse"
        width="315.12989"
@@ -60,22 +60,22 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#f3f2e9;fill-opacity:1;stroke-width:0.60584;stroke-opacity:0.984802;-inkscape-stroke:none;stop-color:#000000"
+       style="fill:#f3f2e9;fill-opacity:1;stroke-width:1.2139;stroke-opacity:0.984802;-inkscape-stroke:none;stop-color:#000000"
        id="rect1533"
-       width="80.929153"
-       height="132.97946"
+       width="162.1555"
+       height="266.44727"
        x="-0.53221393"
-       y="-0.266321" />
+       y="-0.26631892" />
     <rect
-       style="fill:url(#pattern9565);fill-opacity:1;stroke-width:0.60584;stroke-opacity:0.984802;-inkscape-stroke:none;stop-color:#000000"
+       style="fill:url(#pattern9565);fill-opacity:1;stroke-width:1.2139;stroke-opacity:0.984802;-inkscape-stroke:none;stop-color:#000000"
        id="rect1533-3"
-       width="80.929153"
-       height="132.97946"
-       x="-0.5322113"
+       width="162.1555"
+       height="266.44727"
+       x="-0.53220868"
        y="-0.26632309" />
     <g
        id="g353-3"
-       transform="matrix(0.21309912,0,0,0.21309912,-84.712349,-31.251723)">
+       transform="matrix(0.42698079,0,0,0.42698079,-169.20161,-62.350909)">
       <g
          id="g203-1">
         <rect
@@ -87,15 +87,15 @@
            id="rect191-7" />
         <polygon
            style="fill:#81b75e"
-           points="452.792,511.818 458.931,488.367 493.957,488.367 487.817,511.818 "
+           points="487.817,511.818 452.792,511.818 458.931,488.367 493.957,488.367 "
            id="polygon193-5" />
         <polygon
            style="fill:#6d9e4d"
-           points="493.957,569.49 487.817,569.49 487.817,511.818 493.957,488.367 "
+           points="493.957,488.367 493.957,569.49 487.817,569.49 487.817,511.818 "
            id="polygon195-9" />
         <polygon
            style="fill:#81b75e"
-           points="493.957,569.49 498.033,569.49 498.033,511.818 493.957,488.367 "
+           points="493.957,488.367 493.957,569.49 498.033,569.49 498.033,511.818 "
            id="polygon197-6" />
         <rect
            x="458.931"
@@ -121,7 +121,7 @@
                id="path205-7" />
             <polygon
                style="fill:#7a6b5b"
-               points="586.392,532.632 551.432,532.632 552.505,558.668 585.319,558.668 "
+               points="585.319,558.668 586.392,532.632 551.432,532.632 552.505,558.668 "
                id="polygon207-4" />
             <path
                style="fill:#dbdee0"
@@ -155,7 +155,7 @@
                id="rect221-3" />
             <polygon
                style="fill:#7a6b5b"
-               points="586.801,522.703 551.023,522.703 551.121,525.075 586.703,525.075 "
+               points="586.703,525.075 586.801,522.703 551.023,522.703 551.121,525.075 "
                id="polygon223-8" />
           </g>
           <g
@@ -166,7 +166,7 @@
                id="path227-3" />
             <polygon
                style="fill:#6d9e4d"
-               points="643.529,532.632 608.57,532.632 609.643,558.668 642.456,558.668 "
+               points="642.456,558.668 643.529,532.632 608.57,532.632 609.643,558.668 "
                id="polygon229-1" />
             <path
                style="fill:#44555e"
@@ -200,7 +200,7 @@
                id="rect243-3" />
             <polygon
                style="fill:#6d9e4d"
-               points="643.939,522.703 608.161,522.703 608.258,525.075 643.841,525.075 "
+               points="643.841,525.075 643.939,522.703 608.161,522.703 608.258,525.075 "
                id="polygon245-8" />
           </g>
         </g>
@@ -216,7 +216,7 @@
              id="path253-4" />
           <polygon
              style="fill:#bec0c2"
-             points="614.961,532.632 580.001,532.632 581.074,558.668 613.888,558.668 "
+             points="613.888,558.668 614.961,532.632 580.001,532.632 581.074,558.668 "
              id="polygon255-8" />
           <path
              style="fill:#95806f"
@@ -250,7 +250,7 @@
              id="rect269-4" />
           <polygon
              style="fill:#bec0c2"
-             points="615.37,522.703 579.592,522.703 579.69,525.075 615.272,525.075 "
+             points="615.272,525.075 615.37,522.703 579.592,522.703 579.69,525.075 "
              id="polygon271-3" />
         </g>
       </g>
@@ -388,15 +388,15 @@
            id="rect339-5" />
         <polygon
            style="fill:#e2bf94"
-           points="491.6,511.818 497.74,488.367 532.765,488.367 526.626,511.818 "
+           points="526.626,511.818 491.6,511.818 497.74,488.367 532.765,488.367 "
            id="polygon341-1" />
         <polygon
            style="fill:#d3af88"
-           points="532.765,569.49 526.626,569.49 526.626,511.818 532.765,488.367 "
+           points="532.765,488.367 532.765,569.49 526.626,569.49 526.626,511.818 "
            id="polygon343-1" />
         <polygon
            style="fill:#e2bf94"
-           points="532.765,569.49 536.842,569.49 536.842,511.818 532.765,488.367 "
+           points="532.765,488.367 532.765,569.49 536.842,569.49 536.842,511.818 "
            id="polygon345-0" />
         <rect
            x="497.73999"
@@ -417,7 +417,7 @@
        id="path2494" />
     <g
        id="g463"
-       transform="matrix(0.13438364,0,0,0.13438364,-13.436368,-3.3883848)">
+       transform="matrix(0.26926077,0,0,0.26926077,-26.387909,-6.5219115)">
       <g
          id="g437">
         <rect
@@ -443,11 +443,11 @@
            id="rect423" />
         <polygon
            style="fill:#95806f"
-           points="640.145,193.74 640.145,74.229 650.077,64.296 650.077,203.672 "
+           points="650.077,203.672 640.145,193.74 640.145,74.229 650.077,64.296 "
            id="polygon425" />
         <polygon
            style="fill:#95806f"
-           points="159.855,193.74 159.855,74.229 149.923,64.296 149.923,203.672 "
+           points="149.923,203.672 159.855,193.74 159.855,74.229 149.923,64.296 "
            id="polygon427" />
         <rect
            x="159.855"
@@ -465,11 +465,11 @@
            id="rect431" />
         <polygon
            style="fill:#526168"
-           points="630.607,185.223 630.607,82.745 640.145,74.229 640.145,193.74 "
+           points="640.145,193.74 630.607,185.223 630.607,82.745 640.145,74.229 "
            id="polygon433" />
         <polygon
            style="fill:#3b4c52"
-           points="169.393,185.223 169.393,82.745 159.855,74.229 159.855,193.74 "
+           points="159.855,193.74 169.393,185.223 169.393,82.745 159.855,74.229 "
            id="polygon435" />
       </g>
       <g
@@ -530,7 +530,7 @@
     </g>
     <g
        id="DESIGNED_BY_FREEPIK"
-       transform="matrix(0.26458333,0,0,0.26458333,-70.057073,-62.567445)">
+       transform="matrix(0.53013827,0,0,0.53013827,-139.83724,-125.09735)">
       <g
          id="g534">
         <g
@@ -671,5 +671,24 @@
         </g>
       </g>
     </g>
+    <rect
+       style="fill:#f3f2e9;stroke:#cca998;stroke-width:0.703308;-inkscape-stroke:none;stop-color:#000000"
+       id="rect990"
+       width="122.82129"
+       height="84.895615"
+       x="17.964355"
+       y="54.881454"
+       ry="0.15566711" />
+    <text
+       xml:space="preserve"
+       style="font-size:16.568px;line-height:1.25;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, ';text-decoration-color:#000000;fill:#835844;fill-opacity:1;stroke:#cca998;stroke-width:2.80423;stroke-miterlimit:4;stroke-dasharray:none;stop-color:#000000"
+       x="26.5646"
+       y="100.44405"
+       id="text4132"><tspan
+         sodipodi:role="line"
+         id="tspan4130"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Sarai;-inkscape-font-specification:Sarai;fill:#835844;fill-opacity:1;stroke:none;stroke-width:2.80423;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         x="26.5646"
+         y="100.44405">Loyalty Program A</tspan></text>
   </g>
 </svg>

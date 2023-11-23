@@ -76,6 +76,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     ERC6551Account public s_erc6551Implementation;
 
     /* Events */
+    event DeployedLoyaltyProgram(address indexed owner);
     event AddedLoyaltyTokenContract(address indexed loyaltyToken);
     event RemovedLoyaltyTokenClaimable(address indexed loyaltyToken);
     event RemovedLoyaltyTokenRedeemable(address indexed loyaltyToken);
@@ -97,6 +98,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         s_loyaltyCardCounter = 0;
         s_erc6551Registry = new ERC6551Registry();
         s_erc6551Implementation = new ERC6551Account();
+
+        emit DeployedLoyaltyProgram(msg.sender);
     }
 
     receive() external payable {}

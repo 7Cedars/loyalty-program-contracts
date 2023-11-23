@@ -1,0 +1,18 @@
+{
+  "name": "LoyaltyCard",
+  "description": "LoyaltyCard of vendors loyalty program.",
+  "image": "https://ipfs.io/ipfs/Qmf2sd4rFFwGjhyBM7wweCbzGTEEVQLAsigKnm5SAfgC7Y",
+  "attributes": [
+    {
+    "trait_type": "Vendor name",
+    "value": "My Corner Coffeeshop." 
+    },
+    {
+    "trait_type": "Vendor address",
+    "value": "Mainstreet 23, AA5 5AA,  Somecity" 
+    },
+    {"trait_type": "phone number",
+    "value": "555-2323-3223" 
+    }
+  ]
+}

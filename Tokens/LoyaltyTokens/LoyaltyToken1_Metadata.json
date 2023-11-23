@@ -1,0 +1,19 @@
+{
+  "name": "OneFreeCoffee",
+  "description": "Get one free coffee.",
+  "image": "https://ipfs.io/ipfs/QmezGEMBShWGtYhJBneixZaW2Th7onBhUEUPVSZD4H7uvx",
+  "attributes": [
+    {
+    "trait_type": "Redeem for",
+    "value": "One free coffee for to go or have in."
+    },
+    {
+      "trait_type": "Points",
+      "value": 2500
+    },
+    {
+      "trait_type": "Additional requirements",
+      "value": "none"
+    }
+  ]
+}
