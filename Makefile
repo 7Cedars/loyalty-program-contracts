@@ -46,8 +46,11 @@ endif
 
 scenarioOne:
 	@forge script script/DeployRegistry.s.sol:DeployRegistry $(NETWORK_ARGS_0) 
-	@forge script script/DeployLoyaltyTokens.s.sol:DeployOneCoffeeFor2500 $(NETWORK_ARGS_0) 
-	@forge script script/Interactions.s.sol:DeployLoyaltyProgram $(NETWORK_ARGS_1) 
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgramA $(NETWORK_ARGS_1) 
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgramA $(NETWORK_ARGS_2) 
+	@forge script script/DeployLoyaltyTokens.s.sol:DeployOneCoffeeFor2500 $(NETWORK_ARGS_4) 
+	@forge script script/DeployLoyaltyTokens.s.sol:DeployOneCupCakeFor4500 $(NETWORK_ARGS_4) 
+	@forge script script/DeployLoyaltyTokens.s.sol:DeployAccessPartyFor50000 $(NETWORK_ARGS_4) 
 
 transferPoints: 
 	@forge script script/Interactions.s.sol:TransferPoints $(NETWORK_ARGS_0) 

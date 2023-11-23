@@ -9,7 +9,8 @@ import {OneCoffeeFor2500} from "../src/PointsForLoyaltyTokens.sol";
 
 
 contract DeployLoyaltyProgram is Script {
-    LoyaltyProgram loyaltyProgram;
+    LoyaltyProgram loyaltyProgramA;
+    LoyaltyProgram loyaltyProgramB;
   
     address[] DEFAULT_ANVIL_ACCOUNTS = [
         0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, 
@@ -26,28 +27,31 @@ contract DeployLoyaltyProgram is Script {
         
         vm.startBroadcast();
         // step 1: setup program
-        loyaltyProgram = new LoyaltyProgram("https://ipfs.io/ipfs/QmcPwXFUayuEETYJvd3QaLU9Xtjkxte9rgBgfEjD2MBvJ5.json");
+        loyaltyProgramA = new LoyaltyProgram("https://ipfs.io/ipfs/QmeZSxMGSxEAepscJamhJQ56cCfBhU91D1imPtRxX3VUSZ.json");
+        loyaltyProgramB = new LoyaltyProgram("https://ipfs.io/ipfs/QmS5tnFso24nY1YavCyackx4ms34wShhLam7qM1rEfDXpC.json");
         vm.stopBroadcast();
 
         // // step 2: mint loyalty points and cards; 
-        mintLoyaltyPoints(loyaltyProgram, 1e15); 
-        mintLoyaltyCards(loyaltyProgram, 50); 
+        mintLoyaltyPoints(loyaltyProgramA, 1e15); 
+        mintLoyaltyCards(loyaltyProgramA, 50); 
+        mintLoyaltyPoints(loyaltyProgramA, 5000); 
+        mintLoyaltyCards(loyaltyProgramA, 1); 
 
         // // step 3: transfer loyalty cards; 
-        transferLoyaltyCard(loyaltyProgram, 1, loyaltyProgram.getOwner(), DEFAULT_ANVIL_ACCOUNTS[2]);
-        transferLoyaltyCard(loyaltyProgram, 2, loyaltyProgram.getOwner(), DEFAULT_ANVIL_ACCOUNTS[3]); 
-        transferLoyaltyCard(loyaltyProgram, 3, loyaltyProgram.getOwner(), DEFAULT_ANVIL_ACCOUNTS[4]);
-        transferLoyaltyCard(loyaltyProgram, 4, loyaltyProgram.getOwner(), DEFAULT_ANVIL_ACCOUNTS[2]);  
+        transferLoyaltyCard(loyaltyProgramA, 1, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[2]);
+        transferLoyaltyCard(loyaltyProgramA, 2, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[3]); 
+        transferLoyaltyCard(loyaltyProgramA, 3, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[4]);
+        transferLoyaltyCard(loyaltyProgramA, 4, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[2]);  
 
         // // step 4: transfer loyalty points to cards, through discrete transfers;
         for (uint i = 0; numberOfTransactions1 > i; i++) {
-            transferLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 1, 450); 
+            transferLoyaltyPoints(loyaltyProgramA, loyaltyProgramA.getOwner(), 1, 450); 
         }
         for (uint i = 0; numberOfTransactions2 > i; i++) {
-            transferLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 2, 350); 
+            transferLoyaltyPoints(loyaltyProgramA, loyaltyProgramA.getOwner(), 2, 350); 
         }
         for (uint i = 0; numberOfTransactions3 > i; i++) {
-            transferLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 3, 250); 
+            transferLoyaltyPoints(loyaltyProgramA, loyaltyProgramA.getOwner(), 3, 250); 
         }
     }
 
@@ -83,10 +87,10 @@ contract TransferPoints is Script {
   function run() external {
     uint numberOfTransactions1 = 7; 
         address contractAddress = DevOpsTools.get_most_recent_deployment("LoyaltyProgram", block.chainid);
-        LoyaltyProgram loyaltyProgram = LoyaltyProgram(payable(contractAddress));
+        LoyaltyProgram loyaltyProgramA = LoyaltyProgram(payable(contractAddress));
 
     for (uint i = 0; numberOfTransactions1 > i; i++) {
-        transferLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 1, 450); 
+        transferLoyaltyPoints(loyaltyProgramA, loyaltyProgramA.getOwner(), 1, 450); 
     }
   }
 
