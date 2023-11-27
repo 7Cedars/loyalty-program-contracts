@@ -6,6 +6,18 @@ import {LoyaltyProgram} from "../src/LoyaltyProgram.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
+contract DeployLoyaltyProgram is Script {
+    LoyaltyProgram loyaltyProgram;
+
+    // NB: If I need a helper config, see helperConfig.s.sol + learning/foundry-fund-me-f23
+    function run() external returns (LoyaltyProgram) {
+        vm.startBroadcast();
+        loyaltyProgram = new LoyaltyProgram("https://ipfs.io/ipfs/QmeZSxMGSxEAepscJamhJQ56cCfBhU91D1imPtRxX3VUSZ.json");
+        vm.stopBroadcast();
+        return (loyaltyProgram);
+    }
+}
+
 contract DeployLoyaltyProgramA is Script {
     LoyaltyProgram loyaltyProgramA;
     
@@ -89,6 +101,33 @@ contract DeployLoyaltyProgramB is Script {
         // // step 2: mint loyalty points and cards; 
         mintLoyaltyPoints(loyaltyProgramB, 5000); 
         mintLoyaltyCards(loyaltyProgramB, 1); 
+    }
+
+    function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
+      vm.startBroadcast();
+      LoyaltyProgram(lpInstance).mintLoyaltyPoints(numberOfPoints);
+      vm.stopBroadcast();
+    }
+
+    function mintLoyaltyCards(LoyaltyProgram lpInstance, uint256 numberOfCards) public {
+      vm.startBroadcast();
+      LoyaltyProgram(lpInstance).mintLoyaltyCards(numberOfCards);
+      vm.stopBroadcast();
+    }
+}
+
+contract DeployLoyaltyProgramC is Script {
+    LoyaltyProgram loyaltyProgramB;
+
+    function run() external {        
+        vm.startBroadcast();
+        // step 1: setup program
+        loyaltyProgramB = new LoyaltyProgram("https://ipfs.io/ipfs/Qmazf83pVqByBVoD1C9QqkWez5VPTitArfxXMjr1p9Q3d2.json");
+        vm.stopBroadcast();
+
+        // // step 2: mint loyalty points and cards; 
+        mintLoyaltyPoints(loyaltyProgramB, 15000); 
+        mintLoyaltyCards(loyaltyProgramB, 10); 
     }
 
     function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
