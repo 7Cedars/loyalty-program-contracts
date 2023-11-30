@@ -5,26 +5,24 @@ pragma solidity ^0.8.21;
 // TODO: implement and describe accordingly.
 
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {ILoyaltyToken} from "../src/interfaces/ILoyaltyToken.sol";
 
 /**
  * @title
  * @author
  * @notice
  */
-contract LoyaltyToken is ERC1155 {
-    /* errors */
-    error LoyaltyToken__LoyaltyProgramNotRecognised(address loyaltyToken);
-    error LoyaltyToken__NftNotOwnedByloyaltyCard(address loyaltyToken);
+abstract contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
+    // /* errors */
     error LoyaltyToken__NoTokensAvailable(address loyaltyToken);
-    error LoyaltyToken__InsufficientPoints(address loyaltyToken);
 
     /* State variables */
     mapping(uint256 => address) private s_tokenIdToLoyaltyProgram;
     mapping(address => uint256[]) private s_loyaltyProgramToTokenIds;
     uint256 private s_tokenCounter;
 
-    /* Events */
-    // NB: should all functions be external here?!
+     /* Events */
 
     /* FUNCTIONS: */
     constructor(string memory loyaltyTokenUri) ERC1155("") {
@@ -32,11 +30,13 @@ contract LoyaltyToken is ERC1155 {
         _setURI(loyaltyTokenUri);
     }
 
+    receive() external payable {}
+
     /**
      * @dev TODO
      *
      */
-    function mintLoyaltyTokens(uint256 numberOfTokens) public {
+    function mintLoyaltyTokens(uint256 numberOfTokens) public  {
         uint256[] memory loyaltyTokenIds = new uint256[](numberOfTokens);
         uint256[] memory mintNfts = new uint256[](numberOfTokens);
         uint256 counter = s_tokenCounter;

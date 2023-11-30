@@ -36,7 +36,7 @@ contract DeployLoyaltyProgramA is Script {
         
         vm.startBroadcast();
         // step 1: setup program
-        loyaltyProgramA = new LoyaltyProgram("https://ipfs.io/ipfs/QmeZSxMGSxEAepscJamhJQ56cCfBhU91D1imPtRxX3VUSZ.json");
+        loyaltyProgramA = new LoyaltyProgram("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmUkn86g76kMDKsch1Lneckc9Bp6c8viU2MbFojgxNvTts");
         vm.stopBroadcast();
 
         // // step 2: mint loyalty points and cards; 
@@ -95,7 +95,7 @@ contract DeployLoyaltyProgramB is Script {
     function run() external {        
         vm.startBroadcast();
         // step 1: setup program
-        loyaltyProgramB = new LoyaltyProgram("https://ipfs.io/ipfs/QmS5tnFso24nY1YavCyackx4ms34wShhLam7qM1rEfDXpC.json");
+        loyaltyProgramB = new LoyaltyProgram("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmTJCpvkE2gU8E6Ypz9yybJaQ2yLXNh5ayYPfmHBnZuJyw");
         vm.stopBroadcast();
 
         // // step 2: mint loyalty points and cards; 
@@ -117,17 +117,17 @@ contract DeployLoyaltyProgramB is Script {
 }
 
 contract DeployLoyaltyProgramC is Script {
-    LoyaltyProgram loyaltyProgramB;
+    LoyaltyProgram loyaltyProgramC;
 
     function run() external {        
         vm.startBroadcast();
         // step 1: setup program
-        loyaltyProgramB = new LoyaltyProgram("https://ipfs.io/ipfs/Qmazf83pVqByBVoD1C9QqkWez5VPTitArfxXMjr1p9Q3d2.json");
+        loyaltyProgramC = new LoyaltyProgram("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmYDXgbSgF8HnHaqu28Gr4afNqz6onDaB5bmrCKNNdMVPJ");
         vm.stopBroadcast();
 
         // // step 2: mint loyalty points and cards; 
-        mintLoyaltyPoints(loyaltyProgramB, 15000); 
-        mintLoyaltyCards(loyaltyProgramB, 10); 
+        mintLoyaltyPoints(loyaltyProgramC, 15000); 
+        mintLoyaltyCards(loyaltyProgramC, 10); 
     }
 
     function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
