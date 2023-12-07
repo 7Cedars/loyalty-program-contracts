@@ -29,6 +29,12 @@ contract DeployLoyaltyProgramA is Script {
         0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65
         ]; 
 
+    address[] DEFAULT_ANVIL_LOYALTY_TOKENS = [
+        0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6, 
+        0x2910E325cf29dd912E3476B61ef12F49cb931096,
+        0xA7918D253764E42d60C3ce2010a34d5a1e7C1398
+        ]; 
+
     function run() external {
         uint numberOfTransactions1 = 15; 
         uint numberOfTransactions2 = 25; 
@@ -42,6 +48,7 @@ contract DeployLoyaltyProgramA is Script {
         // // step 2: mint loyalty points and cards; 
         mintLoyaltyPoints(loyaltyProgramA, 1e15); 
         mintLoyaltyCards(loyaltyProgramA, 50); 
+        addLoyaltyTokenContract(loyaltyProgramA, DEFAULT_ANVIL_LOYALTY_TOKENS[0]);  
 
         // // step 3: transfer loyalty cards; 
         transferLoyaltyCard(loyaltyProgramA, 1, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[2]);
@@ -86,11 +93,23 @@ contract DeployLoyaltyProgramA is Script {
       vm.stopBroadcast();
     }
 
+    function addLoyaltyTokenContract(LoyaltyProgram lpInstance, address loyaltyTokenAddress) public {
+      vm.startBroadcast();
+      LoyaltyProgram(lpInstance).addLoyaltyTokenContract(loyaltyTokenAddress);
+      vm.stopBroadcast();
+    }
+
 }
 
 
 contract DeployLoyaltyProgramB is Script {
     LoyaltyProgram loyaltyProgramB;
+
+    address[] DEFAULT_ANVIL_LOYALTY_TOKENS = [
+      0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6, 
+      0x2910E325cf29dd912E3476B61ef12F49cb931096,
+      0xA7918D253764E42d60C3ce2010a34d5a1e7C1398
+    ]; 
 
     function run() external {        
         vm.startBroadcast();
@@ -101,6 +120,7 @@ contract DeployLoyaltyProgramB is Script {
         // // step 2: mint loyalty points and cards; 
         mintLoyaltyPoints(loyaltyProgramB, 5000); 
         mintLoyaltyCards(loyaltyProgramB, 1); 
+        addLoyaltyTokenContract(loyaltyProgramB, DEFAULT_ANVIL_LOYALTY_TOKENS[1]);  
     }
 
     function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
@@ -112,6 +132,12 @@ contract DeployLoyaltyProgramB is Script {
     function mintLoyaltyCards(LoyaltyProgram lpInstance, uint256 numberOfCards) public {
       vm.startBroadcast();
       LoyaltyProgram(lpInstance).mintLoyaltyCards(numberOfCards);
+      vm.stopBroadcast();
+    }
+
+    function addLoyaltyTokenContract(LoyaltyProgram lpInstance, address loyaltyTokenAddress) public {
+      vm.startBroadcast();
+      LoyaltyProgram(lpInstance).addLoyaltyTokenContract(loyaltyTokenAddress);
       vm.stopBroadcast();
     }
 }

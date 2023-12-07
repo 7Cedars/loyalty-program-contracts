@@ -13,7 +13,7 @@ import {ILoyaltyToken} from "../src/interfaces/ILoyaltyToken.sol";
  * @author
  * @notice
  */
-abstract contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
+contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
     // /* errors */
     error LoyaltyToken__NoTokensAvailable(address loyaltyToken);
 
@@ -25,12 +25,16 @@ abstract contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
      /* Events */
 
     /* FUNCTIONS: */
-    constructor(string memory loyaltyTokenUri) ERC1155("") {
+    constructor(string memory loyaltyTokenUri) ERC1155(loyaltyTokenUri) {
         s_tokenCounter = 0;
-        _setURI(loyaltyTokenUri);
+        // _setURI(loyaltyTokenUri);
     }
 
-    receive() external payable {}
+    // receive() external payable {}
+
+    function makeDiscoverable() public {
+        emit DiscoverableLoyaltyToken(msg.sender); 
+    }
 
     /**
      * @dev TODO

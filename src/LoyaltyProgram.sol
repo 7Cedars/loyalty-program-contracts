@@ -68,7 +68,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     uint256 public constant LOYALTY_POINTS = 0;
 
     address private s_owner;
-    mapping(address loyaltyTokenAddress => uint256 active) private s_LoyaltyTokensClaimable;
+    mapping(address loyaltyTokenAddress => uint256 active) private s_LoyaltyTokensClaimable; // 0 = false & 1 = true.
     mapping(address loyaltyTokenAddress => uint256 active) private s_LoyaltyTokensRedeemable; // 0 = false & 1 = true.
     mapping(address loyaltyCardAddress => uint256 exists) private s_LoyaltyCards; // 0 = false & 1 = true.
     uint256 private s_loyaltyCardCounter;
@@ -77,9 +77,9 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
     /* Events */
     event DeployedLoyaltyProgram(address indexed owner);
-    event AddedLoyaltyTokenContract(address indexed loyaltyToken);
-    event RemovedLoyaltyTokenClaimable(address indexed loyaltyToken);
-    event RemovedLoyaltyTokenRedeemable(address indexed loyaltyToken);
+    event AddedLoyaltyTokenContract(address indexed loyaltyToken, address indexed loyaltyProgram);
+    event RemovedLoyaltyTokenClaimable(address indexed loyaltyToken, address indexed loyaltyProgram);
+    event RemovedLoyaltyTokenRedeemable(address indexed loyaltyToken, address indexed loyaltyProgram);
 
     /* Modifiers */
     modifier onlyOwner() {
@@ -93,7 +93,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * This emits a URI event. 
      */
     constructor(string memory uri) ERC1155(uri) {
-        // still have to check if this indeed gives out same uri for each NFT minted.
+        // still have to check if this indeed gives out same uri for each NFT minted. Yep - it does. 
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
         s_erc6551Registry = new ERC6551Registry();
@@ -162,7 +162,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         // later additional checks will be added here.
         s_LoyaltyTokensClaimable[loyaltyToken] = 1;
         s_LoyaltyTokensRedeemable[loyaltyToken] = 1;
-        emit AddedLoyaltyTokenContract(loyaltyToken);
+        emit AddedLoyaltyTokenContract(loyaltyToken, address(this));
     }
 
     /**
@@ -181,7 +181,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             revert LoyaltyProgram__LoyaltyTokenNotRecognised();
         }
         s_LoyaltyTokensClaimable[loyaltyToken] = 0;
-        emit RemovedLoyaltyTokenClaimable(loyaltyToken);
+        emit RemovedLoyaltyTokenClaimable(loyaltyToken, address(this));
     }
 
     /**
@@ -205,7 +205,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
           s_LoyaltyTokensClaimable[loyaltyToken] = 0;
         }
         s_LoyaltyTokensRedeemable[loyaltyToken] = 0;
-        emit RemovedLoyaltyTokenRedeemable(loyaltyToken);
+        emit RemovedLoyaltyTokenRedeemable(loyaltyToken, address(this));
     }
 
     /** 

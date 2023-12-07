@@ -20,11 +20,7 @@ contract OneCoffeeFor2500 is LoyaltyToken {
 
         makeDiscoverable(); 
     }
-
-    function makeDiscoverable() public {
-        emit DiscoverableLoyaltyToken(msg.sender); 
-    }
-
+    
     /**
      * @dev This is the actual claim logic / price of the NFT.
      * Now simple, but can include any kind of additional data (from, for instance, chainlink).
@@ -53,10 +49,6 @@ contract OneCupCakeFor4500 is LoyaltyToken {
      */
     constructor() LoyaltyToken("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmWA2RjPJ8mzer6AWM9XY5XCSRhSfWTm3yLwK2YVE8D4pH") {
         makeDiscoverable(); 
-    }
-
-    function makeDiscoverable() public {
-        emit DiscoverableLoyaltyToken(msg.sender); 
     }
 
     /**
@@ -90,10 +82,6 @@ contract AccessPartyFor50000 is LoyaltyToken {
      */
     constructor() LoyaltyToken("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmarurBe5SNSJ94qskJz7Eb95doFTTFb8wQqvBvEJtBerP") {
         makeDiscoverable(); 
-    }
-
-    function makeDiscoverable() public {
-        emit DiscoverableLoyaltyToken(msg.sender); 
     }
 
     /**

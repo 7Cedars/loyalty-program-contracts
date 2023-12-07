@@ -16,7 +16,7 @@ interface ILoyaltyToken is IERC1155 {
      */
     event DiscoverableLoyaltyToken(address indexed issuer);
 
-    receive() external payable;
+    // receive() external payable;
 
     /**
      * @dev natspecs TBI 
