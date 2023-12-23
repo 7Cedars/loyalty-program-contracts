@@ -48,7 +48,7 @@ contract DeployLoyaltyProgramA is Script {
         // // step 2: mint loyalty points and cards; 
         mintLoyaltyPoints(loyaltyProgramA, 1e15); 
         mintLoyaltyCards(loyaltyProgramA, 50); 
-        addLoyaltyTokenContract(loyaltyProgramA, DEFAULT_ANVIL_LOYALTY_TOKENS[0]);  
+        addLoyaltyTokenContract(loyaltyProgramA, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]));  
 
         // // step 3: transfer loyalty cards; 
         transferLoyaltyCard(loyaltyProgramA, 1, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[2]);
@@ -93,7 +93,7 @@ contract DeployLoyaltyProgramA is Script {
       vm.stopBroadcast();
     }
 
-    function addLoyaltyTokenContract(LoyaltyProgram lpInstance, address loyaltyTokenAddress) public {
+    function addLoyaltyTokenContract(LoyaltyProgram lpInstance, address payable loyaltyTokenAddress) public {
       vm.startBroadcast();
       LoyaltyProgram(lpInstance).addLoyaltyTokenContract(loyaltyTokenAddress);
       vm.stopBroadcast();
@@ -105,7 +105,7 @@ contract DeployLoyaltyProgramA is Script {
 contract DeployLoyaltyProgramB is Script {
     LoyaltyProgram loyaltyProgramB;
 
-    address[] DEFAULT_ANVIL_LOYALTY_TOKENS = [
+     address[] DEFAULT_ANVIL_LOYALTY_TOKENS = [
       0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6, 
       0x2910E325cf29dd912E3476B61ef12F49cb931096,
       0xA7918D253764E42d60C3ce2010a34d5a1e7C1398
@@ -120,7 +120,7 @@ contract DeployLoyaltyProgramB is Script {
         // // step 2: mint loyalty points and cards; 
         mintLoyaltyPoints(loyaltyProgramB, 5000); 
         mintLoyaltyCards(loyaltyProgramB, 1); 
-        addLoyaltyTokenContract(loyaltyProgramB, DEFAULT_ANVIL_LOYALTY_TOKENS[1]);  
+        addLoyaltyTokenContract(loyaltyProgramB, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[1]));  
     }
 
     function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
@@ -135,7 +135,7 @@ contract DeployLoyaltyProgramB is Script {
       vm.stopBroadcast();
     }
 
-    function addLoyaltyTokenContract(LoyaltyProgram lpInstance, address loyaltyTokenAddress) public {
+    function addLoyaltyTokenContract(LoyaltyProgram lpInstance, address payable loyaltyTokenAddress) public {
       vm.startBroadcast();
       LoyaltyProgram(lpInstance).addLoyaltyTokenContract(loyaltyTokenAddress);
       vm.stopBroadcast();

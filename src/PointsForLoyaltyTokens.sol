@@ -20,6 +20,10 @@ contract OneCoffeeFor2500 is LoyaltyToken {
 
         makeDiscoverable(); 
     }
+
+    // receive() external override payable { 
+    //     return(); 
+    // } 
     
     /**
      * @dev This is the actual claim logic / price of the NFT.
@@ -50,6 +54,10 @@ contract OneCupCakeFor4500 is LoyaltyToken {
     constructor() LoyaltyToken("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmWA2RjPJ8mzer6AWM9XY5XCSRhSfWTm3yLwK2YVE8D4pH") {
         makeDiscoverable(); 
     }
+
+    // receive() external override payable { 
+    //     return(); 
+    // } 
 
     /**
      * @dev This is the actual claim logic / price of the NFT.
@@ -83,6 +91,10 @@ contract AccessPartyFor50000 is LoyaltyToken {
     constructor() LoyaltyToken("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmarurBe5SNSJ94qskJz7Eb95doFTTFb8wQqvBvEJtBerP") {
         makeDiscoverable(); 
     }
+
+    // receive() external override payable { 
+    //     return( ); 
+    // } 
 
     /**
      * @dev This is the actual claim logic / price of the NFT.

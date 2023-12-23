@@ -77,9 +77,9 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
     /* Events */
     event DeployedLoyaltyProgram(address indexed owner);
-    event AddedLoyaltyTokenContract(address indexed loyaltyToken, address indexed loyaltyProgram);
-    event RemovedLoyaltyTokenClaimable(address indexed loyaltyToken, address indexed loyaltyProgram);
-    event RemovedLoyaltyTokenRedeemable(address indexed loyaltyToken, address indexed loyaltyProgram);
+    event AddedLoyaltyTokenContract(address indexed loyaltyToken);
+    event RemovedLoyaltyTokenClaimable(address indexed loyaltyToken);
+    event RemovedLoyaltyTokenRedeemable(address indexed loyaltyToken);
 
     /* Modifiers */
     modifier onlyOwner() {
@@ -162,7 +162,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         // later additional checks will be added here.
         s_LoyaltyTokensClaimable[loyaltyToken] = 1;
         s_LoyaltyTokensRedeemable[loyaltyToken] = 1;
-        emit AddedLoyaltyTokenContract(loyaltyToken, address(this));
+        emit AddedLoyaltyTokenContract(loyaltyToken);
     }
 
     /**
@@ -181,7 +181,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             revert LoyaltyProgram__LoyaltyTokenNotRecognised();
         }
         s_LoyaltyTokensClaimable[loyaltyToken] = 0;
-        emit RemovedLoyaltyTokenClaimable(loyaltyToken, address(this));
+        emit RemovedLoyaltyTokenClaimable(loyaltyToken);
     }
 
     /**
@@ -205,7 +205,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
           s_LoyaltyTokensClaimable[loyaltyToken] = 0;
         }
         s_LoyaltyTokensRedeemable[loyaltyToken] = 0;
-        emit RemovedLoyaltyTokenRedeemable(loyaltyToken, address(this));
+        emit RemovedLoyaltyTokenRedeemable(loyaltyToken);
     }
 
     /** 
@@ -220,7 +220,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * 
      * - emits transferBatch event --  #REALLY? not transferSingle? double check! 
      */
-    function mintLoyaltyTokens(address loyaltyTokenAddress, uint256 numberOfTokens) public onlyOwner nonReentrant {
+    function mintLoyaltyTokens(address payable loyaltyTokenAddress, uint256 numberOfTokens) public onlyOwner nonReentrant {
         LoyaltyToken(loyaltyTokenAddress).mintLoyaltyTokens(numberOfTokens);
     }
 
@@ -238,7 +238,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * 
      * - emits a TransferSingle event 
      */
-    function redeemLoyaltyPoints(address loyaltyToken, uint256 loyaltyPoints, uint256 loyaltyCardId)
+    function redeemLoyaltyPoints(address payable loyaltyToken, uint256 loyaltyPoints, uint256 loyaltyCardId)
         external
         nonReentrant
     {
@@ -272,7 +272,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
 
 
-    function redeemLoyaltyToken(address loyaltyToken, uint256 loyaltyTokenId, uint256 loyaltyCard)
+    function redeemLoyaltyToken(address payable loyaltyToken, uint256 loyaltyTokenId, uint256 loyaltyCard)
         external
         nonReentrant
     {

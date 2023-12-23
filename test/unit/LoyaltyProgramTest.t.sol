@@ -230,7 +230,7 @@ contract LoyaltyProgramTest is Test {
     function testOwnerCanAddLoyaltyTokenContract() public {
         // Act
         vm.prank(vendorB);
-        loyaltyProgramB.addLoyaltyTokenContract(loyaltyTokenContractA);
+        loyaltyProgramB.addLoyaltyTokenContract(payable(loyaltyTokenContractA));
 
         // Assert
         assertEq(loyaltyProgramB.getLoyaltyToken(loyaltyTokenContractA), 1);
@@ -243,13 +243,13 @@ contract LoyaltyProgramTest is Test {
         emit AddedLoyaltyTokenContract(loyaltyTokenContractA);
         // Act / Assert
         vm.prank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(loyaltyTokenContractA);
+        loyaltyProgramA.addLoyaltyTokenContract(payable(loyaltyTokenContractA));
     }
 
     function testOwnerCanRemoveLoyaltyTokenContract() public {
         // Arrange
         vm.prank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(loyaltyTokenContractA);
+        loyaltyProgramA.addLoyaltyTokenContract(payable(loyaltyTokenContractA));
         assertEq(loyaltyProgramA.getLoyaltyToken(loyaltyTokenContractA), 1);
 
         // Act
@@ -263,7 +263,7 @@ contract LoyaltyProgramTest is Test {
     function testEmitsEventOnRemovingloyaltyTokenContract() public {
         // Arrange
         vm.prank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(loyaltyTokenContractA);
+        loyaltyProgramA.addLoyaltyTokenContract(payable(loyaltyTokenContractA));
         assertEq(loyaltyProgramA.getLoyaltyToken(loyaltyTokenContractA), 1);
 
         vm.expectEmit(true, false, false, false, address(loyaltyProgramA));
@@ -277,7 +277,7 @@ contract LoyaltyProgramTest is Test {
     function testCustomerCannotAddLoyaltyTokenContracts() public {
         vm.expectRevert(LoyaltyProgram.LoyaltyProgram__OnlyOwner.selector);
         vm.prank(customerThree);
-        loyaltyProgramA.addLoyaltyTokenContract(loyaltyTokenContractA);
+        loyaltyProgramA.addLoyaltyTokenContract(payable(loyaltyTokenContractA));
 
         console.log(address(vendorA));
         console.log(address(vendorB));

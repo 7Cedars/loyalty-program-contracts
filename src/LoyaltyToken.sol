@@ -30,7 +30,7 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
         // _setURI(loyaltyTokenUri);
     }
 
-    // receive() external payable {}
+    // receive() external virtual payable {}
 
     function makeDiscoverable() public {
         emit DiscoverableLoyaltyToken(msg.sender); 

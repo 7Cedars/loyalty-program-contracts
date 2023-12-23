@@ -172,11 +172,11 @@ contract IntegrationLoyaltyProgramTest is Test {
 
         // whitelist loyalty token contract..
         vm.prank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(address(loyaltyToken2500));
+        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
 
         // mint loyalty tokens..
         vm.prank(vendorA);
-        loyaltyProgramA.mintLoyaltyTokens(address(loyaltyToken2500), 10);
+        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), 10);
 
         // customer calls loyalty token contract from loyaltycard to
         // redeem points for loyalty token.
@@ -184,7 +184,7 @@ contract IntegrationLoyaltyProgramTest is Test {
         ERC6551Account(tokenOneProgramA).executeCall(
             payable(loyaltyProgramA),
             0,
-            abi.encodeCall(LoyaltyProgram.redeemLoyaltyPoints, (address(loyaltyToken2500), numberOfLoyaltyPoints, 1))
+            abi.encodeCall(LoyaltyProgram.redeemLoyaltyPoints, (payable(address(loyaltyToken2500)), numberOfLoyaltyPoints, 1))
         );
     }
 
@@ -200,11 +200,11 @@ contract IntegrationLoyaltyProgramTest is Test {
 
         // whitelist loyalty token contract..
         vm.prank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(address(loyaltyToken2500));
+        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
 
         // mint loyalty tokens..
         vm.prank(vendorA);
-        loyaltyProgramA.mintLoyaltyTokens(address(loyaltyToken2500), numberOfLoyaltyTokensRequested);
+        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), numberOfLoyaltyTokensRequested);
 
         for (uint256 i = 1; i <= numberOfLoyaltyTokensRequested; i++) {
             numberOfLoyaltyTokensReceived =
@@ -221,11 +221,11 @@ contract IntegrationLoyaltyProgramTest is Test {
 
         // whitelist loyalty token contract..
         vm.prank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(address(loyaltyToken2500));
+        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
 
         // mint loyalty tokens..
         vm.prank(vendorA);
-        loyaltyProgramA.mintLoyaltyTokens(address(loyaltyToken2500), 10);
+        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), 10);
 
         // customer calls loyalty token contract from loyaltycard to
         // redeem points for loyalty token.
@@ -238,7 +238,7 @@ contract IntegrationLoyaltyProgramTest is Test {
         ERC6551Account(tokenOneProgramA).executeCall(
             payable(loyaltyProgramA),
             0,
-            abi.encodeCall(LoyaltyProgram.redeemLoyaltyPoints, (address(loyaltyToken2500), numberOfLoyaltyPoints, 1))
+            abi.encodeCall(LoyaltyProgram.redeemLoyaltyPoints, (payable(address(loyaltyToken2500)), numberOfLoyaltyPoints, 1))
         );
 
         uint256 balanceToken10 = loyaltyToken2500.balanceOf(tokenOneProgramA, 10);
@@ -249,7 +249,7 @@ contract IntegrationLoyaltyProgramTest is Test {
         ERC6551Account(tokenOneProgramA).executeCall(
             payable(loyaltyProgramA),
             0,
-            abi.encodeCall(LoyaltyProgram.redeemLoyaltyToken, (address(loyaltyToken2500), 10, 1))
+            abi.encodeCall(LoyaltyProgram.redeemLoyaltyToken, (payable(address(loyaltyToken2500)), 10, 1))
         );
     }
 
