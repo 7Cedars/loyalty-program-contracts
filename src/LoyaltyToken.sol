@@ -91,8 +91,12 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
 
     /* getter functions */
 
-    function getAvailableTokens() external view returns (uint256[] memory) {
-        return s_loyaltyProgramToTokenIds[msg.sender];
+    function getAvailableTokens(address loyaltyProgram) external view returns (uint256) {
+        if (s_loyaltyProgramToTokenIds[loyaltyProgram].length == 0) {
+            revert LoyaltyToken__NoTokensAvailable(address(this));
+        }
+
+        return s_loyaltyProgramToTokenIds[loyaltyProgram].length;
     }
     // will get to some when testing.
     // uri is already 1155 function.

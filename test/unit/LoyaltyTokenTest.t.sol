@@ -94,6 +94,17 @@ contract LoyaltyTokenTest is Test {
         assert(keccak256(abi.encodePacked(FREE_COFFEE_URI)) == keccak256(abi.encodePacked(loyaltyToken.uri(tokenId))));
     }
 
+    function testUserCanCheckAvailableTokens() public {
+        uint256 numberOfTokens;
+
+        vm.prank(loyaltyProgramAddress);
+        loyaltyToken.mintLoyaltyTokens(20);
+        vm.prank(loyaltyProgramAddress);
+        numberOfTokens = loyaltyToken.getAvailableTokens(loyaltyProgramAddress);
+        
+        console.logUint(numberOfTokens); 
+    }
+
     /////////////////////////////////////////////////////////
     ///     Test Claiming and Redeeming Loyalty Tokens    ///
     /////////////////////////////////////////////////////////
