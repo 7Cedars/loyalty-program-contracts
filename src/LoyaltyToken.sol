@@ -16,6 +16,7 @@ import {ILoyaltyToken} from "../src/interfaces/ILoyaltyToken.sol";
 contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
     // /* errors */
     error LoyaltyToken__NoTokensAvailable(address loyaltyToken);
+    error LoyaltyToken__RequirementsNotMet(address loyaltyToken);
 
     /* State variables */
     mapping(uint256 => address) private s_tokenIdToLoyaltyProgram;
@@ -74,11 +75,11 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
     }
 
     /**
-     * @dev
+     * @dev Note that this function does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract. 
      *
      *
      */
-    function claimNft(address loyaltyCard) public returns (uint256 tokenId) {
+    function claimLoyaltyToken(address loyaltyCard) public returns (uint256 tokenId) {
         uint256 maxIndex = s_loyaltyProgramToTokenIds[msg.sender].length;
         if (maxIndex == 0) {
             revert LoyaltyToken__NoTokensAvailable(address(this));
@@ -92,10 +93,6 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
     /* getter functions */
 
     function getAvailableTokens(address loyaltyProgram) external view returns (uint256) {
-        if (s_loyaltyProgramToTokenIds[loyaltyProgram].length == 0) {
-            revert LoyaltyToken__NoTokensAvailable(address(this));
-        }
-
         return s_loyaltyProgramToTokenIds[loyaltyProgram].length;
     }
     // will get to some when testing.

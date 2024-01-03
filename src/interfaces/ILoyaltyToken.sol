@@ -36,7 +36,7 @@ interface ILoyaltyToken is IERC1155 {
     /**
      * @dev natspecs TBI 
      */
-    function claimNft(address loyaltyCard) external returns (uint256 tokenId);
+    function claimLoyaltyToken(address loyaltyCard) external returns (uint256 tokenId);
 
     /**
      * @dev natspecs TBI 

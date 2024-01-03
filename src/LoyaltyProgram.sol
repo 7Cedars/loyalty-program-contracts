@@ -264,13 +264,11 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
                 loyaltyPoints,
                 ""
             );
+
+            // claiming Loyalty Token / external.
+            LoyaltyToken(loyaltyToken).claimLoyaltyToken(loyaltyCardAddress);
         }
-
-        // claiming Nft / external.
-        LoyaltyToken(loyaltyToken).claimNft(loyaltyCardAddress);
     }
-
-
 
     function redeemLoyaltyToken(address payable loyaltyToken, uint256 loyaltyTokenId, uint256 loyaltyCard)
         external
