@@ -28,11 +28,11 @@ contract LoyaltyTokenTest is Test {
         // for loop in solidity: initialisation, condition, updating. See https://dev.to/shlok2740/loops-in-solidity-2pmp.
         for (uint256 i = 0; i < numberLoyaltyTokens1; i++) {
             vm.prank(loyaltyProgramAddress);
-            loyaltyToken.claimLoyaltyToken(userOne, 5000);
+            loyaltyToken.claimLoyaltyToken(userOne);
         }
         for (uint256 i = 0; i < numberLoyaltyTokens2; i++) {
             vm.prank(loyaltyProgramAddress);
-            loyaltyToken.claimLoyaltyToken(userTwo, 5000);
+            loyaltyToken.claimLoyaltyToken(userTwo);
         }
         _;
     }
@@ -88,7 +88,7 @@ contract LoyaltyTokenTest is Test {
         vm.prank(loyaltyProgramAddress);
         loyaltyToken.mintLoyaltyTokens(20);
         vm.prank(loyaltyProgramAddress);
-        tokenId = loyaltyToken.claimLoyaltyToken(userOne, 5000);
+        tokenId = loyaltyToken.claimLoyaltyToken(userOne);
 
         assert(loyaltyToken.balanceOf(userOne, tokenId) == 1);
         assert(keccak256(abi.encodePacked(FREE_COFFEE_URI)) == keccak256(abi.encodePacked(loyaltyToken.uri(tokenId))));

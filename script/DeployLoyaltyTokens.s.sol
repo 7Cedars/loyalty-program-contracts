@@ -19,6 +19,18 @@ contract DeployLoyaltyToken is Script {
     }
 }
 
+contract DeployMultipleLoyaltyTokens is Script {
+    function run() external returns (OneCoffeeFor2500, OneCupCakeFor4500, AccessPartyFor50000) {
+        vm.startBroadcast();
+        OneCoffeeFor2500 oneCoffeeFor2500 = new OneCoffeeFor2500();
+        OneCupCakeFor4500 oneCupCakeFor4500 = new OneCupCakeFor4500();
+        AccessPartyFor50000 accessPartyFor50000 = new AccessPartyFor50000();
+        vm.stopBroadcast();
+        return (oneCoffeeFor2500, oneCupCakeFor4500, accessPartyFor50000);
+    }
+}
+
+
 contract DeployOneCoffeeFor2500 is Script {
     function run() external returns (OneCoffeeFor2500) {
         vm.startBroadcast();
