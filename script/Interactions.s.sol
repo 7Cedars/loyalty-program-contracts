@@ -17,7 +17,9 @@ contract DeployLoyaltyProgram is Script {
         0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 
         0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, 
         0x90F79bf6EB2c4f870365E785982E1f101E93b906, 
-        0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65
+        0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65,
+        0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc,
+        0x976EA74026E726554dB657fA54763abd0C3a0aa9
         ]; 
 
     function run() external {
@@ -37,13 +39,13 @@ contract DeployLoyaltyProgram is Script {
         mintLoyaltyPoints(loyaltyProgramA, 5000); 
         mintLoyaltyCards(loyaltyProgramA, 1); 
 
-        // // step 3: transfer loyalty cards; 
+        // step 3: transfer loyalty cards; 
         transferLoyaltyCard(loyaltyProgramA, 1, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[2]);
         transferLoyaltyCard(loyaltyProgramA, 2, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[3]); 
         transferLoyaltyCard(loyaltyProgramA, 3, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[4]);
         transferLoyaltyCard(loyaltyProgramA, 4, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[2]);  
 
-        // // step 4: transfer loyalty points to cards, through discrete transfers;
+        // step 4: transfer loyalty points to cards, through discrete transfers;
         for (uint i = 0; numberOfTransactions1 > i; i++) {
             transferLoyaltyPoints(loyaltyProgramA, loyaltyProgramA.getOwner(), 1, 450); 
         }
@@ -53,6 +55,9 @@ contract DeployLoyaltyProgram is Script {
         for (uint i = 0; numberOfTransactions3 > i; i++) {
             transferLoyaltyPoints(loyaltyProgramA, loyaltyProgramA.getOwner(), 3, 250); 
         }
+
+        // step 5: transfer loyalty cards between customers; 
+        transferLoyaltyCard(loyaltyProgramA, 1, DEFAULT_ANVIL_ACCOUNTS[2], DEFAULT_ANVIL_ACCOUNTS[3]);
     }
 
     function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
@@ -85,9 +90,10 @@ contract DeployLoyaltyProgram is Script {
 contract TransferPoints is Script {
 
   function run() external {
-    uint numberOfTransactions1 = 7; 
-        address contractAddress = DevOpsTools.get_most_recent_deployment("LoyaltyProgram", block.chainid);
-        LoyaltyProgram loyaltyProgramA = LoyaltyProgram(payable(contractAddress));
+    uint numberOfTransactions1 = 7;
+    address contractAddress = DevOpsTools.get_most_recent_deployment("LoyaltyProgram", block.chainid);
+    LoyaltyProgram loyaltyProgramA = LoyaltyProgram(payable(contractAddress));
+
 
     for (uint i = 0; numberOfTransactions1 > i; i++) {
         transferLoyaltyPoints(loyaltyProgramA, loyaltyProgramA.getOwner(), 1, 450); 

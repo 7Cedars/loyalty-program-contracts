@@ -27,8 +27,11 @@ pragma solidity ^0.8.21;
 
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import {ERC165Checker} from  "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {LoyaltyToken} from "./LoyaltyToken.sol";
+import {ILoyaltyToken} from "./interfaces/ILoyaltyToken.sol";
 import {ERC6551Registry} from "./ERC6551Registry.sol";
 import {ERC6551Account} from "./ERC6551Account.sol";
 import {IERC6551Account} from "../src/interfaces/IERC6551Account.sol";
@@ -63,6 +66,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     error LoyaltyProgram__VendorLoyaltyCardCannotBeTransferred();
     error LoyaltyProgram__InSufficientPointsOnCard();
     error LoyaltyProgram__LoyaltyTokenNotOnCard();
+    error LoyaltyProgram__IncorrectContractInterface(address loyaltyToken);
 
     /* State variables */
     uint256 public constant LOYALTY_POINTS = 0;
@@ -148,7 +152,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
     /** 
      * @dev whitelisting contracts that customers can use to redeem loyalty points and loyalty tokens. 
-     * These contracts should follow the LoyaltyToken contract.  
+     * If contract does not have LoyaltyToken interface, function reverts.
      * The interface for this has not been written yet. 
      * 
      * @param loyaltyToken address of contract to be whitelisted.
@@ -159,7 +163,12 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      */
 
     function addLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
-        // later additional checks will be added here.
+        // CAUSES many reverts :D Needs bug fixing... 
+        // bytes4 interfaceId = type(ILoyaltyToken).interfaceId; 
+        // if (ERC165Checker.supportsERC165InterfaceUnchecked(loyaltyToken, interfaceId) == false) {
+        //     revert LoyaltyProgram__IncorrectContractInterface(loyaltyToken);
+        // }
+
         s_LoyaltyTokensClaimable[loyaltyToken] = 1;
         s_LoyaltyTokensRedeemable[loyaltyToken] = 1;
         emit AddedLoyaltyTokenContract(loyaltyToken);
@@ -293,6 +302,14 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         );
 
         // emits a transferSingle event. 
+    }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function checkLoyaltyToken(bytes4 interfaceId) public view returns (bool) {
+        return
+            interfaceId == type(ILoyaltyToken).interfaceId; 
     }
 
     function getTokenBoundAddress(uint256 _loyaltyCardId) public view returns (address tokenBoundAccount) {
