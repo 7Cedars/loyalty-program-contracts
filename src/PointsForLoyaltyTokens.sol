@@ -16,10 +16,7 @@ contract OneCoffeeFor2500 is LoyaltyToken {
     /**
      * @dev
      */
-    constructor() LoyaltyToken("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmX5em6Dh4XgnZ6pe4igkZqkf6mSRTRbNja2w3qE8qcfGT") {
-
-        makeDiscoverable(); 
-    }
+    constructor() LoyaltyToken("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmX5em6Dh4XgnZ6pe4igkZqkf6mSRTRbNja2w3qE8qcfGT") { }
 
     // receive() external override payable { 
     //     return(); 
@@ -51,9 +48,7 @@ contract OneCupCakeFor4500 is LoyaltyToken {
     /**
      * @dev
      */
-    constructor() LoyaltyToken("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmWA2RjPJ8mzer6AWM9XY5XCSRhSfWTm3yLwK2YVE8D4pH") {
-        makeDiscoverable(); 
-    }
+    constructor() LoyaltyToken("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmWA2RjPJ8mzer6AWM9XY5XCSRhSfWTm3yLwK2YVE8D4pH") { }
 
     // receive() external override payable { 
     //     return(); 
@@ -88,9 +83,7 @@ contract AccessPartyFor50000 is LoyaltyToken {
     /**
      * @dev
      */
-    constructor() LoyaltyToken("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmarurBe5SNSJ94qskJz7Eb95doFTTFb8wQqvBvEJtBerP") {
-        makeDiscoverable(); 
-    }
+    constructor() LoyaltyToken("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmarurBe5SNSJ94qskJz7Eb95doFTTFb8wQqvBvEJtBerP") {}
 
     // receive() external override payable { 
     //     return( ); 

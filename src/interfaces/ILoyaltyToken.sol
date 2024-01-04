@@ -21,11 +21,6 @@ interface ILoyaltyToken is IERC1155 {
     /**
      * @dev natspecs TBI 
      */
-    function makeDiscoverable() external; 
-
-    /**
-     * @dev natspecs TBI 
-     */
     function mintLoyaltyTokens(uint256 numberOfTokens) external; 
 
     /**

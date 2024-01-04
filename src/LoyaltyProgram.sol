@@ -94,7 +94,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     }
 
     /**
-     * This emits a URI event. 
+     * Emits a DeployedLoyaltyProgram event. 
      */
     constructor(string memory uri) ERC1155(uri) {
         // still have to check if this indeed gives out same uri for each NFT minted. Yep - it does. 
@@ -168,7 +168,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         // if (ERC165Checker.supportsERC165InterfaceUnchecked(loyaltyToken, interfaceId) == false) {
         //     revert LoyaltyProgram__IncorrectContractInterface(loyaltyToken);
         // }
-
         s_LoyaltyTokensClaimable[loyaltyToken] = 1;
         s_LoyaltyTokensRedeemable[loyaltyToken] = 1;
         emit AddedLoyaltyTokenContract(loyaltyToken);
@@ -302,14 +301,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         );
 
         // emits a transferSingle event. 
-    }
-
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
-    function checkLoyaltyToken(bytes4 interfaceId) public view returns (bool) {
-        return
-            interfaceId == type(ILoyaltyToken).interfaceId; 
     }
 
     function getTokenBoundAddress(uint256 _loyaltyCardId) public view returns (address tokenBoundAccount) {

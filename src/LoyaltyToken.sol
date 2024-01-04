@@ -28,14 +28,14 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
     /* FUNCTIONS: */
     constructor(string memory loyaltyTokenUri) ERC1155(loyaltyTokenUri) {
         s_tokenCounter = 0;
-        // _setURI(loyaltyTokenUri);
+        emit DiscoverableLoyaltyToken(msg.sender); 
     }
 
     // receive() external virtual payable {}
 
-    function makeDiscoverable() public {
-        emit DiscoverableLoyaltyToken(msg.sender); 
-    }
+    // function makeDiscoverable() public {
+        
+    // }
 
     /**
      * @dev TODO
