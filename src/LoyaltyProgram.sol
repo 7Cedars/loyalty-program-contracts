@@ -217,6 +217,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     }
 
     /** 
+     * * NB: In front end I AM NOT CALLING THIS FUNCTION! 
      * @dev mint loyaltyTokens at external loyaltyToken contract. 
      * @param loyaltyTokenAddress address of loyalty token contract. 
      * @param numberOfTokens amount of tokens to be minted. 
@@ -228,7 +229,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * 
      * - emits transferBatch event --  #REALLY? not transferSingle? double check! 
      */
-    function mintLoyaltyTokens(address payable loyaltyTokenAddress, uint256 numberOfTokens) public onlyOwner nonReentrant {
+    function mintLoyaltyTokens(address loyaltyTokenAddress, uint256 numberOfTokens) public onlyOwner nonReentrant {
         LoyaltyToken(loyaltyTokenAddress).mintLoyaltyTokens(numberOfTokens);
     }
 

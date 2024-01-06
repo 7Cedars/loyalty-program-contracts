@@ -3,6 +3,7 @@ pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
 import {LoyaltyProgram} from "../src/LoyaltyProgram.sol";
+import {LoyaltyToken} from "../src/LoyaltyToken.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
@@ -49,6 +50,7 @@ contract DeployLoyaltyProgramA is Script {
         mintLoyaltyPoints(loyaltyProgramA, 1e15); 
         mintLoyaltyCards(loyaltyProgramA, 50); 
         addLoyaltyTokenContract(loyaltyProgramA, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]));  
+        // mintLoyaltyTokens(loyaltyProgramA, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]), 50); 
 
         // // step 3: transfer loyalty cards; 
         giftLoyaltyCard(loyaltyProgramA, 1, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[2]);
@@ -72,6 +74,10 @@ contract DeployLoyaltyProgramA is Script {
         vm.startBroadcast(ownerPrivateKey);
         LoyaltyProgram(loyaltyProgramA).safeTransferFrom(DEFAULT_ANVIL_ACCOUNTS[2], DEFAULT_ANVIL_ACCOUNTS[3], 1, 1, "");
         vm.stopBroadcast();
+
+        // step 6: claim loyalty gift by redeeming points 
+        // claimLoyaltyTokens(loyaltyProgramA, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]), 2501, 2);
+
       }
 
     function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
@@ -104,6 +110,20 @@ contract DeployLoyaltyProgramA is Script {
       LoyaltyProgram(lpInstance).addLoyaltyTokenContract(loyaltyTokenAddress);
       vm.stopBroadcast();
     }
+
+    function mintLoyaltyTokens(LoyaltyProgram lpInstance, address loyaltyTokenAddress, uint256 numberOfTokens) public {
+      uint256 ownerPrivateKey = vm.envUint("DEFAULT_ANVIL_KEY_2");
+      vm.startBroadcast(ownerPrivateKey);
+      LoyaltyProgram(lpInstance).mintLoyaltyTokens(loyaltyTokenAddress, numberOfTokens);
+      vm.stopBroadcast();
+    }
+    
+    // function claimLoyaltyTokens(LoyaltyProgram lpInstance, address payable loyaltyTokenAddress, uint256 numberOfPoints, uint256 loyaltyCardId)  public {
+    //   uint256 ownerPrivateKey = vm.envUint("DEFAULT_ANVIL_KEY_3");
+    //   vm.startBroadcast(ownerPrivateKey);
+    //   LoyaltyProgram(lpInstance).redeemLoyaltyPoints(loyaltyTokenAddress, numberOfPoints, loyaltyCardId);
+    //   vm.stopBroadcast();
+    // }
 }
 
 

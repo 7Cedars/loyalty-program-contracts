@@ -37,10 +37,10 @@ contract LoyaltyProgramTest is Test {
     address public customerThree = makeAddr("customer3");
     address public loyaltyTokenContractA = makeAddr("loyaltyTokenA");
     address public loyaltyTokenContractB = makeAddr("loyaltyTokenB");
-    address tokenOneProgramA;
-    address tokenTwoProgramA;
-    address tokenOneProgramB;
-    address tokenTwoProgramB;
+    address cardOneProgramA;
+    address cardTwoProgramA;
+    address cardOneProgramB;
+    address cardTwoProgramB;
 
     uint256 constant STARTING_BALANCE = 10 ether;
     uint256 constant GAS_PRICE = 1;
@@ -65,13 +65,13 @@ contract LoyaltyProgramTest is Test {
         loyaltyProgramB.safeTransferFrom(vendorB, customerThree, 2, 1, "");
 
         vm.prank(vendorA);
-        loyaltyProgramA.safeTransferFrom(vendorA, tokenOneProgramA, 0, 200, "");
+        loyaltyProgramA.safeTransferFrom(vendorA, cardOneProgramA, 0, 200, "");
         vm.prank(vendorA);
-        loyaltyProgramA.safeTransferFrom(vendorA, tokenTwoProgramA, 0, 400, "");
+        loyaltyProgramA.safeTransferFrom(vendorA, cardTwoProgramA, 0, 400, "");
         vm.prank(vendorB);
-        loyaltyProgramB.safeTransferFrom(vendorB, tokenOneProgramB, 0, 250, "");
+        loyaltyProgramB.safeTransferFrom(vendorB, cardOneProgramB, 0, 250, "");
         vm.prank(vendorB);
-        loyaltyProgramB.safeTransferFrom(vendorB, tokenTwoProgramB, 0, 555, "");
+        loyaltyProgramB.safeTransferFrom(vendorB, cardTwoProgramB, 0, 555, "");
         _;
     }
 
@@ -94,10 +94,10 @@ contract LoyaltyProgramTest is Test {
         loyaltyProgramB.mintLoyaltyPoints(1500000);
 
         // getting addresses of tokenBoundAccounts
-        tokenOneProgramA = loyaltyProgramA.getTokenBoundAddress(1);
-        tokenTwoProgramA = loyaltyProgramA.getTokenBoundAddress(2);
-        tokenOneProgramB = loyaltyProgramB.getTokenBoundAddress(1);
-        tokenTwoProgramB = loyaltyProgramB.getTokenBoundAddress(2);
+        cardOneProgramA = loyaltyProgramA.getTokenBoundAddress(1);
+        cardTwoProgramA = loyaltyProgramA.getTokenBoundAddress(2);
+        cardOneProgramB = loyaltyProgramB.getTokenBoundAddress(1);
+        cardTwoProgramB = loyaltyProgramB.getTokenBoundAddress(2);
     }
 
     function testLoyaltyProgramHasOwner() public {
@@ -288,4 +288,24 @@ contract LoyaltyProgramTest is Test {
         vm.prank(customerTwo);
         loyaltyProgramB.removeLoyaltyTokenClaimable(loyaltyTokenContractB);
     }
+
+    /////////////////////////////////////////////////////
+    /////       Test claiming and redeeming Tokens  ///// 
+    /////////////////////////////////////////////////////
+    
+    // function testLoyaltyCardCanExchangePointsForToken() public {
+    //     // Arrange
+    //     vm.prank(vendorA);
+    //     loyaltyProgramA.addLoyaltyTokenContract(payable(loyaltyTokenContractA));
+    //     vm.prank(vendorA);
+    //     loyaltyProgramA.mintLoyaltyTokens(payable(loyaltyTokenContractA), 50);
+
+    //     vm.prank(vendorA);
+    //     loyaltyProgramA.safeTransferFrom(vendorA, customerOne, 2, 1, "");
+
+    //     // Assert
+    //     assertEq(loyaltyProgramA.getLoyaltyToken(loyaltyTokenContractA), 0);
+    // }
+
+
 }

@@ -38,7 +38,7 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
     // }
 
     /**
-     * @dev TODO
+     * @dev Note that anyone can call this function. 
      *
      */
     function mintLoyaltyTokens(uint256 numberOfTokens) public  {
@@ -87,7 +87,7 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
 
         tokenId = s_loyaltyProgramToTokenIds[msg.sender][maxIndex - 1];
         _safeTransferFrom(msg.sender, loyaltyCard, tokenId, 1, "");
-        return tokenId;
+        // return tokenId;
     }
 
     /* getter functions */

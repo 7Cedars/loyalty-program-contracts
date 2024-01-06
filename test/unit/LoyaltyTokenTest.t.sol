@@ -109,21 +109,7 @@ contract LoyaltyTokenTest is Test {
     ///     Test Claiming and Redeeming Loyalty Tokens    ///
     /////////////////////////////////////////////////////////
 
-    // TODO
+    /// See integration tests /// 
 
-    // function testLoyaltyTokensCanBeTransferredFreely(
-    //   uint256 numberLoyaltyTokens1,
-    //   uint256 numberLoyaltyTokens2
-    //   ) public usersHaveLoyaltyTokens (
-    //     numberLoyaltyTokens1, numberLoyaltyTokens2
-    //     ) {
-    //       uint256 user1AmountLoyaltyTokens = loyaltyToken.balanceOf(userOne);
-    //       uint256 user2AmountLoyaltyTokens = loyaltyToken.balanceOf(userTwo);
-
-    //       assert(user1AmountLoyaltyTokens > 0);
-    //       assert(user2AmountLoyaltyTokens > 0);
-
-    //   // vm.prank(userOne);
-    //   // loyaltyToken.safeTransferFrom(userOne, userTwo);
-    // }
+    
 }

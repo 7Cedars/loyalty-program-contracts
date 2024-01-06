@@ -200,11 +200,11 @@ contract IntegrationLoyaltyProgramTest is Test {
 
         // whitelist loyalty token contract..
         vm.prank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
+        loyaltyProgramA.addLoyaltyTokenContract(address(loyaltyToken2500));
 
         // mint loyalty tokens..
         vm.prank(vendorA);
-        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), numberOfLoyaltyTokensRequested);
+        loyaltyProgramA.mintLoyaltyTokens(address(loyaltyToken2500), numberOfLoyaltyTokensRequested);
 
         for (uint256 i = 1; i <= numberOfLoyaltyTokensRequested; i++) {
             numberOfLoyaltyTokensReceived =
