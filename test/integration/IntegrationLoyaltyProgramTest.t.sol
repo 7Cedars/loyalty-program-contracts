@@ -238,7 +238,12 @@ contract IntegrationLoyaltyProgramTest is Test {
         ERC6551Account(tokenOneProgramA).executeCall(
             payable(loyaltyProgramA),
             0,
-            abi.encodeCall(LoyaltyProgram.redeemLoyaltyPoints, (payable(address(loyaltyToken2500)), numberOfLoyaltyPoints, 1))
+            abi.encodeCall(
+                LoyaltyProgram.redeemLoyaltyPoints, 
+                (payable(address(loyaltyToken2500)), 
+                numberOfLoyaltyPoints, 
+                1)
+                )
         );
 
         uint256 balanceToken10 = loyaltyToken2500.balanceOf(tokenOneProgramA, 10);
@@ -249,7 +254,12 @@ contract IntegrationLoyaltyProgramTest is Test {
         ERC6551Account(tokenOneProgramA).executeCall(
             payable(loyaltyProgramA),
             0,
-            abi.encodeCall(LoyaltyProgram.redeemLoyaltyToken, (payable(address(loyaltyToken2500)), 10, 1))
+            abi.encodeCall(
+                LoyaltyProgram.redeemLoyaltyToken, 
+                (payable(address(loyaltyToken2500)), 
+                10, 
+                1)
+            )
         );
     }
 

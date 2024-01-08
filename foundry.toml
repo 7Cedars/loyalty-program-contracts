@@ -5,7 +5,7 @@ libs = ["lib"]
 
 remappings = ["@openzeppelin/=lib/openzeppelin-contracts/"]
 # ways to open access to filesystem. First is very generic and should be avoided.  
-# ffi = true
+ffi = true
 # fs.permissions =[{access = "read", path = "./img/"}] 
 
 [fuzz]

@@ -209,10 +209,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         if (s_LoyaltyTokensRedeemable[loyaltyToken] == 0) {
             revert LoyaltyProgram__LoyaltyTokenNotRecognised();
         }
-        if (s_LoyaltyTokensClaimable[loyaltyToken] == 1) {
-          s_LoyaltyTokensClaimable[loyaltyToken] = 0;
-        }
-        s_LoyaltyTokensRedeemable[loyaltyToken] = 0;
+        // if (s_LoyaltyTokensClaimable[loyaltyToken] == 1) {
+        s_LoyaltyTokensClaimable[loyaltyToken] = 0;
+        // }
+        // s_LoyaltyTokensRedeemable[loyaltyToken] = 0;
         emit RemovedLoyaltyTokenRedeemable(loyaltyToken);
     }
 
@@ -247,32 +247,42 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * 
      * - emits a TransferSingle event 
      */
-    function redeemLoyaltyPoints(address payable loyaltyToken, uint256 loyaltyPoints, uint256 loyaltyCardId)
+    function redeemLoyaltyPoints(address loyaltyToken, uint256 loyaltyPoints, uint256 loyaltyCardId)
         external
         nonReentrant
     {
         address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
+        // uint256 tokenId = LoyaltyToken(loyaltyToken).getAvailableTokens(address(this)); 
 
         // checks
         if (loyaltyPoints >= balanceOf(loyaltyCardAddress, 0)) {
             revert LoyaltyProgram__InSufficientPointsOnCard();
         }
-        if (s_LoyaltyTokensRedeemable[loyaltyToken] == 0) {
-            revert LoyaltyProgram__LoyaltyTokenNotRedeemable();
-        }
+        // if (s_LoyaltyTokensClaimable[loyaltyToken] == 0) {
+        //     revert LoyaltyProgram__LoyaltyTokenNotRedeemable();
+        // }
 
         // requirements check = external.
         (bool success) = LoyaltyToken(loyaltyToken).requirementsLoyaltyTokenMet(loyaltyCardAddress, loyaltyPoints);
         // updating balances / interaction
 
+        // this should be burn function.   
         if (success) {
             safeTransferFrom(
                 loyaltyCardAddress,
-                address(0), // loyalty points are send to burner address.
+                s_owner, // loyalty points are returned to owner .
                 0,
                 loyaltyPoints,
                 ""
             );
+
+            // safeTransferFrom(
+            //     s_owner,
+            //     loyaltyCardAddress,
+            //     0,
+            //     1,
+            //     ""
+            // );
 
             // claiming Loyalty Token / external.
             LoyaltyToken(loyaltyToken).claimLoyaltyToken(loyaltyCardAddress);
@@ -288,8 +298,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             revert LoyaltyProgram__LoyaltyTokenNotOnCard();
         }
         // check if loyaltyToken is redeemable. 
-        if (LoyaltyToken(loyaltyToken).balanceOf(loyaltyCardAddress, loyaltyTokenId) == 0) {
-            revert LoyaltyProgram__LoyaltyTokenNotOnCard();
+        if (s_LoyaltyTokensRedeemable[loyaltyToken] == 0) {
+            revert LoyaltyProgram__LoyaltyTokenNotRedeemable();
         }
 
         /// Token is send to

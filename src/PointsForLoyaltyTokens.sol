@@ -34,7 +34,9 @@ contract OneCoffeeFor2500 is LoyaltyToken {
             revert LoyaltyToken__InsufficientPoints(address(this));
         }
 
-        super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints);
+        bool check = super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints);
+
+        return check; 
     }
 }
 
@@ -69,7 +71,8 @@ contract OneCupCakeFor4500 is LoyaltyToken {
             revert LoyaltyToken__InsufficientPoints(address(this));
         }
 
-        super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints);
+        bool check = super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints);
+        return check; 
     }
 }
 
@@ -104,6 +107,7 @@ contract AccessPartyFor50000 is LoyaltyToken {
             revert LoyaltyToken__InsufficientPoints(address(this));
         }
 
-        super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints);
+        bool check = super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints);
+        return check; 
     }
 }
