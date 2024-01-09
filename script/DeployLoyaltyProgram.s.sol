@@ -22,6 +22,7 @@ contract DeployLoyaltyProgram is Script {
 
 contract DeployLoyaltyProgramA is Script {
     LoyaltyProgram loyaltyProgramA;
+    ERC6551Account ercAccount;
     
     address[] DEFAULT_ANVIL_ACCOUNTS = [
         0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, 
@@ -53,7 +54,7 @@ contract DeployLoyaltyProgramA is Script {
 
         // // step 2: mint loyalty points and cards; 
         mintLoyaltyPoints(loyaltyProgramA, 1e15); 
-        mintLoyaltyCards(loyaltyProgramA, 50); 
+        mintLoyaltyCards(loyaltyProgramA, 50);
         addLoyaltyTokenContract(loyaltyProgramA, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]));
         mintLoyaltyTokens(loyaltyProgramA, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]), 50); 
 
@@ -82,24 +83,19 @@ contract DeployLoyaltyProgramA is Script {
 
         // step 6: claim loyalty gift by redeeming points 
         address cardAddress = payable(LoyaltyProgram(loyaltyProgramA).getTokenBoundAddress(4)); 
-        
+
         vm.startBroadcast(ownerPrivateKey);
-        // claimLoyaltyTokens(loyaltyProgramA, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]), 2501, 2);
+        // claimLoyaltyTokens(loyaltyProgramA, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]), 5002, 2);
         
-        address oneCoffeeFor2500 = 0xA7918D253764E42d60C3ce2010a34d5a1e7C1398; 
         ERC6551Account(payable(cardAddress)).executeCall(
           payable(loyaltyProgramA),
           0,
           abi.encodeCall(
               LoyaltyProgram.redeemLoyaltyPoints, 
-              (payable(oneCoffeeFor2500), 
-              2502, 
-              1))
+              (payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]), 
+              5002, 
+              4))
               ); 
-
-        // LoyaltyProgram(loyaltyProgramA).redeemLoyaltyPoints(
-        //   payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]), 2502, 4
-        //   );
         vm.stopBroadcast();
       }
 
@@ -110,9 +106,13 @@ contract DeployLoyaltyProgramA is Script {
     }
 
     function mintLoyaltyCards(LoyaltyProgram lpInstance, uint256 numberOfCards) public {
-
       vm.startBroadcast();
       LoyaltyProgram(lpInstance).mintLoyaltyCards(numberOfCards);
+      // for (uint i = 0; numberOfCards > i; i++) {
+      //   address cardAddress = payable(LoyaltyProgram(lpInstance).getTokenBoundAddress(i)); 
+      //   (bool sent, bytes memory data) = cardAddress.call{value: 1000000000000000000}("");
+      //   require(sent, "failed to send ether"); 
+      // }
       vm.stopBroadcast();
     }
 
@@ -135,7 +135,7 @@ contract DeployLoyaltyProgramA is Script {
       vm.stopBroadcast();
     }
 
-    function mintLoyaltyTokens(LoyaltyProgram lpInstance, address loyaltyTokenAddress, uint256 numberOfTokens) public {
+    function mintLoyaltyTokens(LoyaltyProgram lpInstance, address payable loyaltyTokenAddress, uint256 numberOfTokens) public {
       // uint256 ownerPrivateKey = vm.envUint("DEFAULT_ANVIL_KEY_2");
       vm.startBroadcast();
       LoyaltyProgram(lpInstance).mintLoyaltyTokens(loyaltyTokenAddress, numberOfTokens);

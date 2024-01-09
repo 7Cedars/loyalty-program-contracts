@@ -15,6 +15,7 @@ import {ILoyaltyToken} from "../src/interfaces/ILoyaltyToken.sol";
  */
 contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
     // /* errors */
+    error LoyaltyToken__TokenNotOwned(address loyaltyToken);
     error LoyaltyToken__NoTokensAvailable(address loyaltyToken);
     error LoyaltyToken__RequirementsNotMet(address loyaltyToken);
 
@@ -31,7 +32,7 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
         emit DiscoverableLoyaltyToken(msg.sender); 
     }
 
-    // receive() external virtual payable {}
+    receive() external virtual payable {}
 
     // function makeDiscoverable() public {
         
@@ -79,15 +80,24 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
      *
      *
      */
-    function claimLoyaltyToken(address loyaltyCard) public returns (uint256 tokenId) {
-        uint256 maxIndex = s_loyaltyProgramToTokenIds[msg.sender].length;
+    function claimLoyaltyToken(address loyaltyCard, address loyaltyProgram) public returns (uint256 tokenId) {
+        uint256 maxIndex = s_loyaltyProgramToTokenIds[loyaltyProgram].length;
         if (maxIndex == 0) {
             revert LoyaltyToken__NoTokensAvailable(address(this));
         }
 
         tokenId = s_loyaltyProgramToTokenIds[msg.sender][maxIndex - 1];
+        // tokenId = 999; 
         _safeTransferFrom(msg.sender, loyaltyCard, tokenId, 1, "");
-        // return tokenId;
+        s_loyaltyProgramToTokenIds[loyaltyProgram].pop(); 
+        return tokenId;
+    }
+
+    function redeemLoyaltyToken(address loyaltyCard, uint256 tokenId) public {
+        if (balanceOf(loyaltyCard, tokenId) ==  0) {
+            revert LoyaltyToken__TokenNotOwned(address(this));
+        }
+        _safeTransferFrom(loyaltyCard, msg.sender, tokenId, 1, "");
     }
 
     /* getter functions */

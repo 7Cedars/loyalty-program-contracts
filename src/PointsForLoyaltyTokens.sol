@@ -35,7 +35,6 @@ contract OneCoffeeFor2500 is LoyaltyToken {
         }
 
         bool check = super.requirementsLoyaltyTokenMet(loyaltyCard, loyaltyPoints);
-
         return check; 
     }
 }

@@ -35,7 +35,7 @@ contract ContinueOnRevertHandler is Test {
       loyaltyPrograms[i].mintLoyaltyCards(seedCards); 
 
       for (uint j; j < loyaltyTokens.length; j++) { 
-        loyaltyPrograms[i].addLoyaltyTokenContract(address(loyaltyTokens[j])); 
+        loyaltyPrograms[i].addLoyaltyTokenContract(payable(address(loyaltyTokens[j]))); 
         loyaltyPrograms[i].mintLoyaltyTokens(payable(address(loyaltyTokens[j])), seedToken);
       }
       vm.stopPrank(); 

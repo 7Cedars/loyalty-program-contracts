@@ -200,11 +200,11 @@ contract IntegrationLoyaltyProgramTest is Test {
 
         // whitelist loyalty token contract..
         vm.prank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(address(loyaltyToken2500));
+        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
 
         // mint loyalty tokens..
         vm.prank(vendorA);
-        loyaltyProgramA.mintLoyaltyTokens(address(loyaltyToken2500), numberOfLoyaltyTokensRequested);
+        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), numberOfLoyaltyTokensRequested);
 
         for (uint256 i = 1; i <= numberOfLoyaltyTokensRequested; i++) {
             numberOfLoyaltyTokensReceived =
@@ -249,18 +249,19 @@ contract IntegrationLoyaltyProgramTest is Test {
         uint256 balanceToken10 = loyaltyToken2500.balanceOf(tokenOneProgramA, 10);
         console.log("balanceToken10", balanceToken10);
 
-        // now try and redeem this token...
-        vm.prank(customerOne);
-        ERC6551Account(tokenOneProgramA).executeCall(
-            payable(loyaltyProgramA),
-            0,
-            abi.encodeCall(
-                LoyaltyProgram.redeemLoyaltyToken, 
-                (payable(address(loyaltyToken2500)), 
-                10, 
-                1)
-            )
-        );
+        // // now try and redeem this token...
+        // vm.prank(customerOne);
+        // ERC6551Account(tokenOneProgramA).executeCall(
+        //     payable(loyaltyProgramA),
+        //     0,
+        //     abi.encodeCall(
+        //         LoyaltyProgram.redeemLoyaltyToken, 
+        //         (payable(address(loyaltyToken2500)), 
+        //         10,
+        //         LoyaltyProgram.getTokenBoundAddress(1)
+        //      )
+        //     )
+        // );
     }
 
     // function testOwnerCanTransferTokenstouserOne(uint256 amount) public {

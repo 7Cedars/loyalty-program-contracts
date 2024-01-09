@@ -48,7 +48,11 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
  *
  * @notice This contract interacts with loyalty token contracts that define the requirement logics
  * for redeemin points (and any other type of data) for loyalty token.
- *
+ * 
+ * @notice Loyalty Points are minted at loyalty Program by the owner. 
+ * Loyalty Tokens are minted at the Loyalty Tokens by the Loyalty Program. 
+ * e.g. points and tokens are held by different contracts.  
+ * 
  * @notice The contract builds on the ERC1155 and ERC6551 standards, and is meant as a showcase
  * of using both fungible, semi-fungible and non-fungible tokens as a utility, rather than
  * store/exchange of value.
@@ -60,6 +64,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     error LoyaltyProgram__InSufficientPoints();
     error LoyaltyProgram__LoyaltyCardNotRecognised();
     error LoyaltyProgram__LoyaltyTokenNotRecognised();
+    error LoyaltyProgram__LoyaltyTokenNotClaimable(); 
     error LoyaltyProgram__LoyaltyTokenNotRedeemable();
     error LoyaltyProgram__CardCanOnlyReceivePoints();
     error LoyaltyProgram__LoyaltyCardNotAvailable();
@@ -162,7 +167,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * - emits a AddedLoyaltyTokenContract event
      */
 
-    function addLoyaltyTokenContract(address loyaltyToken) public onlyOwner {
+    function addLoyaltyTokenContract(address payable loyaltyToken) public onlyOwner {
         // CAUSES many reverts :D Needs bug fixing... 
         // bytes4 interfaceId = type(ILoyaltyToken).interfaceId; 
         // if (ERC165Checker.supportsERC165InterfaceUnchecked(loyaltyToken, interfaceId) == false) {
@@ -217,7 +222,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     }
 
     /** 
-     * * NB: In front end I AM NOT CALLING THIS FUNCTION! 
      * @dev mint loyaltyTokens at external loyaltyToken contract. 
      * @param loyaltyTokenAddress address of loyalty token contract. 
      * @param numberOfTokens amount of tokens to be minted. 
@@ -227,9 +231,9 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * @notice only owner can remove contracts from whitelist. 
      * @notice added nonReentrant guard. 
      * 
-     * - emits transferBatch event --  #REALLY? not transferSingle? double check! 
+     * - emits transferBatch event 
      */
-    function mintLoyaltyTokens(address loyaltyTokenAddress, uint256 numberOfTokens) public onlyOwner nonReentrant {
+    function mintLoyaltyTokens(address payable loyaltyTokenAddress, uint256 numberOfTokens) public onlyOwner nonReentrant {
         LoyaltyToken(loyaltyTokenAddress).mintLoyaltyTokens(numberOfTokens);
     }
 
@@ -247,28 +251,27 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * 
      * - emits a TransferSingle event 
      */
-    function redeemLoyaltyPoints(address loyaltyToken, uint256 loyaltyPoints, uint256 loyaltyCardId)
+    function redeemLoyaltyPoints(address payable loyaltyToken, uint256 loyaltyPoints, uint256 loyaltyCardId)
         external
         nonReentrant
     {
         address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
-        // uint256 tokenId = LoyaltyToken(loyaltyToken).getAvailableTokens(address(this)); 
 
         // checks
         if (loyaltyPoints >= balanceOf(loyaltyCardAddress, 0)) {
             revert LoyaltyProgram__InSufficientPointsOnCard();
         }
-        // if (s_LoyaltyTokensClaimable[loyaltyToken] == 0) {
-        //     revert LoyaltyProgram__LoyaltyTokenNotRedeemable();
-        // }
+        if (s_LoyaltyTokensClaimable[loyaltyToken] == 0) {
+            revert LoyaltyProgram__LoyaltyTokenNotClaimable();
+        }
 
         // requirements check = external.
         (bool success) = LoyaltyToken(loyaltyToken).requirementsLoyaltyTokenMet(loyaltyCardAddress, loyaltyPoints);
         // updating balances / interaction
 
-        // this should be burn function.   
+        // Note: no approval check   
         if (success) {
-            safeTransferFrom(
+            _safeTransferFrom(
                 loyaltyCardAddress,
                 s_owner, // loyalty points are returned to owner .
                 0,
@@ -276,40 +279,31 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
                 ""
             );
 
-            // safeTransferFrom(
-            //     s_owner,
-            //     loyaltyCardAddress,
-            //     0,
-            //     1,
-            //     ""
-            // );
-
             // claiming Loyalty Token / external.
-            LoyaltyToken(loyaltyToken).claimLoyaltyToken(loyaltyCardAddress);
+            LoyaltyToken(loyaltyToken).claimLoyaltyToken(loyaltyCardAddress, address(this));
         }
     }
 
-    function redeemLoyaltyToken(address payable loyaltyToken, uint256 loyaltyTokenId, uint256 loyaltyCard)
+    function redeemLoyaltyToken(address payable loyaltyToken, uint256 loyaltyTokenId, address loyaltyCardAddress)
         external
+        onlyOwner
         nonReentrant
     {
-        address loyaltyCardAddress = getTokenBoundAddress(loyaltyCard);
-        if (LoyaltyToken(loyaltyToken).balanceOf(loyaltyCardAddress, loyaltyTokenId) == 0) {
-            revert LoyaltyProgram__LoyaltyTokenNotOnCard();
-        }
         // check if loyaltyToken is redeemable. 
         if (s_LoyaltyTokensRedeemable[loyaltyToken] == 0) {
             revert LoyaltyProgram__LoyaltyTokenNotRedeemable();
         }
 
-        /// Token is send to
-        safeTransferFrom(
-            loyaltyCardAddress,
-            address(1), // loyalty points are send to burner address.
-            loyaltyTokenId,
-            0,
-            ""
-        );
+        LoyaltyToken(loyaltyToken).redeemLoyaltyToken(loyaltyCardAddress, loyaltyTokenId);
+
+        /// NB: this will NOT send without approval from owner of loyaltycard. 
+        // _safeTransferFrom(
+        //     loyaltyCardAddress,
+        //     address(this), // Loyalty Tokens are send back to loyalty program address.
+        //     loyaltyTokenId,
+        //     0,
+        //     ""
+        // );
 
         // emits a transferSingle event. 
     }
