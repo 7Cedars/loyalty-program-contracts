@@ -87,17 +87,22 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
         }
 
         tokenId = s_loyaltyProgramToTokenIds[msg.sender][maxIndex - 1];
-        // tokenId = 999; 
-        _safeTransferFrom(msg.sender, loyaltyCard, tokenId, 1, "");
+        // it should be possible to do this with normal safeTransferFrom. (from == operator) 
+        safeTransferFrom(msg.sender, loyaltyCard, tokenId, 1, "");
         s_loyaltyProgramToTokenIds[loyaltyProgram].pop(); 
         return tokenId;
     }
 
+    /**
+     * @dev Note that this function does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract. 
+     *
+     *
+     */
     function redeemLoyaltyToken(address loyaltyCard, uint256 tokenId) public {
         if (balanceOf(loyaltyCard, tokenId) ==  0) {
             revert LoyaltyToken__TokenNotOwned(address(this));
         }
-        _safeTransferFrom(loyaltyCard, msg.sender, tokenId, 1, "");
+        safeTransferFrom(loyaltyCard, msg.sender, tokenId, 1, "");
     }
 
     /* getter functions */
