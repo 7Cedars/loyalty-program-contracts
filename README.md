@@ -12,7 +12,7 @@ For personal use only.
 - Design of solidity backend is on Figma. 
 
 ## Development / TO DO 
-So, minimal PoC of LoyaltyProgram is finished. Next steps 
+So, minimal PoC of LoyaltyProgram is finished. Next steps (Do these while completing PatrickC's course on Foundry)
 - [x] Add reentrancy guard to LoyaltyProgram. See note on safeTransferFrom in erc1155. 
 - [x] Build unit tests 
   - [x] Do points get added to loyaltyCard (and not user address)? 
@@ -23,18 +23,23 @@ So, minimal PoC of LoyaltyProgram is finished. Next steps
   - [ ] Does claim loyaltyTokens work - do tokens get redeemd by loyaltyCards (and not customers)? 
   - [ ] When tokens are finsihed - does it indeed stop issuing them? (are reverts bound by loyalty program)
   - [ ] Are points and tokens bound to loyalty cards?   
-- [ ] Build interactions and scenarios 
+- [ ] Build interactions and scenarios - best done in seperate github repository! 
   - [ ] colleting points, claim and redeeming LoyaltyTokens
   - [ ] colleting points, transfer loyaltyCard, claim tokens, transfer loyaltyCard, redeem tokens. 
   - [ ] etc. -- come up with many different scenarios. 
+  - [ ] Place all these in seperate repository. 
+  - [ ] Create mock loyalty contract in this repository for testing purposes.  
 - [ ] Implement gasless transaction for loyaltyCard holdres - VENDOR should pay gas!
-- [ ] Rerun all tests - now with gas cost > 0
+- [ ] Rerun all tests - now with gas cost > 0 
 - [ ] Create mutliple / more loyaltyToken contracts - also using chainlink external data. 
   - [ ] Raffle. 
-  - [ ] at least x amoung of transactions... 
+  - [ ] at least x amoung of transactions in last  x days... 
+  - [ ] premium programs -> loyalty tokens only available on having particular 'premium token'. 
+  - [ ] Buying token with $$ instead of points. 
   - [ ] etc etc . 
 - [ ] Focus on developing front end - see 'loyalty-program-next' folder.  
 - [ ] Check: on what chains is ERC6551 deployed?  
+  - [ ] Start setting up infra to deploy to several chains. 
 - [ ] Run rest on forked testnets.
   - [ ] L1: Sepolia 
   - [ ] L2: optimus? 
