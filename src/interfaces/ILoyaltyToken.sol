@@ -31,7 +31,7 @@ interface ILoyaltyToken is IERC1155 {
     /**
      * @dev natspecs TBI 
      */
-    function claimLoyaltyToken(address loyaltyCard, address loyaltyProgram) external returns (uint256 tokenId);
+    function claimLoyaltyToken(address loyaltyCard) external;
 
     /**
      * @dev natspecs TBI 
@@ -41,5 +41,5 @@ interface ILoyaltyToken is IERC1155 {
     /**
      * @dev natspecs TBI 
      */
-    function getAvailableTokens(address loyaltyCard) external view returns (uint256);
+    function getAvailableTokens(address loyaltyCard) external view returns (uint256[] memory);
 }

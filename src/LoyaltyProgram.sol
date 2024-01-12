@@ -214,10 +214,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         if (s_LoyaltyTokensRedeemable[loyaltyToken] == 0) {
             revert LoyaltyProgram__LoyaltyTokenNotRecognised();
         }
-        // if (s_LoyaltyTokensClaimable[loyaltyToken] == 1) {
         s_LoyaltyTokensClaimable[loyaltyToken] = 0;
-        // }
-        // s_LoyaltyTokensRedeemable[loyaltyToken] = 0;
+
         emit RemovedLoyaltyTokenRedeemable(loyaltyToken);
     }
 
@@ -280,7 +278,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             );
 
             // claiming Loyalty Token / external.
-            LoyaltyToken(loyaltyToken).claimLoyaltyToken(loyaltyCardAddress, address(this));
+            LoyaltyToken(loyaltyToken).claimLoyaltyToken(loyaltyCardAddress);
         }
     }
 
@@ -296,15 +294,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
         LoyaltyToken(loyaltyToken).redeemLoyaltyToken(loyaltyCardAddress, loyaltyTokenId);
 
-        /// NB: this will NOT send without approval from owner of loyaltycard. 
-        // _safeTransferFrom(
-        //     loyaltyCardAddress,
-        //     address(this), // Loyalty Tokens are send back to loyalty program address.
-        //     loyaltyTokenId,
-        //     0,
-        //     ""
-        // );
-
         // emits a transferSingle event. 
     }
 
@@ -316,7 +305,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         return tokenBoundAccount;
     }
 
-    // I should try an delete these ones - and see what happens..
+    // Without these transactions are declined. 
     function onERC1155Received(address, address, uint256, uint256, bytes memory) public virtual returns (bytes4) {
         return this.onERC1155Received.selector;
     }
@@ -336,7 +325,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * - loyalty token contracts.
      * - address(0) - to burn.
      * - owner of this contracts, s_owner (used ofr minting points).
-     * LoyaltyCards can be transferred anywhere.
+     * LoyaltyCards can be transferred anywhere! 
      * @dev All other params remain unchanged.
      */
     function _update(address from, address to, uint256[] memory ids, uint256[] memory values)
@@ -344,13 +333,12 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         virtual
         override
     {
-        for (uint256 i = 0; i < ids.length; ++i) {
+        for (uint256 i; i < ids.length; ++i) {
             if (ids[i] == LOYALTY_POINTS) {
                 if (
                     s_LoyaltyTokensClaimable[to] == 0
-                        && s_LoyaltyCards[to] == 0  // points can be transferred to loyalty Token Contracts
-                        && to != address(0) // points can be transferred to address(0) = burn address
-                        && to != s_owner // points can be transferred to owner (address that minted points are transferred to)
+                    && s_LoyaltyCards[to] == 0  // points can be transferred to loyalty Token Contracts
+                    && to != s_owner // points can be transferred to owner (address that minted points are transferred to)
                 ) {
                     // All other addresses are no-go.
                     revert LoyaltyProgram__TransferDenied();
@@ -373,7 +361,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         return s_owner;
     }
 
-    function getLoyaltyToken(address loyaltyToken) external view returns (uint256) {
+    function getLoyaltyTokensClaimable(address loyaltyToken) external view returns (uint256) {
         return s_LoyaltyTokensClaimable[loyaltyToken];
     }
 

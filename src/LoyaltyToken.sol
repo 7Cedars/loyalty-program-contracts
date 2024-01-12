@@ -15,9 +15,10 @@ import {ILoyaltyToken} from "../src/interfaces/ILoyaltyToken.sol";
  */
 contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
     // /* errors */
-    error LoyaltyToken__TokenNotOwned(address loyaltyToken);
+    error LoyaltyToken__TokenNotOwnedByCard(address loyaltyToken);
     error LoyaltyToken__NoTokensAvailable(address loyaltyToken);
     error LoyaltyToken__RequirementsNotMet(address loyaltyToken);
+    error LoyaltyToken__TokenFromOtherLoyaltyProgram(address mintedAt, address redeemedFrom);
 
     /* State variables */
     mapping(uint256 => address) private s_tokenIdToLoyaltyProgram;
@@ -47,22 +48,20 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
         uint256[] memory mintNfts = new uint256[](numberOfTokens);
         uint256 counter = s_tokenCounter;
 
-        for (uint256 i; i < numberOfTokens; i++) {
-            // i starts at 0.... right? TEST!
+        for (uint256 i; i < numberOfTokens; i++) { // i starts at 0.... right? TEST!
             counter = counter + 1;
             loyaltyTokenIds[i] = counter;
             mintNfts[i] = 1;
             s_tokenIdToLoyaltyProgram[i] = msg.sender;
+            s_loyaltyProgramToTokenIds[msg.sender].push(counter); 
         }
 
         _mintBatch(msg.sender, loyaltyTokenIds, mintNfts, ""); // emits batchtransfer event
-
         s_tokenCounter = s_tokenCounter + numberOfTokens;
-        s_loyaltyProgramToTokenIds[msg.sender] = loyaltyTokenIds;
     }
 
     /**
-     * @dev TODO
+     * @dev Here NFT specific requirements are inserted.
      *
      *
      */
@@ -70,7 +69,6 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
         address, // loyaltyCard
         uint256 // loyaltypoints
     ) public virtual returns (bool success) {
-        // Here NFT specific requirements are inserted.
 
         return true;
     }
@@ -80,36 +78,38 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
      *
      *
      */
-    function claimLoyaltyToken(address loyaltyCard, address loyaltyProgram) public returns (uint256 tokenId) {
-        uint256 maxIndex = s_loyaltyProgramToTokenIds[loyaltyProgram].length;
+    function claimLoyaltyToken(address loyaltyCard) public {
+        uint256 maxIndex = s_loyaltyProgramToTokenIds[msg.sender].length;
         if (maxIndex == 0) {
             revert LoyaltyToken__NoTokensAvailable(address(this));
         }
 
-        tokenId = s_loyaltyProgramToTokenIds[msg.sender][maxIndex - 1];
-        // it should be possible to do this with normal safeTransferFrom. (from == operator) 
+        uint256 tokenId = s_loyaltyProgramToTokenIds[msg.sender][maxIndex - 1]; // because array starts counting at 0, last position == length - 1 
+        s_loyaltyProgramToTokenIds[msg.sender].pop(); 
         safeTransferFrom(msg.sender, loyaltyCard, tokenId, 1, "");
-        s_loyaltyProgramToTokenIds[loyaltyProgram].pop(); 
-        return tokenId;
     }
 
     /**
-     * @dev Note that this function does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract. 
-     *
+     * @notice includes check if token was minted by loyalty program that is redeemed from. This means that Loyalty Tokens can be 
+     * freely transferred by customers, but can only be redeemed at the program where they were originally minted (and claimed by a customer).    
+     * 
+     * @notice It does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract. 
+     *  
      *
      */
     function redeemLoyaltyToken(address loyaltyCard, uint256 tokenId) public {
-        if (balanceOf(loyaltyCard, tokenId) ==  0) {
-            revert LoyaltyToken__TokenNotOwned(address(this));
+
+        if (s_tokenIdToLoyaltyProgram[tokenId] != msg.sender) {
+            revert LoyaltyToken__TokenFromOtherLoyaltyProgram(s_tokenIdToLoyaltyProgram[tokenId], msg.sender);
         }
+        
+        s_loyaltyProgramToTokenIds[msg.sender].push(tokenId);
         safeTransferFrom(loyaltyCard, msg.sender, tokenId, 1, "");
     }
 
     /* getter functions */
 
-    function getAvailableTokens(address loyaltyProgram) external view returns (uint256) {
-        return s_loyaltyProgramToTokenIds[loyaltyProgram].length;
+    function getAvailableTokens(address loyaltyProgram) external view returns ( uint256[] memory ) {
+        return s_loyaltyProgramToTokenIds[loyaltyProgram];
     }
-    // will get to some when testing.
-    // uri is already 1155 function.
 }

@@ -142,12 +142,12 @@ contract DeployLoyaltyProgramA is Script {
       vm.stopBroadcast();
     }
     
-    // function claimLoyaltyTokens(LoyaltyProgram lpInstance, address payable loyaltyTokenAddress, uint256 numberOfPoints, uint256 loyaltyCardId)  public {
-    //   uint256 ownerPrivateKey = vm.envUint("DEFAULT_ANVIL_KEY_3");
-    //   vm.startBroadcast(ownerPrivateKey);
-    //   LoyaltyProgram(lpInstance).redeemLoyaltyPoints(loyaltyTokenAddress, numberOfPoints, loyaltyCardId);
-    //   vm.stopBroadcast();
-    // }
+//     function claimLoyaltyTokens(LoyaltyProgram lpInstance, address payable loyaltyTokenAddress, uint256 numberOfPoints, uint256 loyaltyCardId)  public {
+//       uint256 ownerPrivateKey = vm.envUint("DEFAULT_ANVIL_KEY_3");
+//       vm.startBroadcast(ownerPrivateKey);
+//       LoyaltyProgram(lpInstance).redeemLoyaltyPoints(loyaltyTokenAddress, numberOfPoints, loyaltyCardId);
+//       vm.stopBroadcast();
+//     }
 }
 
 

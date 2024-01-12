@@ -49,7 +49,7 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
         uint256 numberLCs = loyaltyPrograms[i].getNumberLoyaltyCardsMinted();
         console.log("numberLCs: ", numberLCs); 
 
-        loyaltyPrograms[i].getLoyaltyToken(address(loyaltyTokens[0]));
+        loyaltyPrograms[i].getLoyaltyTokensClaimable(address(loyaltyTokens[0]));
         loyaltyPrograms[i].getOwner();
         
         for (uint256 j = 0; j < numberLCs; j++) { 

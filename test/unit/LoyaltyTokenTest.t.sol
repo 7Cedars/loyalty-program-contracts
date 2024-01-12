@@ -28,11 +28,11 @@ contract LoyaltyTokenTest is Test {
         // for loop in solidity: initialisation, condition, updating. See https://dev.to/shlok2740/loops-in-solidity-2pmp.
         for (uint256 i = 0; i < numberLoyaltyTokens1; i++) {
             vm.prank(loyaltyProgramAddress);
-            loyaltyToken.claimLoyaltyToken(userOne, loyaltyProgramAddress);
+            loyaltyToken.claimLoyaltyToken(userOne);
         }
         for (uint256 i = 0; i < numberLoyaltyTokens2; i++) {
             vm.prank(loyaltyProgramAddress);
-            loyaltyToken.claimLoyaltyToken(userTwo, loyaltyProgramAddress);
+            loyaltyToken.claimLoyaltyToken(userTwo);
         }
         _;
     }
@@ -88,21 +88,27 @@ contract LoyaltyTokenTest is Test {
         vm.prank(loyaltyProgramAddress);
         loyaltyToken.mintLoyaltyTokens(20);
         vm.prank(loyaltyProgramAddress);
-        tokenId = loyaltyToken.claimLoyaltyToken(userOne, loyaltyProgramAddress);
+        loyaltyToken.claimLoyaltyToken(userOne);
 
-        assert(loyaltyToken.balanceOf(userOne, tokenId) == 1);
+        assert(loyaltyToken.balanceOf(userOne, 19) == 1);
         assert(keccak256(abi.encodePacked(FREE_COFFEE_URI)) == keccak256(abi.encodePacked(loyaltyToken.uri(tokenId))));
     }
 
     function testUserCanCheckAvailableTokens() public {
-        uint256 numberOfTokens;
+        uint256[] memory numberOfTokens;
 
-        // vm.prank(loyaltyProgramAddress);
-        // loyaltyToken.mintLoyaltyTokens(20);
-        // vm.prank(loyaltyProgramAddress);
+        vm.prank(loyaltyProgramAddress);
+        loyaltyToken.mintLoyaltyTokens(20);
+        vm.prank(loyaltyProgramAddress);
+        loyaltyToken.claimLoyaltyToken(userOne);
+
         numberOfTokens = loyaltyToken.getAvailableTokens(userOne);
+
+        for (uint256 i = 1; i < numberOfTokens.length; i++) {
+            console.logUint(numberOfTokens[i]); 
+        }
         
-        console.logUint(numberOfTokens); 
+        
     }
 
     /////////////////////////////////////////////////////////
