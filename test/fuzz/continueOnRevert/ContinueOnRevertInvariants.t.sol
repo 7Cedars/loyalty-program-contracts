@@ -32,8 +32,9 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
     deployerLP = new DeployLoyaltyProgram(); 
     deployerLT = new DeployLoyaltyToken(); 
 
-    uint256 numberLPs = 5;
-    uint256 numberLTs = 15;
+    uint256 numberLPs = 3; // number of LoyaltyPrograms that will be deployed. 
+    uint256 numberLTs = 4; // number of LoyaltyTokens that will be deployed. 
+    uint256 numberLCs = 5; // number of LoyaltyCards that will be minted by each LoyaltyProgram. 
     
     for (uint256 i = 0; i < numberLPs; i++) { loyaltyPrograms.push(deployerLP.run()); }
     for (uint256 j = 0; j < numberLTs; j++) { loyaltyTokens.push(deployerLT.run()); }
@@ -42,8 +43,13 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
     targetContract(address(continueOnRevertHandler)); 
   }
 
+  // Invariant 1: Points minted at LoyaltyProgram can never end up at LoyaltyCards affiliated with another LoyaltyProgram.    
 
 
+  // Invariant 2: Tokens minted by LoyaltyProgram can never be redeemed at another LoyaltyProgram.  
+
+
+  // Invariant 3: Getter functions cannot revert.  
   function invariant_gettersCantRevert() public view {
     for (uint256 i = 0; i < loyaltyPrograms.length; i++) { 
         uint256 numberLCs = loyaltyPrograms[i].getNumberLoyaltyCardsMinted();

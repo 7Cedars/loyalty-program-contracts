@@ -5,46 +5,58 @@ This repository is meant as initial playground to try out, develop and test the 
 For personal use only. 
 
 ## Idea and Design
-
 - Create an open and modular blockchain based framework for loyalty programs. 
 - Aimed at small and medium sized shops and companies. 
 - eventually deploy on multiple blockchains. 
 - Design of solidity backend is on Figma. 
 
-## Development / TO DO 
-So, minimal PoC of LoyaltyProgram is finished. Next steps (Do these while completing PatrickC's course on Foundry)
-- [x] Add reentrancy guard to LoyaltyProgram. See note on safeTransferFrom in erc1155. 
-- [x] Build unit tests 
+## Development / TO DO
+LoyaltyProgram. Get to deployment of contract! 
+- [ ] Implement covering gas of users by LoyaltyProgram Owner
+  - [ ] See https://learnweb3.io/lessons/using-metatransaction-to-pay-for-your-users-gas for a lesson on how to do this. 
+  - [ ] It will take some careful coding. 
+- [ ] Build unit tests 
+  - [ ] test should run with gas > 0 
   - [x] Do points get added to loyaltyCard (and not user address)? 
   - [x] Does adding and removing loyaltyTokenContract work? 
-  - [ ] Are loyalty cards freely transferrable to any contract address? 
-- [ ] Build integration tests 
+  - [x] Are loyalty cards freely transferrable to any contract address? 
+  - [ ] Check use of signature works 
+  - [ ] Check for signature replay attack 
+- [ ] Build integration
   - [x] Does Minting loyaltyTokens by vendor work? 
-  - [ ] Does claim loyaltyTokens work - do tokens get redeemd by loyaltyCards (and not customers)? 
+  - [x] Does claim loyaltyTokens work - do tokens get redeemd by loyaltyCards (and not customers)? 
   - [ ] When tokens are finsihed - does it indeed stop issuing them? (are reverts bound by loyalty program)
-  - [ ] Are points and tokens bound to loyalty cards?   
-- [ ] Build interactions and scenarios - best done in seperate github repository! 
-  - [ ] colleting points, claim and redeeming LoyaltyTokens
-  - [ ] colleting points, transfer loyaltyCard, claim tokens, transfer loyaltyCard, redeem tokens. 
-  - [ ] etc. -- come up with many different scenarios. 
-  - [ ] Place all these in seperate repository. 
-  - [ ] Create mock loyalty contract in this repository for testing purposes.  
-- [ ] Implement gasless transaction for loyaltyCard holdres - VENDOR should pay gas!
-- [ ] Rerun all tests - now with gas cost > 0 
-- [ ] Create mutliple / more loyaltyToken contracts - also using chainlink external data. 
+  - [ ] Are points and tokens bound to loyalty cards?
+- [ ] Build invariant tests
+  - [ ] implement handler contract. 
+  - [ ] implement invarient check cintract. 
+
+LoyaltyToken 
+- [ ] Create mock loyalty contract in this repository for testing purposes.  
+- [ ] Create mutliple / more loyaltyToken contracts - also using chainlink external data: in seperate repositroy 
+  - [ ] Create a seperate github repository for these contracts. -- only keep mock contract in this repository.  
   - [ ] Raffle. 
-  - [ ] at least x amoung of transactions in last  x days... 
-  - [ ] premium programs -> loyalty tokens only available on having particular 'premium token'. 
-  - [ ] Buying token with $$ instead of points. 
+  - [ ] at least x amount of transactions in last x days... OR on last x number of Wednesday! 
+  - [ ] Not having more than one of these tokens (otherwise you can claim many tokens, even though most points are from other day.)  
+  - [ ] premium programs -> loyalty tokens only available on having particular 'premium token'. (for instance, cheaper free gifts, etc)
+  - [ ] Buying token with $$ instead of points. (for instance, for customers buying themselves into premium program)
+  - [ ] A DAO that distributes tokens for premium program. 
   - [ ] etc etc . 
-- [ ] Focus on developing front end - see 'loyalty-program-next' folder.  
+  - [ ] 
+
+Deployment 
+- [ ] Build deployment scripts
+- [x] Build mock interaction scripts 
+  - [x] colleting points, claim and redeeming LoyaltyTokens
+  - [x] colleting points, transfer loyaltyCard, claim tokens, transfer loyaltyCard, redeem tokens. 
+  - [x] etc. -- come up with many different scenarios.
 - [ ] Check: on what chains is ERC6551 deployed?  
   - [ ] Start setting up infra to deploy to several chains. 
 - [ ] Run rest on forked testnets.
   - [ ] L1: Sepolia 
   - [ ] L2: optimus? 
   - [ ] L2: Arbitrum? 
-  - [ ] ...? 
+  - [ ] Polygon zvEVM? 
 - [ ] Deploy on actual testnet - and test.
 - [ ] Deploy on actual chains! 
 

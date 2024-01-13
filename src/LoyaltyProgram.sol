@@ -235,6 +235,59 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         LoyaltyToken(loyaltyTokenAddress).mintLoyaltyTokens(numberOfTokens);
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////
+    /// THIS FUNCTION NEEDS TO BE REFACTORED: GAS SHOULD BE COVERED BY LOYALTYPROGRAM /// 
+    /////////////////////////////////////////////////////////////////////////////////////
+    /** 
+     * @dev redeem loyaltyPoints for loyaltyToken by a Token Bound Account (the loyalty card). 
+     * The loyalty card calls the requirement function of external loyaltyToken contract. 
+     * @param loyaltyToken address of loyalty token contract. 
+     * @param loyaltyPoints number of points send to claim token.  
+     * @param loyaltyCardId id of the loyalty card used to call this function. 
+     * 
+     * @notice only one token can be claimed per call. 
+     * @notice any loyaltyCard minted through loyalty program can redeem loyalty points. 
+     * @notice added nonReentrant guard as CEI structure could not be 100% followed. 
+     * @notice if customer does not own TBA / loyalty card it will revert at ERC6551 account.  
+     * 
+     * - emits a TransferSingle event 
+     */
+    function redeemLoyaltyPointsNEW(address payable loyaltyToken, uint256 loyaltyPoints, uint256 loyaltyCardId)
+        external
+        nonReentrant
+    {
+        address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
+
+        // checks
+        if (loyaltyPoints >= balanceOf(loyaltyCardAddress, 0)) {
+            revert LoyaltyProgram__InSufficientPointsOnCard();
+        }
+        if (s_LoyaltyTokensClaimable[loyaltyToken] == 0) {
+            revert LoyaltyProgram__LoyaltyTokenNotClaimable();
+        }
+
+        // requirements check = external.
+        (bool success) = LoyaltyToken(loyaltyToken).requirementsLoyaltyTokenMet(loyaltyCardAddress, loyaltyPoints);
+        // updating balances / interaction
+
+        // Note: no approval check   
+        if (success) {
+            _safeTransferFrom(
+                loyaltyCardAddress,
+                s_owner, // loyalty points are returned to owner .
+                0,
+                loyaltyPoints,
+                ""
+            );
+
+            // claiming Loyalty Token / external.
+            LoyaltyToken(loyaltyToken).claimLoyaltyToken(loyaltyCardAddress);
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    /// THIS FUNCTION NEEDS TO BE REFACTORED: GAS SHOULD BE COVERED BY LOYALTYPROGRAM /// 
+    /////////////////////////////////////////////////////////////////////////////////////
     /** 
      * @dev redeem loyaltyPoints for loyaltyToken by a Token Bound Account (the loyalty card). 
      * The loyalty card calls the requirement function of external loyaltyToken contract. 
@@ -282,6 +335,9 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// THIS FUNCTION NEEDS TO BE REFACTORED: IT REQUIRES USER AUTHENTICATION - GAS COST NEEDS TO BE COVERED BY LOYALTYPROGRAM  /// 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     function redeemLoyaltyToken(address payable loyaltyToken, uint256 loyaltyTokenId, address loyaltyCardAddress)
         external
         onlyOwner
@@ -295,14 +351,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         LoyaltyToken(loyaltyToken).redeemLoyaltyToken(loyaltyCardAddress, loyaltyTokenId);
 
         // emits a transferSingle event. 
-    }
-
-    function getTokenBoundAddress(uint256 _loyaltyCardId) public view returns (address tokenBoundAccount) {
-        tokenBoundAccount = s_erc6551Registry.account(
-            address(s_erc6551Implementation), block.chainid, address(this), _loyaltyCardId, 3947539732098357
-        );
-
-        return tokenBoundAccount;
     }
 
     // Without these transactions are declined. 
@@ -359,6 +407,13 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     /* Getter functions */
     function getOwner() external view returns (address) {
         return s_owner;
+    }
+    
+    function getTokenBoundAddress(uint256 _loyaltyCardId) public view returns (address tokenBoundAccount) {
+        tokenBoundAccount = s_erc6551Registry.account(
+            address(s_erc6551Implementation), block.chainid, address(this), _loyaltyCardId, 3947539732098357
+        );
+        return tokenBoundAccount;
     }
 
     function getLoyaltyTokensClaimable(address loyaltyToken) external view returns (uint256) {

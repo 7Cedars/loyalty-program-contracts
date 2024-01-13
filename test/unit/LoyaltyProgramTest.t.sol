@@ -233,8 +233,8 @@ contract LoyaltyProgramTest is Test {
         loyaltyProgramB.addLoyaltyTokenContract(payable(loyaltyTokenContractA));
 
         // Assert
-        assertEq(loyaltyProgramB.getLoyaltyToken(loyaltyTokenContractA), 1);
-        assertEq(loyaltyProgramB.getLoyaltyToken(address(0)), 0);
+        assertEq(loyaltyProgramB.getLoyaltyTokensClaimable(loyaltyTokenContractA), 1);
+        assertEq(loyaltyProgramB.getLoyaltyTokensClaimable(address(0)), 0);
     }
 
     function testEmitsEventOnAddingLoyaltyTokenContract() public {
@@ -250,21 +250,21 @@ contract LoyaltyProgramTest is Test {
         // Arrange
         vm.prank(vendorA);
         loyaltyProgramA.addLoyaltyTokenContract(payable(loyaltyTokenContractA));
-        assertEq(loyaltyProgramA.getLoyaltyToken(loyaltyTokenContractA), 1);
+        assertEq(loyaltyProgramA.getLoyaltyTokensClaimable(loyaltyTokenContractA), 1);
 
         // Act
         vm.prank(vendorA);
         loyaltyProgramA.removeLoyaltyTokenClaimable(loyaltyTokenContractA);
 
         // Assert
-        assertEq(loyaltyProgramA.getLoyaltyToken(loyaltyTokenContractA), 0);
+        assertEq(loyaltyProgramA.getLoyaltyTokensClaimable(loyaltyTokenContractA), 0);
     }
 
     function testEmitsEventOnRemovingloyaltyTokenContract() public {
         // Arrange
         vm.prank(vendorA);
         loyaltyProgramA.addLoyaltyTokenContract(payable(loyaltyTokenContractA));
-        assertEq(loyaltyProgramA.getLoyaltyToken(loyaltyTokenContractA), 1);
+        assertEq(loyaltyProgramA.getLoyaltyTokensClaimable(loyaltyTokenContractA), 1);
 
         vm.expectEmit(true, false, false, false, address(loyaltyProgramA));
         emit RemovedLoyaltyTokenClaimable(loyaltyTokenContractA);
