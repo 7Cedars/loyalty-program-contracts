@@ -36,6 +36,8 @@ import {ERC6551Registry} from "./ERC6551Registry.sol";
 import {ERC6551Account} from "./ERC6551Account.sol";
 import {IERC6551Account} from "../src/interfaces/IERC6551Account.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 /**
  * @title LoyaltyProgram
@@ -63,6 +65,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     error LoyaltyProgram__OnlyOwner();
     error LoyaltyProgram__InSufficientPoints();
     error LoyaltyProgram__LoyaltyCardNotRecognised();
+    error LoyaltyProgram__RequestAlreadyExecuted();
+    error LoyaltyProgram__RequestNotFromLoyaltyCard(); 
     error LoyaltyProgram__LoyaltyTokenNotRecognised();
     error LoyaltyProgram__LoyaltyTokenNotClaimable(); 
     error LoyaltyProgram__LoyaltyTokenNotRedeemable();
@@ -73,10 +77,15 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     error LoyaltyProgram__LoyaltyTokenNotOnCard();
     error LoyaltyProgram__IncorrectContractInterface(address loyaltyToken);
 
+    /* Type declarations */
+    using MessageHashUtils for bytes32;
+    using ECDSA for bytes32;
+
     /* State variables */
     uint256 public constant LOYALTY_POINTS = 0;
 
     address private s_owner;
+    mapping(bytes32 => bool) requestExecuted;
     mapping(address loyaltyTokenAddress => uint256 active) private s_LoyaltyTokensClaimable; // 0 = false & 1 = true.
     mapping(address loyaltyTokenAddress => uint256 active) private s_LoyaltyTokensRedeemable; // 0 = false & 1 = true.
     mapping(address loyaltyCardAddress => uint256 exists) private s_LoyaltyCards; // 0 = false & 1 = true.
@@ -247,47 +256,69 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * 
      * @notice only one token can be claimed per call. 
      * @notice any loyaltyCard minted through loyalty program can redeem loyalty points. 
-     * @notice added nonReentrant guard as CEI structure could not be 100% followed. 
+     * @notice CHECK add nonReentrant guard as CEI structure can not be 100% followed?  
      * @notice if customer does not own TBA / loyalty card it will revert at ERC6551 account.  
      * 
      * - emits a TransferSingle event 
      */
-    function redeemLoyaltyPointsNEW(address payable loyaltyToken, uint256 loyaltyPoints, uint256 loyaltyCardId)
+    function redeemLoyaltyPointsNEW(
+        address loyaltyToken, 
+        uint256 loyaltyPoints, 
+        uint256 loyaltyCardId, // if possible, change this to address (will be more efficient to ask for address in front end). 
+        uint nonce, // can, I think, be blocknumber. --just meant so same type of request do not end up being reverted. 
+        bytes memory signature
+        )
         external
         nonReentrant
     {
+        // note: nonce passed into messageHAsh here. 
+        bytes32 messageHash = getHashRedeemPoints(loyaltyToken, s_owner, loyaltyPoints, loyaltyCardId, nonce);
+        bytes32 signedMessageHash = messageHash.toEthSignedMessageHash();
         address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
+        
+        // Check that this signature hasn't already been executed
+        if(requestExecuted[signedMessageHash]) {
+            revert LoyaltyProgram__RequestAlreadyExecuted(); 
+        }
+        
+        // Check that this signer is loyaltyCard from which points are send. 
+        address signer = signedMessageHash.recover(signature);
+        if(signer != loyaltyCardAddress) {
+            revert  LoyaltyProgram__RequestNotFromLoyaltyCard(); 
+        } 
 
-        // checks
+        // check if Loyalty Card has sufficient points
         if (loyaltyPoints >= balanceOf(loyaltyCardAddress, 0)) {
             revert LoyaltyProgram__InSufficientPointsOnCard();
         }
+
+        // check if Loyalty Token is active to be claimed. 
         if (s_LoyaltyTokensClaimable[loyaltyToken] == 0) {
             revert LoyaltyProgram__LoyaltyTokenNotClaimable();
         }
 
-        // requirements check = external.
-        (bool success) = LoyaltyToken(loyaltyToken).requirementsLoyaltyTokenMet(loyaltyCardAddress, loyaltyPoints);
-        // updating balances / interaction
+        // check if requirements are met at LoyaltyToken (= external call!)
+        (bool success) = LoyaltyToken(payable(loyaltyToken)).requirementsLoyaltyTokenMet(loyaltyCardAddress, loyaltyPoints);
 
-        // Note: no approval check   
+        // if all checks passed: 
+        // 1) set executed to true..  
+        requestExecuted[signedMessageHash] = true;
+
+        // 2) transfer points to owner (payment) 
         if (success) {
-            _safeTransferFrom(
-                loyaltyCardAddress,
-                s_owner, // loyalty points are returned to owner .
-                0,
-                loyaltyPoints,
-                ""
-            );
-
-            // claiming Loyalty Token / external.
-            LoyaltyToken(loyaltyToken).claimLoyaltyToken(loyaltyCardAddress);
+        _safeTransferFrom(
+            loyaltyCardAddress,
+            s_owner, 
+            0,
+            loyaltyPoints,
+            ""
+        );
+        
+        // and 3) claim token. 
+          LoyaltyToken(payable(loyaltyToken)).claimLoyaltyToken(loyaltyCardAddress);      
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////
-    /// THIS FUNCTION NEEDS TO BE REFACTORED: GAS SHOULD BE COVERED BY LOYALTYPROGRAM /// 
-    /////////////////////////////////////////////////////////////////////////////////////
     /** 
      * @dev redeem loyaltyPoints for loyaltyToken by a Token Bound Account (the loyalty card). 
      * The loyalty card calls the requirement function of external loyaltyToken contract. 
@@ -333,6 +364,46 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             // claiming Loyalty Token / external.
             LoyaltyToken(loyaltyToken).claimLoyaltyToken(loyaltyCardAddress);
         }
+    }
+
+    function redeemLoyaltyTokenNEW(
+        address payable loyaltyToken, 
+        uint256 loyaltyTokenId, 
+        address loyaltyCardAddress,
+        uint nonce, // can, I think, be blocknumber. --just meant so same type of request do not end up being reverted. 
+        bytes memory signature
+        ) 
+        external
+        onlyOwner
+        nonReentrant
+    {
+        // note: nonce passed into messageHAsh here. 
+        bytes32 messageHash = getHashRedeemToken(loyaltyToken, loyaltyTokenId, loyaltyCardAddress, nonce);
+        bytes32 signedMessageHash = messageHash.toEthSignedMessageHash();
+        
+        // Check that this signature hasn't already been executed
+        if(requestExecuted[signedMessageHash]) {
+            revert LoyaltyProgram__RequestAlreadyExecuted(); 
+        }
+        
+        // Check that this signer is loyaltyCard from which points are send. 
+        address signer = signedMessageHash.recover(signature);
+        if(signer != loyaltyCardAddress) {
+            revert  LoyaltyProgram__RequestNotFromLoyaltyCard(); 
+        } 
+
+        // check if loyaltyToken is redeemable. 
+        if (s_LoyaltyTokensRedeemable[loyaltyToken] == 0) {
+            revert LoyaltyProgram__LoyaltyTokenNotRedeemable();
+        }
+
+        // if check pass:  
+        // 1) set executed to true..  
+        requestExecuted[signedMessageHash] = true;
+
+        // 2) redeem loyalty token (emits a transferSingle event.)
+        LoyaltyToken(loyaltyToken).redeemLoyaltyToken(loyaltyCardAddress, loyaltyTokenId);
+
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -428,4 +499,25 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
         return balanceOf(loyaltyCardAddress, 0);
     }
+
+    function getHashRedeemPoints(
+        address loyaltyToken, 
+        address ownerLoyaltyProgram, 
+        uint256 loyaltyPoints,
+        uint256 loyaltyCardId, 
+        uint nonce
+        ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(loyaltyToken, ownerLoyaltyProgram, loyaltyPoints, loyaltyCardId, nonce));
+    }
+
+
+    function getHashRedeemToken(
+        address loyaltyToken, 
+        uint256 loyaltyTokenId, 
+        address loyaltyCardAddress, 
+        uint nonce
+        ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(loyaltyToken, loyaltyTokenId, loyaltyCardAddress, nonce));
+    }
+
 }
