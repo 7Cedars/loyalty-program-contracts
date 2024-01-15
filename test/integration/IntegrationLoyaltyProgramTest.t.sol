@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
+import {console} from "forge-std/console.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
+
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
@@ -10,6 +12,8 @@ import {ERC6551Account} from "../../src/ERC6551Account.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {DeployOneCoffeeFor2500} from "../../script/DeployLoyaltyTokens.s.sol";
 import {OneCoffeeFor2500} from "../../src/PointsForLoyaltyTokens.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 // NB: invariant (stateful fuzz) testing in foundry see PC course at 3:23 - Implement! 
 // at 3.45: handlers. 
@@ -33,12 +37,14 @@ contract IntegrationLoyaltyProgramTest is Test {
     uint256 maxCustomerInteractions;
     uint256 minPointsPerInteraction;
     uint256 maxPointsPerInteraction;
-
     address public vendorA;
     address public vendorB;
-    address public customerOne = makeAddr("customer1");
-    address public customerTwo = makeAddr("customer2");
-    address public customerThree = makeAddr("customer3");
+    uint256 internal customerOnePrivateKey; 
+    uint256 internal customerTwoPrivateKey; 
+    uint256 internal customerThreePrivateKey; 
+    address internal customerOne;
+    address internal customerTwo; 
+    address internal customerThree;
     address public loyaltyTokenContractA = makeAddr("loyaltyTokenA");
     address public loyaltyTokenContractB = makeAddr("loyaltyTokenB");
     address payable tokenOneProgramA;
@@ -50,14 +56,14 @@ contract IntegrationLoyaltyProgramTest is Test {
     uint256 constant GAS_PRICE = 1;
     bytes resultTransfer;
 
+    using MessageHashUtils for bytes32;
+    using ECDSA for bytes32;
+
     /**
      * @dev this modifier sets up a fuzzy context consisting of
      * - 2 customers,
      */
     modifier setUpContext() 
-    // uint256 random1,
-    // uint256 random2,
-    // uint256 random3
     {
         // transfer single loyalty card to customers
         vm.prank(vendorA);
@@ -82,6 +88,14 @@ contract IntegrationLoyaltyProgramTest is Test {
         vendorA = loyaltyProgramA.getOwner();
         vendorB = loyaltyProgramB.getOwner();
 
+        customerOnePrivateKey = 0xA11CE; 
+        customerTwoPrivateKey = 0xF155E; 
+        customerThreePrivateKey = 0xB210E; 
+
+        customerOne = vm.addr(customerOnePrivateKey);
+        customerTwo = vm.addr(customerTwoPrivateKey);
+        customerThree = vm.addr(customerThreePrivateKey);
+
         // minting loyalty cards and points by vendors
         vm.prank(vendorA);
         loyaltyProgramA.mintLoyaltyCards(3);
@@ -100,10 +114,11 @@ contract IntegrationLoyaltyProgramTest is Test {
 
         // Transfer points to loyalty cards
         // This will later be fuzzed.
-        vm.prank(vendorA);
-        loyaltyProgramA.safeTransferFrom(vendorA, tokenOneProgramA, 0, 5000, "");
-        vm.prank(vendorA);
-        loyaltyProgramA.safeTransferFrom(vendorA, tokenTwoProgramA, 0, 6500, "");
+        vm.startPrank(vendorA);
+        loyaltyProgramA.safeTransferFrom(vendorA, tokenOneProgramA, 0, 50000, "");
+        loyaltyProgramA.safeTransferFrom(vendorA, tokenTwoProgramA, 0, 65000, "");
+        vm.stopPrank();
+        
         vm.prank(vendorB);
         loyaltyProgramB.safeTransferFrom(vendorB, tokenOneProgramB, 0, 2500, "");
         vm.prank(vendorB);
@@ -263,6 +278,115 @@ contract IntegrationLoyaltyProgramTest is Test {
         //     )
         // );
     }
+
+    // See explanation here: https://book.getfoundry.sh/tutorials/testing-eip712
+    function testCustomerCanClaimLoyaltyPointsThroughSignedMessage() public setUpContext {
+        // Setup:
+        uint256 numberOfLoyaltyPoints = 5000;
+        uint256 nonce = 1; 
+        
+        // whitelist loyalty token contract & mint tokens ..
+        vm.startPrank(vendorA);
+        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
+        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), 10);
+        vm.stopPrank();  
+        // customer calls loyalty token contract from loyaltycard to
+        // redeem points for loyalty token.
+
+        vm.startPrank(customerOne);
+        bytes32 messageHash = keccak256(
+            abi
+            .encodePacked(
+                payable(address(loyaltyToken2500)), // address loyaltyToken,
+                customerOne, // address customerAddress, 
+                numberOfLoyaltyPoints, // uint256 loyaltyPoints, 
+                nonce
+            )).toEthSignedMessageHash();
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOnePrivateKey, messageHash); 
+        bytes memory signature = abi.encodePacked(r, s, v); 
+        vm.stopPrank(); 
+
+        console.logAddress(customerOne);
+        console.logAddress(address(vendorA));
+        console.logAddress(address(loyaltyProgramA.getTokenBoundAddress(1)));
+        console.logAddress(address(loyaltyProgramA));
+        console.logAddress(address(loyaltyToken2500));
+        
+        /////////////////
+        vm.startPrank(vendorA); 
+        loyaltyProgramA.redeemLoyaltyPointsUsingSignedMessage(
+            address(loyaltyToken2500), // address payable loyaltyToken,
+            loyaltyProgramA.getTokenBoundAddress(1), // address loyaltyCardAddress,
+            customerOne, 
+            5000, // uint256 loyaltyPoints, 
+            1, // uint nonce, // can, I think, be blocknumber. --just meant so same type of request do not end up being reverted. 
+            signature // signature bytes32
+        ); 
+        vm.stopPrank();
+
+        uint256 balanceToken10 = loyaltyToken2500.balanceOf(tokenOneProgramA, 10);
+        console.log("balanceToken10", balanceToken10);
+    }
+
+       // See explanation here: https://book.getfoundry.sh/tutorials/testing-eip712
+    function testCustomerCanRedeemLoyaltyTokenThroughSignedMessage() public setUpContext {
+        // Setup:
+        uint256 nonce = 1; 
+        uint256 loyaltyTokenId = 9; 
+        uint256 numberOfLoyaltyPoints = 5000;
+        
+        // whitelist loyalty token contract & mint tokens ..
+        vm.startPrank(vendorA);
+        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
+        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), 10);
+        vm.stopPrank(); 
+
+        // customer One claims token
+        vm.prank(customerOne);
+        ERC6551Account(tokenOneProgramA).executeCall(
+            payable(loyaltyProgramA),
+            0,
+            abi.encodeCall(
+                LoyaltyProgram.redeemLoyaltyPoints, 
+                (payable(address(loyaltyToken2500)), 
+                numberOfLoyaltyPoints, 
+                1)
+                )
+        );
+
+        // Now redeeming this token through signed message: Create signature by customer  
+        vm.startPrank(customerOne);
+        bytes32 messageHash = keccak256(
+            abi
+            .encodePacked(
+                payable(loyaltyToken2500), // address loyaltyToken,
+                loyaltyTokenId,
+                customerOne, 
+                loyaltyProgramA.getTokenBoundAddress(1), // uint256 loyaltyPoints, 
+                nonce
+            )).toEthSignedMessageHash();
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOnePrivateKey, messageHash); 
+        bytes memory signature = abi.encodePacked(r, s, v); 
+        vm.stopPrank(); 
+        
+        // Use signature as approval to redeem token by vendor. 
+        vm.startPrank(vendorA); 
+        loyaltyProgramA.redeemLoyaltyTokenUsingSignedMessage(
+            payable(loyaltyToken2500), // address payable loyaltyToken,
+            customerOne, // address customerAddress, 
+            loyaltyTokenId, // loyaltyTokenId
+            loyaltyProgramA.getTokenBoundAddress(1) // address loyaltyCardAddress,
+            // nonce, // uint nonce, // can, I think, be blocknumber. --just meant so same type of request do not end up being reverted. 
+            // signature // signature bytes32
+        ); 
+        vm.stopPrank();
+
+        uint256 balanceToken10 = loyaltyToken2500.balanceOf(tokenOneProgramA, 9);
+        console.log("balanceToken10", balanceToken10);
+    }
+
 
     // function testOwnerCanTransferTokenstouserOne(uint256 amount) public {
     //   // Arrange

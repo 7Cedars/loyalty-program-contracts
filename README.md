@@ -14,7 +14,10 @@ For personal use only.
 LoyaltyProgram. Get to deployment of contract! 
 - [ ] Implement covering gas of users by LoyaltyProgram Owner
   - [ ] See https://learnweb3.io/lessons/using-metatransaction-to-pay-for-your-users-gas for a lesson on how to do this. 
-  - [ ] It will take some careful coding. 
+  - [ ] Implement redeem token through signed message at till 
+  - [ ] Implement (in front end) refund of money paid when claiming token. 
+  - [ ] Implement gasless claiming of gift through signing message at till.
+  - [ ] Optional: Implement tokens that DO NOT have NFT token - but can ONLY be claimed at till!  
 - [ ] Build unit tests 
   - [ ] test should run with gas > 0 
   - [x] Do points get added to loyaltyCard (and not user address)? 

@@ -18,7 +18,7 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
     error LoyaltyToken__TokenNotOwnedByCard(address loyaltyToken);
     error LoyaltyToken__NoTokensAvailable(address loyaltyToken);
     error LoyaltyToken__RequirementsNotMet(address loyaltyToken);
-    error LoyaltyToken__TokenFromOtherLoyaltyProgram(address mintedAt, address redeemedFrom);
+    error LoyaltyToken__IllegalRedeem(address mintedAt, address redeemedFrom);
 
     /* State variables */
     mapping(uint256 => address) private s_tokenIdToLoyaltyProgram;
@@ -49,11 +49,11 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
         uint256 counter = s_tokenCounter;
 
         for (uint256 i; i < numberOfTokens; i++) { // i starts at 0.... right? TEST!
-            counter = counter + 1;
             loyaltyTokenIds[i] = counter;
             mintNfts[i] = 1;
             s_tokenIdToLoyaltyProgram[i] = msg.sender;
             s_loyaltyProgramToTokenIds[msg.sender].push(counter); 
+            counter = counter + 1;
         }
 
         _mintBatch(msg.sender, loyaltyTokenIds, mintNfts, ""); // emits batchtransfer event
@@ -99,16 +99,16 @@ contract LoyaltyToken is ERC1155, ILoyaltyToken { // ILoyaltyToken
      */
     function redeemLoyaltyToken(address loyaltyCard, uint256 tokenId) public {
 
+        // check if loyaltyProgram is calling redeem. 
         if (s_tokenIdToLoyaltyProgram[tokenId] != msg.sender) {
-            revert LoyaltyToken__TokenFromOtherLoyaltyProgram(s_tokenIdToLoyaltyProgram[tokenId], msg.sender);
+            revert LoyaltyToken__IllegalRedeem(s_tokenIdToLoyaltyProgram[tokenId], msg.sender);
         }
         
         s_loyaltyProgramToTokenIds[msg.sender].push(tokenId);
-        safeTransferFrom(loyaltyCard, msg.sender, tokenId, 1, "");
+        _safeTransferFrom(loyaltyCard, msg.sender, tokenId, 1, "");
     }
 
     /* getter functions */
-
     function getAvailableTokens(address loyaltyProgram) external view returns ( uint256[] memory ) {
         return s_loyaltyProgramToTokenIds[loyaltyProgram];
     }
