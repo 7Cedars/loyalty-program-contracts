@@ -2,43 +2,43 @@
 pragma solidity ^0.8.21;
 
 import {Test, console} from "forge-std/Test.sol";
-import {LoyaltyToken} from "../../src/LoyaltyToken.sol";
+import {LoyaltyGift} from "../../src/LoyaltyGift.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
-import {DeployLoyaltyToken} from "../../script/DeployLoyaltyTokens.s.sol";
+import {DeployLoyaltyGift} from "../../script/DeployLoyaltyGifts.s.sol";
 
 ///////////////////////////////////////////////
 ///                   Setup                 ///
 ///////////////////////////////////////////////
 
-contract LoyaltyTokenTest is Test {
-    DeployLoyaltyToken public deployer;
-    LoyaltyToken public loyaltyToken;
+contract LoyaltyGiftTest is Test {
+    DeployLoyaltyGift public deployer;
+    LoyaltyGift public loyaltyToken;
     address public loyaltyProgramAddress = makeAddr("LoyaltyProgramContract");
     address public userOne = makeAddr("user1");
     address public userTwo = makeAddr("user2");
     string public constant FREE_COFFEE_URI = "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7";
 
-    modifier usersHaveLoyaltyTokens(uint256 numberLoyaltyTokens1, uint256 numberLoyaltyTokens2) {
+    modifier usersHaveLoyaltyGifts(uint256 numberLoyaltyGifts1, uint256 numberLoyaltyGifts2) {
         vm.prank(loyaltyProgramAddress);
-        loyaltyToken.mintLoyaltyTokens(75);
+        loyaltyToken.mintLoyaltyGifts(75);
 
-        numberLoyaltyTokens1 = bound(numberLoyaltyTokens1, 11, 35);
-        numberLoyaltyTokens2 = bound(numberLoyaltyTokens2, 18, 21);
+        numberLoyaltyGifts1 = bound(numberLoyaltyGifts1, 11, 35);
+        numberLoyaltyGifts2 = bound(numberLoyaltyGifts2, 18, 21);
 
         // for loop in solidity: initialisation, condition, updating. See https://dev.to/shlok2740/loops-in-solidity-2pmp.
-        for (uint256 i = 0; i < numberLoyaltyTokens1; i++) {
+        for (uint256 i = 0; i < numberLoyaltyGifts1; i++) {
             vm.prank(loyaltyProgramAddress);
-            loyaltyToken.claimLoyaltyToken(userOne);
+            loyaltyToken.claimLoyaltyGift(userOne);
         }
-        for (uint256 i = 0; i < numberLoyaltyTokens2; i++) {
+        for (uint256 i = 0; i < numberLoyaltyGifts2; i++) {
             vm.prank(loyaltyProgramAddress);
-            loyaltyToken.claimLoyaltyToken(userTwo);
+            loyaltyToken.claimLoyaltyGift(userTwo);
         }
         _;
     }
 
     function setUp() public {
-        deployer = new DeployLoyaltyToken();
+        deployer = new DeployLoyaltyGift();
         loyaltyToken = deployer.run();
     }
 
@@ -46,7 +46,7 @@ contract LoyaltyTokenTest is Test {
     ///         Test Minting LoyaltyPoints      ///
     ///////////////////////////////////////////////
 
-    function testAnyoneCanMintLoyaltyTokens(uint256 numberOfTokens) public {
+    function testAnyoneCanMintLoyaltyGifts(uint256 numberOfTokens) public {
         numberOfTokens = bound(numberOfTokens, 10, 99);
         uint256 numberTokensBefore1;
         uint256 numberTokensAfter1;
@@ -62,9 +62,9 @@ contract LoyaltyTokenTest is Test {
         }
 
         vm.prank(loyaltyProgramAddress);
-        loyaltyToken.mintLoyaltyTokens(numberOfTokens);
+        loyaltyToken.mintLoyaltyGifts(numberOfTokens);
         vm.prank(userOne);
-        loyaltyToken.mintLoyaltyTokens(numberOfTokens);
+        loyaltyToken.mintLoyaltyGifts(numberOfTokens);
 
         for (uint256 i = 1; i <= numberOfTokens; i++) {
             numberTokensAfter1 = numberTokensAfter1 + loyaltyToken.balanceOf(loyaltyProgramAddress, i);
@@ -86,9 +86,9 @@ contract LoyaltyTokenTest is Test {
         uint256 tokenId;
 
         vm.prank(loyaltyProgramAddress);
-        loyaltyToken.mintLoyaltyTokens(20);
+        loyaltyToken.mintLoyaltyGifts(20);
         vm.prank(loyaltyProgramAddress);
-        loyaltyToken.claimLoyaltyToken(userOne);
+        loyaltyToken.claimLoyaltyGift(userOne);
 
         assert(loyaltyToken.balanceOf(userOne, 19) == 1);
         assert(keccak256(abi.encodePacked(FREE_COFFEE_URI)) == keccak256(abi.encodePacked(loyaltyToken.uri(tokenId))));
@@ -98,9 +98,9 @@ contract LoyaltyTokenTest is Test {
         uint256[] memory numberOfTokens;
 
         vm.prank(loyaltyProgramAddress);
-        loyaltyToken.mintLoyaltyTokens(20);
+        loyaltyToken.mintLoyaltyGifts(20);
         vm.prank(loyaltyProgramAddress);
-        loyaltyToken.claimLoyaltyToken(userOne);
+        loyaltyToken.claimLoyaltyGift(userOne);
 
         numberOfTokens = loyaltyToken.getAvailableTokens(userOne);
 

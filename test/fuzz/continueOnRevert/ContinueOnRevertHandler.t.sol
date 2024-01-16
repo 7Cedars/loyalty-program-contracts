@@ -5,20 +5,20 @@ import {Test} from "forge-std/Test.sol";
 import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {DeployLoyaltyProgram} from "../../../script/DeployLoyaltyProgram.s.sol";
 import {
-  DeployLoyaltyToken,
-  DeployMultipleLoyaltyTokens
-  } from "../../../script/DeployLoyaltyTokens.s.sol";
+  DeployLoyaltyGift,
+  DeployMultipleLoyaltyGifts
+  } from "../../../script/DeployLoyaltyGifts.s.sol";
 import {LoyaltyProgram} from "../../../src/LoyaltyProgram.sol" ;
-import {LoyaltyToken} from "../../../src/LoyaltyToken.sol" ;
+import {LoyaltyGift} from "../../../src/LoyaltyGift.sol" ;
 
 contract ContinueOnRevertHandler is Test {
   DeployLoyaltyProgram deployerLP; 
-  DeployLoyaltyToken deployerLT; 
+  DeployLoyaltyGift deployerLT; 
   LoyaltyProgram[] loyaltyPrograms; 
-  LoyaltyToken[] loyaltyTokens; 
+  LoyaltyGift[] loyaltyTokens; 
   ContinueOnRevertHandler handler; 
 
-  constructor(LoyaltyProgram[] memory _loyaltyPrograms, LoyaltyToken[] memory _loyaltyTokens) {
+  constructor(LoyaltyProgram[] memory _loyaltyPrograms, LoyaltyGift[] memory _loyaltyTokens) {
         loyaltyPrograms = _loyaltyPrograms;
         loyaltyTokens = _loyaltyTokens; 
   }
@@ -35,8 +35,8 @@ contract ContinueOnRevertHandler is Test {
       loyaltyPrograms[i].mintLoyaltyCards(seedCards); 
 
       for (uint j; j < loyaltyTokens.length; j++) { 
-        loyaltyPrograms[i].addLoyaltyTokenContract(payable(address(loyaltyTokens[j]))); 
-        loyaltyPrograms[i].mintLoyaltyTokens(payable(address(loyaltyTokens[j])), seedToken);
+        loyaltyPrograms[i].addLoyaltyGiftContract(payable(address(loyaltyTokens[j]))); 
+        loyaltyPrograms[i].mintLoyaltyGifts(payable(address(loyaltyTokens[j])), seedToken);
       }
       vm.stopPrank(); 
     }

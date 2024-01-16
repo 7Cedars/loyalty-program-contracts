@@ -2,24 +2,24 @@
 pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
-import {LoyaltyToken} from "../src/LoyaltyToken.sol";
+import {LoyaltyGift} from "../src/LoyaltyGift.sol";
 import {
     OneCoffeeFor2500, 
     OneCupCakeFor4500, 
     AccessPartyFor50000
-    } from "../src/PointsForLoyaltyTokens.sol";
+    } from "../src/PointsForLoyaltyGifts.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
-contract DeployLoyaltyToken is Script {
-    function run() external returns (LoyaltyToken) {
+contract DeployLoyaltyGift is Script {
+    function run() external returns (LoyaltyGift) {
         vm.startBroadcast();
-        LoyaltyToken loyaltyToken = new LoyaltyToken("ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7");
+        LoyaltyGift loyaltyToken = new LoyaltyGift("ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7");
         vm.stopBroadcast();
         return loyaltyToken;
     }
 }
 
-contract DeployMultipleLoyaltyTokens is Script {
+contract DeployMultipleLoyaltyGifts is Script {
     function run() external returns (OneCoffeeFor2500, OneCupCakeFor4500, AccessPartyFor50000) {
         vm.startBroadcast();
         OneCoffeeFor2500 oneCoffeeFor2500 = new OneCoffeeFor2500();

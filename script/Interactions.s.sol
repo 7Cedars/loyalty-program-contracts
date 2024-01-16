@@ -4,7 +4,7 @@ pragma solidity ^0.8.21;
 import {Script} from "forge-std/Script.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {LoyaltyProgram} from "../src/LoyaltyProgram.sol";
-import {OneCoffeeFor2500} from "../src/PointsForLoyaltyTokens.sol";
+import {OneCoffeeFor2500} from "../src/PointsForLoyaltyGifts.sol";
 
 
 

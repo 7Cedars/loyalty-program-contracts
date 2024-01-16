@@ -10,8 +10,8 @@ import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {ERC6551Account} from "../../src/ERC6551Account.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
-import {DeployOneCoffeeFor2500} from "../../script/DeployLoyaltyTokens.s.sol";
-import {OneCoffeeFor2500} from "../../src/PointsForLoyaltyTokens.sol";
+import {DeployOneCoffeeFor2500} from "../../script/DeployLoyaltyGifts.s.sol";
+import {OneCoffeeFor2500} from "../../src/PointsForLoyaltyGifts.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
@@ -22,8 +22,8 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 contract IntegrationLoyaltyProgramTest is Test {
     /* events */
     event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
-    event AddedLoyaltyTokenContract(address indexed loyaltyToken);
-    event RemovedLoyaltyTokenContract(address indexed loyaltyToken);
+    event AddedLoyaltyGiftContract(address indexed loyaltyToken);
+    event RemovedLoyaltyGiftContract(address indexed loyaltyToken);
 
     ///////////////////////////////////////////////
     ///                   Setup                 ///
@@ -158,7 +158,7 @@ contract IntegrationLoyaltyProgramTest is Test {
 
     // console.log("resultTransfer: ", resultTransfer);
 
-    // function testLoyaltyTokensAreTransferableBetweenLoyaltyCards(
+    // function testLoyaltyGiftsAreTransferableBetweenLoyaltyCards(
     //   uint256 numberOfLoyaltyPoints
     //   ) public setUpContext {
     //     uint256 balanceBeforeSender;
@@ -187,11 +187,11 @@ contract IntegrationLoyaltyProgramTest is Test {
 
         // whitelist loyalty token contract..
         vm.prank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
+        loyaltyProgramA.addLoyaltyGiftContract(payable(address(loyaltyToken2500)));
 
         // mint loyalty tokens..
         vm.prank(vendorA);
-        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), 10);
+        loyaltyProgramA.mintLoyaltyGifts(payable(address(loyaltyToken2500)), 10);
 
         // customer calls loyalty token contract from loyaltycard to
         // redeem points for loyalty token.
@@ -209,38 +209,38 @@ contract IntegrationLoyaltyProgramTest is Test {
     // this still needs to be expanded with negative tests: checinking if all reverts work.
     // while setting up these tests this seemed to be the case.
 
-    function testOwnerCanMintLoyaltyTokens() public setUpContext {
-        uint256 numberOfLoyaltyTokensRequested = 10;
-        uint256 numberOfLoyaltyTokensReceived = 0;
+    function testOwnerCanMintLoyaltyGifts() public setUpContext {
+        uint256 numberOfLoyaltyGiftsRequested = 10;
+        uint256 numberOfLoyaltyGiftsReceived = 0;
 
         // whitelist loyalty token contract..
         vm.prank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
+        loyaltyProgramA.addLoyaltyGiftContract(payable(address(loyaltyToken2500)));
 
         // mint loyalty tokens..
         vm.prank(vendorA);
-        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), numberOfLoyaltyTokensRequested);
+        loyaltyProgramA.mintLoyaltyGifts(payable(address(loyaltyToken2500)), numberOfLoyaltyGiftsRequested);
 
-        for (uint256 i = 1; i <= numberOfLoyaltyTokensRequested; i++) {
-            numberOfLoyaltyTokensReceived =
-                numberOfLoyaltyTokensReceived + loyaltyToken2500.balanceOf(address(loyaltyProgramA), i);
+        for (uint256 i = 1; i <= numberOfLoyaltyGiftsRequested; i++) {
+            numberOfLoyaltyGiftsReceived =
+                numberOfLoyaltyGiftsReceived + loyaltyToken2500.balanceOf(address(loyaltyProgramA), i);
         }
 
-        assertEq(numberOfLoyaltyTokensRequested, numberOfLoyaltyTokensReceived);
+        assertEq(numberOfLoyaltyGiftsRequested, numberOfLoyaltyGiftsReceived);
     }
 
-    function testCustomerCanRedeemLoyaltyTokens() public setUpContext {
+    function testCustomerCanRedeemLoyaltyGifts() public setUpContext {
         // Setup:
         // First mint tokens and redeem loyalty points
         uint256 numberOfLoyaltyPoints = 2502;
 
         // whitelist loyalty token contract..
         vm.prank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
+        loyaltyProgramA.addLoyaltyGiftContract(payable(address(loyaltyToken2500)));
 
         // mint loyalty tokens..
         vm.prank(vendorA);
-        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), 10);
+        loyaltyProgramA.mintLoyaltyGifts(payable(address(loyaltyToken2500)), 10);
 
         // customer calls loyalty token contract from loyaltycard to
         // redeem points for loyalty token.
@@ -270,7 +270,7 @@ contract IntegrationLoyaltyProgramTest is Test {
         //     payable(loyaltyProgramA),
         //     0,
         //     abi.encodeCall(
-        //         LoyaltyProgram.redeemLoyaltyToken, 
+        //         LoyaltyProgram.redeemLoyaltyGift, 
         //         (payable(address(loyaltyToken2500)), 
         //         10,
         //         LoyaltyProgram.getTokenBoundAddress(1)
@@ -287,8 +287,8 @@ contract IntegrationLoyaltyProgramTest is Test {
         
         // whitelist loyalty token contract & mint tokens ..
         vm.startPrank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
-        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), 10);
+        loyaltyProgramA.addLoyaltyGiftContract(payable(address(loyaltyToken2500)));
+        loyaltyProgramA.mintLoyaltyGifts(payable(address(loyaltyToken2500)), 10);
         vm.stopPrank();  
         // customer calls loyalty token contract from loyaltycard to
         // redeem points for loyalty token.
@@ -330,7 +330,7 @@ contract IntegrationLoyaltyProgramTest is Test {
     }
 
        // See explanation here: https://book.getfoundry.sh/tutorials/testing-eip712
-    function testCustomerCanRedeemLoyaltyTokenThroughSignedMessage() public setUpContext {
+    function testCustomerCanRedeemLoyaltyGiftThroughSignedMessage() public setUpContext {
         // Setup:
         uint256 nonce = 1; 
         uint256 loyaltyTokenId = 9; 
@@ -338,8 +338,8 @@ contract IntegrationLoyaltyProgramTest is Test {
         
         // whitelist loyalty token contract & mint tokens ..
         vm.startPrank(vendorA);
-        loyaltyProgramA.addLoyaltyTokenContract(payable(address(loyaltyToken2500)));
-        loyaltyProgramA.mintLoyaltyTokens(payable(address(loyaltyToken2500)), 10);
+        loyaltyProgramA.addLoyaltyGiftContract(payable(address(loyaltyToken2500)));
+        loyaltyProgramA.mintLoyaltyGifts(payable(address(loyaltyToken2500)), 10);
         vm.stopPrank(); 
 
         // customer One claims token
@@ -373,7 +373,7 @@ contract IntegrationLoyaltyProgramTest is Test {
         
         // Use signature as approval to redeem token by vendor. 
         vm.startPrank(vendorA); 
-        loyaltyProgramA.redeemLoyaltyTokenUsingSignedMessage(
+        loyaltyProgramA.redeemLoyaltyGiftUsingSignedMessage(
             payable(loyaltyToken2500), // address payable loyaltyToken,
             customerOne, // address customerAddress, 
             loyaltyTokenId, // loyaltyTokenId

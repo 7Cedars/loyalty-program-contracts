@@ -13,11 +13,24 @@ For personal use only.
 ## Development / TO DO
 LoyaltyProgram. Get to deployment of contract! 
 - [ ] Implement covering gas of users by LoyaltyProgram Owner
-  - [ ] See https://learnweb3.io/lessons/using-metatransaction-to-pay-for-your-users-gas for a lesson on how to do this. 
+  - [x] See https://learnweb3.io/lessons/using-metatransaction-to-pay-for-your-users-gas for a lesson on how to do this. 
+  - [ ] Implement claim gift through signed message at till 
   - [ ] Implement redeem token through signed message at till 
-  - [ ] Implement (in front end) refund of money paid when claiming token. 
-  - [ ] Implement gasless claiming of gift through signing message at till.
-  - [ ] Optional: Implement tokens that DO NOT have NFT token - but can ONLY be claimed at till!  
+- [ ] Refactor program and token logic (relating to gasless transactions above). 
+  - [ ] Loyalty Token contracts have their requirement check - as is now. 
+  - [ ] Loyalty Token contracts safeTransfer function is checked with requirement function. 
+  - [ ] claim gift function: 
+    - [ ] either gives only the bool of the requirement function.
+    - [ ] or transfers a token. (which will provide the bool.) 
+    - [ ] In other words: Loyalty Token contracts have option to provide token (to be redeemed later) or not. 
+  - [ ] Loyalty contracts have redeem function that should be disabled in contracts that do not give out loyalty tokens. 
+  - [ ] The tokens meta data should have added following fields: 
+    - [ ] token_voucher: true / false
+    - [ ] vendor_message_at_claim: string 
+    - [ ] customer_message_at_claim: string
+    - [ ] vendor_message_at_redeem: string / undefined 
+    - [ ] customer_message_at_redeem: string / undefined. 
+  - [ ] At Loyalty Program only have claim and redeem function - as was the case previsouly. But both through signing message. 
 - [ ] Build unit tests 
   - [ ] test should run with gas > 0 
   - [x] Do points get added to loyaltyCard (and not user address)? 
