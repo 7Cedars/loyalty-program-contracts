@@ -7,97 +7,128 @@ import {LoyaltyProgram} from "../src/LoyaltyProgram.sol";
 import {LoyaltyGift} from "../src/LoyaltyGift.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+
 
 contract DeployLoyaltyProgram is Script {
     LoyaltyProgram loyaltyProgram;
+    HelperConfig helperConfig; 
 
     // NB: If I need a helper config, see helperConfig.s.sol + learning/foundry-fund-me-f23
-    function run() external returns (LoyaltyProgram) {
-        vm.startBroadcast();
-        loyaltyProgram = new LoyaltyProgram("https://ipfs.io/ipfs/QmeZSxMGSxEAepscJamhJQ56cCfBhU91D1imPtRxX3VUSZ.json");
-        vm.stopBroadcast();
-        return (loyaltyProgram);
+    function run() external returns (LoyaltyProgram, HelperConfig) {
+      helperConfig = new HelperConfig(); 
+
+      vm.startBroadcast();
+      loyaltyProgram = new LoyaltyProgram("https://ipfs.io/ipfs/QmeZSxMGSxEAepscJamhJQ56cCfBhU91D1imPtRxX3VUSZ.json");
+      vm.stopBroadcast();
+      return (loyaltyProgram, helperConfig);
     }
 }
 
-contract DeployLoyaltyProgramA is Script {
-    LoyaltyProgram loyaltyProgramA;
-    ERC6551Account ercAccount;
-    
-    address[] DEFAULT_ANVIL_ACCOUNTS = [
-        0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, 
-        0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 
-        0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, 
-        0x90F79bf6EB2c4f870365E785982E1f101E93b906, 
-        0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65
-        ]; 
+contract Interactions is Script {
+  uint256[] public TOKENISED = [0, 0, 0, 1, 1, 1]; // 0 == false, 1 == true.  
+  uint256[] public TOKENIDS = [0, 0, 0, 1, 1, 1]; // 0 == false, 1 == true.  
+  uint256[] public tokenValues = [0, 0, 0, 1, 1, 1]; // 0 == false, 1 == true.  
+  string public URI = "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmX5em6Dh4XgnZ6pe4igkZqkf6mSRTRbNja2w3qE8qcfGT"; 
 
-    address[] DEFAULT_ANVIL_LOYALTY_TOKENS = [
-        0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6, 
-        0x2910E325cf29dd912E3476B61ef12F49cb931096,
-        0xA7918D253764E42d60C3ce2010a34d5a1e7C1398
-        ]; 
+  using ECDSA for bytes32;
+  using MessageHashUtils for bytes32;
 
-    function run() external {
-        uint numberOfTransactions1 = 15; 
-        uint numberOfTransactions2 = 25; 
-        uint numberOfTransactions3 = 30; 
-        
-        vm.startBroadcast();
-        // step 1: setup program
-        loyaltyProgramA = new LoyaltyProgram("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmUkn86g76kMDKsch1Lneckc9Bp6c8viU2MbFojgxNvTts");
-        // address oneCoffeeFor2500 = DevOpsTools.get_most_recent_deployment("OneCoffeeFor2500", block.chainid);
-        // address contractAddress = DevOpsTools.get_most_recent_deployment("IER", block.chainid);
-        // LoyaltyProgram loyaltyProgramA = LoyaltyProgram(payable(contractAddress));
+  LoyaltyProgram loyaltyProgram;
+  LoyaltyGift loyaltyGiftContract; 
+  LoyaltyGift loyaltyGiftsContract; 
+  HelperConfig helperConfig; 
+  ERC6551Account ercAccount;
+  address internal customerOne;
+  address internal customerTwo; 
+  address internal customerThree;
+  
+  uint256 privateKey0 = vm.envUint("DEFAULT_ANVIL_KEY_0");
+  address address0 = vm.addr(privateKey0); 
+  uint256 privateKey1 = vm.envUint("DEFAULT_ANVIL_KEY_1");
+  address address1 = vm.addr(privateKey1); 
+  uint256 privateKey2 = vm.envUint("DEFAULT_ANVIL_KEY_2");
+  address address2 = vm.addr(privateKey2); 
+  uint256 privateKey3 = vm.envUint("DEFAULT_ANVIL_KEY_3");
+  address address3 = vm.addr(privateKey3); 
+  uint256 privateKey4 = vm.envUint("DEFAULT_ANVIL_KEY_4");
+  address address4 = vm.addr(privateKey4); 
 
-        vm.stopBroadcast();
+  function run() external {
+    helperConfig = new HelperConfig(); 
 
-        // // step 2: mint loyalty points and cards; 
-        mintLoyaltyPoints(loyaltyProgramA, 1e15); 
-        mintLoyaltyCards(loyaltyProgramA, 50);
-        addLoyaltyGiftContract(loyaltyProgramA, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]));
-        mintLoyaltyGifts(loyaltyProgramA, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]), 50); 
+    vm.startBroadcast();
+    loyaltyProgram = new LoyaltyProgram("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmUkn86g76kMDKsch1Lneckc9Bp6c8viU2MbFojgxNvTts");
+    loyaltyGiftsContract = new LoyaltyGift(URI, TOKENISED);
+    vm.stopBroadcast();
+    vm.startBroadcast();
+      
+      vm.stopBroadcast();
 
-        // // step 3: transfer loyalty cards; 
-        giftLoyaltyCard(loyaltyProgramA, 1, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[2]);
-        giftLoyaltyCard(loyaltyProgramA, 2, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[3]); 
-        giftLoyaltyCard(loyaltyProgramA, 3, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[4]);
-        giftLoyaltyCard(loyaltyProgramA, 4, loyaltyProgramA.getOwner(), DEFAULT_ANVIL_ACCOUNTS[2]);  
-
-        // // step 4: transfer loyalty points to cards, through discrete transfers;
-        for (uint i = 0; numberOfTransactions1 > i; i++) {
-            giftLoyaltyPoints(loyaltyProgramA, loyaltyProgramA.getOwner(), 1, 450); 
-        }
-        for (uint i = 0; numberOfTransactions2 > i; i++) {
-            giftLoyaltyPoints(loyaltyProgramA, loyaltyProgramA.getOwner(), 2, 350); 
-        }
-        for (uint i = 0; numberOfTransactions3 > i; i++) {
-            giftLoyaltyPoints(loyaltyProgramA, loyaltyProgramA.getOwner(), 4, 1250); 
-        }
-        
-        // step 5: transfer loyalty cards between customers; 
-        uint256 ownerPrivateKey = vm.envUint("DEFAULT_ANVIL_KEY_2");
-        vm.startBroadcast(ownerPrivateKey);
-        LoyaltyProgram(loyaltyProgramA).safeTransferFrom(DEFAULT_ANVIL_ACCOUNTS[2], DEFAULT_ANVIL_ACCOUNTS[3], 1, 1, "");
-        vm.stopBroadcast();
-
-        // step 6: claim loyalty gift by redeeming points 
-        address cardAddress = payable(LoyaltyProgram(loyaltyProgramA).getTokenBoundAddress(4)); 
-
-        vm.startBroadcast(ownerPrivateKey);
-        // claimLoyaltyGifts(loyaltyProgramA, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]), 5002, 2);
-        
-        ERC6551Account(payable(cardAddress)).executeCall(
-          payable(loyaltyProgramA),
-          0,
-          abi.encodeCall(
-              LoyaltyProgram.redeemLoyaltyPoints, 
-              (payable(DEFAULT_ANVIL_LOYALTY_TOKENS[0]), 
-              5002, 
-              4))
-              ); 
-        vm.stopBroadcast();
+    // // step 2: mint loyalty points and cards; 
+    mintLoyaltyPoints(loyaltyProgram, 1e15); 
+    mintLoyaltyCards(loyaltyProgram, 50);
+    for (uint i = 0; TOKENIDS.length > i; i++) { 
+      addLoyaltyGift(loyaltyProgram, i); 
       }
+    mintLoyaltyGifts(loyaltyProgram, payable(loyaltyGiftsContract), TOKENIDS, tokenValues);
+
+    // // step 3: transfer loyalty cards; 
+    giftLoyaltyCard(loyaltyProgram, 1, loyaltyProgram.getOwner(), address2);
+    giftLoyaltyCard(loyaltyProgram, 2, loyaltyProgram.getOwner(), address3); 
+    giftLoyaltyCard(loyaltyProgram, 3, loyaltyProgram.getOwner(), address4);
+    giftLoyaltyCard(loyaltyProgram, 4, loyaltyProgram.getOwner(), address2);  
+
+      // // step 4: transfer loyalty points to cards, through discrete transfers;
+      for (uint i = 0; 33 > i; i++) {
+          giftLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 1, 450); 
+      }
+      for (uint i = 0; 23 > i; i++) {
+          giftLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 2, 350); 
+      }
+      for (uint i = 0; 13 > i; i++) {
+          giftLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 4, 1250); 
+      }
+      
+      // step 5: transfer loyalty cards between customers; 
+      vm.startBroadcast(privateKey2);
+      LoyaltyProgram(loyaltyProgram).safeTransferFrom(address2, address3, 1, 1, "");
+      vm.stopBroadcast();
+
+      // step 6: claim loyalty gift by redeeming points 
+      address cardAddress = payable(LoyaltyProgram(loyaltyProgram).getTokenBoundAddress(4)); 
+      uint256 loyaltyGiftId = 4; 
+      uint256 loyaltyPoints = 5000; 
+      uint256 nonceLoyaltyCard = 0; 
+      
+      // first make signed request 
+      bytes32 messageHash = keccak256(
+          abi
+          .encodePacked(
+            loyaltyGiftsContract, // loyaltyGiftsAddress, 
+            loyaltyGiftId, // loyaltyGiftId, -- this one should give a token. 
+            cardAddress,  // loyaltyCardAddress, 
+            address2, // customerAddress,
+            loyaltyPoints, // loyaltyPoints,
+            nonceLoyaltyCard // s_nonceLoyaltyCard[loyaltyCardAddress]
+          )).toEthSignedMessageHash();
+
+      (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey2, messageHash); 
+      bytes memory signature = abi.encodePacked(r, s, v); 
+      
+      vm.startBroadcast(); 
+      // then call function at loyaltyProgram to mint 
+      LoyaltyProgram(loyaltyProgram).claimLoyaltyGift(
+        address(loyaltyGiftsContract), // loyaltyGiftsAddress, 
+        loyaltyGiftId, // loyaltyGiftId, -- this one should give a token. 
+        cardAddress,  // loyaltyCardAddress, 
+        address2, // customerAddress,
+        loyaltyPoints, // loyaltyPoints,
+        signature // bytes memory signature
+      ); 
+      vm.stopBroadcast();
+    }
 
     function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
       vm.startBroadcast();
@@ -129,16 +160,28 @@ contract DeployLoyaltyProgramA is Script {
       vm.stopBroadcast();
     }
 
-    function addLoyaltyGiftContract(LoyaltyProgram lpInstance, address payable loyaltyTokenAddress) public {
-      vm.startBroadcast();
-      LoyaltyProgram(lpInstance).addLoyaltyGiftContract(loyaltyTokenAddress);
-      vm.stopBroadcast();
+    function addLoyaltyGift(
+      LoyaltyProgram lpInstance, 
+      uint256 loyaltyTokenId
+      ) public {
+        vm.startBroadcast();
+        LoyaltyProgram(lpInstance).addLoyaltyGift(payable(loyaltyGiftsContract), loyaltyTokenId);
+        vm.stopBroadcast();
     }
 
-    function mintLoyaltyGifts(LoyaltyProgram lpInstance, address payable loyaltyTokenAddress, uint256 numberOfTokens) public {
-      // uint256 ownerPrivateKey = vm.envUint("DEFAULT_ANVIL_KEY_2");
+
+    // function mintLoyaltyTokens(
+    //   address payable loyaltyGiftAddress, 
+    //   uint256[] memory loyaltyGiftIds, 
+    //   uint256[] memory numberOfTokens)
+    function mintLoyaltyGifts(
+      LoyaltyProgram lpInstance, 
+      address payable loyaltyGiftAddress, 
+      uint256[] memory loyaltyGiftIds, 
+      uint256[] memory numberOfTokens
+      ) public {
       vm.startBroadcast();
-      LoyaltyProgram(lpInstance).mintLoyaltyGifts(loyaltyTokenAddress, numberOfTokens);
+      LoyaltyProgram(lpInstance).mintLoyaltyTokens(loyaltyGiftAddress, loyaltyGiftIds, numberOfTokens);
       vm.stopBroadcast();
     }
     
@@ -150,70 +193,3 @@ contract DeployLoyaltyProgramA is Script {
 //     }
 }
 
-
-contract DeployLoyaltyProgramB is Script {
-    LoyaltyProgram loyaltyProgramB;
-
-     address[] DEFAULT_ANVIL_LOYALTY_TOKENS = [
-      0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6, 
-      0x2910E325cf29dd912E3476B61ef12F49cb931096,
-      0xA7918D253764E42d60C3ce2010a34d5a1e7C1398
-    ]; 
-
-    function run() external {        
-        vm.startBroadcast();
-        // step 1: setup program
-        loyaltyProgramB = new LoyaltyProgram("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmTJCpvkE2gU8E6Ypz9yybJaQ2yLXNh5ayYPfmHBnZuJyw");
-        vm.stopBroadcast();
-
-        // // step 2: mint loyalty points and cards; 
-        mintLoyaltyPoints(loyaltyProgramB, 5000); 
-        mintLoyaltyCards(loyaltyProgramB, 1); 
-        addLoyaltyGiftContract(loyaltyProgramB, payable(DEFAULT_ANVIL_LOYALTY_TOKENS[1]));  
-    }
-
-    function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
-      vm.startBroadcast();
-      LoyaltyProgram(lpInstance).mintLoyaltyPoints(numberOfPoints);
-      vm.stopBroadcast();
-    }
-
-    function mintLoyaltyCards(LoyaltyProgram lpInstance, uint256 numberOfCards) public {
-      vm.startBroadcast();
-      LoyaltyProgram(lpInstance).mintLoyaltyCards(numberOfCards);
-      vm.stopBroadcast();
-    }
-
-    function addLoyaltyGiftContract(LoyaltyProgram lpInstance, address payable loyaltyTokenAddress) public {
-      vm.startBroadcast();
-      LoyaltyProgram(lpInstance).addLoyaltyGiftContract(loyaltyTokenAddress);
-      vm.stopBroadcast();
-    }
-}
-
-contract DeployLoyaltyProgramC is Script {
-    LoyaltyProgram loyaltyProgramC;
-
-    function run() external {        
-        vm.startBroadcast();
-        // step 1: setup program
-        loyaltyProgramC = new LoyaltyProgram("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmYDXgbSgF8HnHaqu28Gr4afNqz6onDaB5bmrCKNNdMVPJ");
-        vm.stopBroadcast();
-
-        // // step 2: mint loyalty points and cards; 
-        mintLoyaltyPoints(loyaltyProgramC, 15000); 
-        mintLoyaltyCards(loyaltyProgramC, 10); 
-    }
-
-    function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
-      vm.startBroadcast();
-      LoyaltyProgram(lpInstance).mintLoyaltyPoints(numberOfPoints);
-      vm.stopBroadcast();
-    }
-
-    function mintLoyaltyCards(LoyaltyProgram lpInstance, uint256 numberOfCards) public {
-      vm.startBroadcast();
-      LoyaltyProgram(lpInstance).mintLoyaltyCards(numberOfCards);
-      vm.stopBroadcast();
-    }
-}

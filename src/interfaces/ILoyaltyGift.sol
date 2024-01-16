@@ -9,7 +9,7 @@ interface ILoyaltyGift is IERC1155 {
       /* errors */
     error LoyaltyGift__LoyaltyProgramNotRecognised(address loyaltyToken);
     error LoyaltyGift__NftNotOwnedByloyaltyCard(address loyaltyToken);
-    error LoyaltyGift__InsufficientPoints(address loyaltyToken);
+    error LoyaltyGift__RequirementsNotMet(address loyaltyToken, uint256 loyaltyTokenId);
 
     /**
      * @dev natspecs TBI 

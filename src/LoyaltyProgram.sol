@@ -368,12 +368,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
     /* internal */
     /**
-     * @dev Loyalty points and tokens can only transferred to
-     * - other loyalty cards.
-     * - loyalty token contracts.
-     * - address(0) - to burn.
-     * - owner of this contracts, s_owner (used ofr minting points).
-     * LoyaltyCards can be transferred anywhere! 
+     * @dev Loyalty points can only transferred to
+     * - loyalty cards.
+     * - owner of this contracts, s_owner - when paying for gifts in tokens.
+     * LoyaltyCards cannot be transferred to other loyaltyCards. For the rest they can be transferred anywhere. 
      * @dev All other params remain unchanged.
      */
     function _update(address from, address to, uint256[] memory ids, uint256[] memory values)
@@ -383,14 +381,18 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     {
         for (uint256 i; i < ids.length; ++i) {
             if (ids[i] == LOYALTY_POINTS) {
-                if (
-                    s_LoyaltyGiftsClaimable[to] == 0
-                    && s_LoyaltyCards[to] == 0  // points can be transferred to loyalty Token Contracts
-                    && to != s_owner // points can be transferred to owner (address that minted points are transferred to)
+                if (                             // if ...  
+                    s_LoyaltyCards[to] == 0 &&   // points are not transferred to loyalty cards...
+                    to != s_owner // ...or to owner... 
                 ) {
-                    // All other addresses are no-go.
+                    // ...revert
                     revert LoyaltyProgram__TransferDenied();
                 }
+            } 
+            if (ids[i] != LOYALTY_POINTS) {
+                 if (s_LoyaltyCards[to] == 1) {
+                    revert LoyaltyProgram__TransferDenied();
+                 } 
             }
         }
         super._update(from, to, ids, values);

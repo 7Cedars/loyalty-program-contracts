@@ -20,7 +20,6 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     // /* errors */
     error LoyaltyGift__TokenNotOwnedByCard(address loyaltyToken);
     error LoyaltyGift__NoTokensAvailable(address loyaltyToken);
-    error LoyaltyGift__RequirementsNotMet(address loyaltyToken);
     error LoyaltyGift__NotTokenised(address loyaltyToken, uint256 loyaltyGiftId); 
     error LoyaltyGift__IllegalRedeem(address mintedAt, address redeemedFrom);
     error LoyaltyGift__TransferDenied(address loyaltyToken);
@@ -43,7 +42,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
      * in implementations of LoyaltyGift contract. 
      *
      */
-    function requirementsLoyaltyGiftMet(address loyaltyCard, uint256 loyaltyGiftId, uint256 loyaltyPoints) public virtual returns (bool success) {
+    function requirementsLoyaltyGiftMet(address /*loyaltyCard*/, uint256 /*loyaltyGiftId*/, uint256 /*loyaltyPoints*/) public virtual returns (bool success) {
        
         return true;
     }
