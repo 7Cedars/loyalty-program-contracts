@@ -1,15 +1,15 @@
 {
-  "name": "Free Cupcake",
-  "description": "Get one free cupcake.",
-  "image": "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmYEESzyhDA8iqcRmEG6RL8RCdrj6ETAE9Uti9y4kPF45G",
+  "title": "Party Access",
+  "description": "Entree to our blasting company party!",
+  "image": "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmafmDAzPrKnE5KUEpbEwVEc9HB8UqMPAPZnTC7o1rDu68",
   "attributes": [
     {
       "trait_type": "is_token_voucher",
-      "value": false
+      "value": 0
     },
     {
       "trait_type": "Points",
-      "value": 4500
+      "value": 50000
     },
     {
       "trait_type": "additional_requirements",
@@ -17,11 +17,11 @@
     },
     {
       "trait_type": "vendor_message_at_claim",
-      "value": "Points have been received. Give customer a cupcake for free."
+      "value": "Points have been received. Let customer in."
     },
     {
       "trait_type": "customer_message_at_claim",
-      "value": "Enjoy your cupcake!"
+      "value": "Enjoy the party!"
     },
     {
       "trait_type": "vendor_message_at_token_redeem",

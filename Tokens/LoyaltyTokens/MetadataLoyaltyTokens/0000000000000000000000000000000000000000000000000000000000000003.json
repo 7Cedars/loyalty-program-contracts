@@ -5,7 +5,7 @@
   "attributes": [
     {
     "trait_type": "is_token_voucher",
-    "value": true
+    "value": 1
     },
     {
       "trait_type": "points",

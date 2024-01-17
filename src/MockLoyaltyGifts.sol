@@ -4,7 +4,6 @@ pragma solidity ^0.8.21;
 import {LoyaltyGift} from "./LoyaltyGift.sol";
 import {ILoyaltyGift} from "../src/interfaces/ILoyaltyGift.sol";
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {LoyaltyProgram} from "./LoyaltyProgram.sol";
 
 /**
  * @dev 
@@ -16,7 +15,7 @@ contract MockLoyaltyGifts is LoyaltyGift {
      * @dev
      */
     constructor() LoyaltyGift(
-        "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmX5em6Dh4XgnZ6pe4igkZqkf6mSRTRbNja2w3qE8qcfGT", 
+        "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmSshfobzx5jtA14xd7zJ1PtmG8xFaPkAq2DZQagiAkSET/{id}", 
         tokenised) { }
     
     /**
