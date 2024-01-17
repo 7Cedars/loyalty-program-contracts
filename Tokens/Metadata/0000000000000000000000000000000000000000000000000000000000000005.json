@@ -1,0 +1,35 @@
+{
+  "name": "Party Access",
+  "description": "Entree to our blasting company party!",
+  "image": "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmQyz1Dka9gmRkNPXzPTVNPy3dFt47xennS2JTF4s2viVb",
+  "attributes": [
+    {
+      "trait_type": "is_token_voucher",
+      "value": true
+    },
+    {
+      "trait_type": "Points",
+      "value": 50000
+    },
+    {
+      "trait_type": "additional_requirements",
+      "value": "none"
+    },
+    {
+      "trait_type": "vendor_message_at_claim",
+      "value": "No further action required. Points have been received and token sent."
+    },
+    {
+      "trait_type": "customer_message_at_claim",
+      "value": "Your party access token has been send. You can use this to access the party!"
+    },
+    {
+      "trait_type": "vendor_message_at_token_redeem",
+      "value": "Valid Token. Let person in."
+    },
+    {
+      "trait_type": "customer_message_at_token_redeem",
+      "value": "Enjoy the Party!"
+    }
+  ]
+}

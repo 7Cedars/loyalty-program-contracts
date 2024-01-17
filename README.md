@@ -12,20 +12,19 @@ For personal use only.
 
 ## Development / TO DO
 LoyaltyProgram. Get to deployment of contract! 
-- [ ] Implement covering gas of users by LoyaltyProgram Owner
+- [x] Implement covering gas of users by LoyaltyProgram Owner
   - [x] See https://learnweb3.io/lessons/using-metatransaction-to-pay-for-your-users-gas for a lesson on how to do this. 
-  - [ ] Implement claim gift through signed message at till 
-  - [ ] Implement redeem token through signed message at till 
+  - [x] Implement claim gift through signed message at till 
+  - [x] Implement redeem token through signed message at till 
 - [ ] Refactor program and token logic (relating to gasless transactions above). 
-  - [ ] Loyalty Token contracts have their requirement check - as is now. 
-  - [ ] Loyalty Token contracts safeTransfer function is checked with requirement function. 
-  - [ ] claim gift function: 
-    - [ ] either gives only the bool of the requirement function.
-    - [ ] or transfers a token. (which will provide the bool.) 
-    - [ ] In other words: Loyalty Token contracts have option to provide token (to be redeemed later) or not. 
-  - [ ] Loyalty contracts have redeem function that should be disabled in contracts that do not give out loyalty tokens. 
-  - [ ] The tokens meta data should have added following fields: 
-    - [ ] token_voucher: true / false
+  - [x] Loyalty Token contracts have their requirement check - as is now. 
+  - [x] Loyalty Token contracts safeTransfer function is checked with requirement function. 
+  - [x] claim gift function: 
+    - [x] either gives only the bool of the requirement function.
+    - [x] In other words: Loyalty Token contracts have option to provide token (to be redeemed later) or not. 
+  - [x] Loyalty contracts have redeem function that should be disabled in contracts that do not give out loyalty tokens. 
+  - [ ] The tokens meta data should have added following fields - all in one file for all tokens in one contract: 
+    - [ ] is_token_voucher: true / false
     - [ ] vendor_message_at_claim: string 
     - [ ] customer_message_at_claim: string
     - [ ] vendor_message_at_redeem: string / undefined 
@@ -49,6 +48,9 @@ LoyaltyProgram. Get to deployment of contract!
 
 LoyaltyToken 
 - [ ] Create mock loyalty contract in this repository for testing purposes.  
+- [x] Refatctor logic of loyaltyTokens! 
+  - [x] Needs to place multiple tokens into ONE contract. 
+  - [x] make tokens mix of NFT and fungible tokens. ERC1155 allows this.  
 - [ ] Create mutliple / more loyaltyToken contracts - also using chainlink external data: in seperate repositroy 
   - [ ] Create a seperate github repository for these contracts. -- only keep mock contract in this repository.  
   - [ ] Raffle. 

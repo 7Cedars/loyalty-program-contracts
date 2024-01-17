@@ -1,11 +1,11 @@
 {
   "name": "Free Cupcake",
   "description": "Get one free cupcake.",
-  "image": "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmYEESzyhDA8iqcRmEG6RL8RCdrj6ETAE9Uti9y4kPF45G",
+  "image": "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmXs2aiTVLpEQg4xBv4nGdHa3NGh5EHv7JMTF8SEtCxkyS",
   "attributes": [
     {
       "trait_type": "is_token_voucher",
-      "value": false
+      "value": true
     },
     {
       "trait_type": "Points",
@@ -17,19 +17,19 @@
     },
     {
       "trait_type": "vendor_message_at_claim",
-      "value": "Points have been received. Give customer a cupcake for free."
+      "value": "No further action required. Points have been received and token sent."
     },
     {
       "trait_type": "customer_message_at_claim",
-      "value": "Enjoy your cupcake!"
+      "value": "Your free cupcake token has been send. You can use as a voucher to get a cupcake at a later date."
     },
     {
       "trait_type": "vendor_message_at_token_redeem",
-      "value": "none"
+      "value": "Valid Token. Give cupcake to customer."
     },
     {
       "trait_type": "customer_message_at_token_redeem",
-      "value": "none"
+      "value": "Enjoy your cupcake!"
     }
   ]
 }

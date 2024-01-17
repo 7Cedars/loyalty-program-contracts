@@ -1,11 +1,11 @@
 {
   "title": "One Free Coffee",
   "description": "Get one free coffee on us!",
-  "image": "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmezGEMBShWGtYhJBneixZaW2Th7onBhUEUPVSZD4H7uvx",
+  "image": "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmNTm2abX3z4WtjLuQk9ysbyM2hUwbWGrzbQn3h6m4DKWv",
   "attributes": [
     {
     "trait_type": "is_token_voucher",
-    "value": false
+    "value": true
     },
     {
       "trait_type": "points",
@@ -17,19 +17,19 @@
     },
     {
       "trait_type": "vendor_message_at_claim",
-      "value": "Points have been received. Give customer a coffee for free."
+      "value": "No further action required. Points have been received and token sent."
     },
     {
       "trait_type": "customer_message_at_claim",
-      "value": "Enjoy your coffee!"
+      "value": "Your free coffee token has been send. You can use this to get a fere coffee at a later date."
     },
     {
       "trait_type": "vendor_message_at_token_redeem",
-      "value": "none"
+      "value": "Valid Token. Give free coffee to customer."
     },
     {
       "trait_type": "customer_message_at_token_redeem",
-      "value": "none"
+      "value": "Enjoy your coffee!"
     }
   ]
 }
