@@ -296,7 +296,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         // uint256 loyaltyGiftId, 
         // address loyaltyCardAddress,
         // address customerAddress, 
-        // uint256 loyaltyPoints, 
+        // uint256 loyaltyPoints,  
         bytes memory signature
         )
         external
