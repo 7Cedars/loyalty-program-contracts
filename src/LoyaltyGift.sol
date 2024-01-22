@@ -116,10 +116,11 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
         virtual
         override
     {
-        // Checks if 1: msg.sender == LoyaltyProgram 2: to == LoyaltyCard and 3: if LoyaltyCard has Balance. 
-        if (LoyaltyProgram(payable(msg.sender)).balanceOf(to, 0) == 0) { 
-            revert LoyaltyGift__TransferDenied(address(this));
-            }
+        // Checks if 1: msg.sender == LoyaltyProgram 2: to == LoyaltyCard at Loyalty Program and 3: if LoyaltyCard has Balance. 
+        // DOES NOT QUITE WORK YET... 
+        // if (LoyaltyProgram(payable(msg.sender)).balanceOf(to, 0) == 0) { 
+        //     revert LoyaltyGift__TransferDenied(address(this));
+        //     }
         super._update(from, to, ids, values);
     }
 

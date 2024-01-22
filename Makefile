@@ -48,7 +48,9 @@ scenarioOne:
 	@forge script script/DeployRegistry.s.sol:DeployRegistry $(NETWORK_ARGS_0)
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(NETWORK_ARGS_1)
 	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(NETWORK_ARGS_4)
-	@forge script script/Interactions.s.sol:selectAndMintLoyaltyGifts $(NETWORK_ARGS_1) 
+	@forge script script/Interactions.s.sol:Interactions $(NETWORK_ARGS_1)
+
+	
 	
 #	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgramB $(NETWORK_ARGS_2) 
 #	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgramC $(NETWORK_ARGS_2) 

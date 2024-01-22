@@ -2,6 +2,7 @@
 // see also: https://github.com/nascentxyz/simple-security-toolkit
 // Covering gas for user logic was taken from https://learnweb3.io/lessons/using-metatransaction-to-pay-for-your-users-gas 
 // See for setup example in foundry book (does not use OpenZeppelin libs): https://book.getfoundry.sh/tutorials/testing-eip712 
+// see for a concrete implementation with front end https://medium.com/coinmonks/eip-712-example-d5877a1600bd 
 
 // Structure contract //
 /* version */
@@ -68,7 +69,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     error LoyaltyProgram__InSufficientPoints();
     error LoyaltyProgram__LoyaltyCardNotRecognised();
     error LoyaltyProgram__RequestAlreadyExecuted();
-    error LoyaltyProgram__RequestNotFromLoyaltyCard(address signer); 
+    error LoyaltyProgram__RequestInvalid(address signer, bytes32 digest, RequestGift message); 
+    error LoyaltyProgram__Valid(address signer, bytes32 messageHash); 
     error LoyaltyProgram__LoyaltyGiftNotRecognised();
     error LoyaltyProgram__LoyaltyGiftNotClaimable(); 
     error LoyaltyProgram__LoyaltyTokensNotRedeemable();
@@ -86,7 +88,29 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     /* State variables */
     uint256 public constant LOYALTY_POINTS = 0;
 
+    // EIP712 domain separator
+    struct EIP712Domain {
+        string name;
+        string version;
+        uint256 chainId;
+        address verifyingContract; 
+    }
+
+    // struct Person {
+    //     string name;
+    //     address wallet;
+    // }
+
+    // Example message struct
+    struct RequestGift {
+        address from;
+        address to;
+        string contents;
+    }
+
     address private s_owner;
+    bytes32 private DOMAIN_SEPARATOR;
+
     mapping(bytes32 => uint256 executed) requestExecuted; // 0 = false & 1 = true.
     mapping(address loyaltyCard => uint256 nonce) private s_nonceLoyaltyCard;
     mapping(address loyaltyCardAddress => uint256 exists) private s_LoyaltyCards; // 0 = false & 1 = true.
@@ -119,7 +143,13 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         s_loyaltyCardCounter = 0;
         s_erc6551Registry = new ERC6551Registry();
         s_erc6551Implementation = new ERC6551Account();
-
+        DOMAIN_SEPARATOR = hashDomain(EIP712Domain({
+            name: "Loyalty Program",
+            version: "1",
+            chainId: 31337, // block.chainid,
+            verifyingContract: address(this) 
+        }));
+        
         emit DeployedLoyaltyProgram(msg.sender);
     }
 
@@ -262,48 +292,92 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * - emits a TransferSingle event 
      */
     function claimLoyaltyGift(
-        address loyaltyGiftsAddress, 
-        uint256 loyaltyGiftId, 
-        address loyaltyCardAddress,
-        address customerAddress, 
-        uint256 loyaltyPoints, 
-        bytes memory signature)
+        // address loyaltyGiftsAddress, 
+        // uint256 loyaltyGiftId, 
+        // address loyaltyCardAddress,
+        // address customerAddress, 
+        // uint256 loyaltyPoints, 
+        bytes memory signature
+        )
         external
         nonReentrant
         onlyOwner
-    {
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            loyaltyGiftsAddress, 
-            loyaltyGiftId, 
-            loyaltyCardAddress, 
-            customerAddress,
-            loyaltyPoints, 
-            s_nonceLoyaltyCard[loyaltyCardAddress]
-            )).toEthSignedMessageHash();
-        
-        // Check that this signature hasn't already been executed
-        if(requestExecuted[messageHash] == 1) {
+    {   
+
+        RequestGift memory message; 
+        string memory content; 
+
+        // see: https://solidity-by-example.org/structs/
+        content = "One Free Coffee for 2500 Loyalty Points"; 
+        // from.name = "Cow"; 
+        // from.wallet = 0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826;  
+        // to.name = "Bob"; 
+        // to.wallet = 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB; 
+        // message.from = from; 
+        // message.to = to;  
+        message.from = 0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826; 
+        message.to = 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB;  
+        message.contents = content;  
+
+        bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashMessage(message)); 
+
+        // bytes32 digest = keccak256(abi.encodePacked(
+        //     "\x19\x01",
+        //     DOMAIN_SEPARATOR,
+        //     hashMessage(message)
+        // ));
+
+        // uint256 versionNumber = 1;  
+        // bytes32 domainSep = keccak256(
+        //     abi.encode(
+        //         // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
+        //         0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
+        //         keccak256('Loyalty Program'),
+        //         keccak256(abi.encode(versionNumber)),
+        //         31337,
+        //         address(this)
+        //     )
+        // );
+
+        // address testAddress = 0x90F79bf6EB2c4f870365E785982E1f101E93b906; 
+        // bytes32 messageHash = keccak256(abi.encodePacked(
+        //     // testNumber,  
+        //     keccak256(bytes('test message')), // is this what went wrong? 
+        //     testAddress
+        //     // loyaltyGiftsAddress, 
+        //     // loyaltyGiftId,
+        //     // loyaltyCardAddress, 
+        //     // customerAddress,
+        //     // loyaltyPoints, 
+        //     // s_nonceLoyaltyCard[loyaltyCardAddress]
+        //     )); 
+        // bytes32 ethSignedMessage = messageHash.toEthSignedMessageHash();
+
+        // // Check that this signature hasn't already been executed
+        if(requestExecuted[digest] == 1) {
             revert LoyaltyProgram__RequestAlreadyExecuted(); 
         }
         
         // Check that this signer is loyaltyCard from which points are send. 
-        address signer = messageHash.recover(signature);
-        if(signer != customerAddress) {
-            revert  LoyaltyProgram__RequestNotFromLoyaltyCard(signer); 
+        // ecrecover(messageHash, signature); 
+        address signer = digest.recover(signature);
+        if(signer != address(0x70997970C51812dc3A010C7d01b50e0d17dc79C8)) { // customerAddress
+            revert  LoyaltyProgram__RequestInvalid(signer, digest, message); 
         }
+        // revert LoyaltyProgram__Valid(signer, messageHash); 
 
-        // check if Loyalty Token is active to be claimed. 
-        if (s_LoyaltyGiftsClaimable[loyaltyGiftsAddress][loyaltyGiftId] == 0) {
-            revert LoyaltyProgram__LoyaltyGiftNotClaimable();
-        }
+        // // check if Loyalty Token is active to be claimed. 
+        // if (s_LoyaltyGiftsClaimable[loyaltyGiftsAddress][loyaltyGiftId] == 0) {
+        //     revert LoyaltyProgram__LoyaltyGiftNotClaimable();
+        // }
 
-        // if all checks passed: 
-        // 1) set executed to true..  
-        requestExecuted[messageHash] = 1;
-        s_nonceLoyaltyCard[loyaltyCardAddress] = s_nonceLoyaltyCard[loyaltyCardAddress] + 1; 
+        // // if all checks passed: 
+        // // 1) set executed to true..  
+        // requestExecuted[messageHash] = 1;
+        // s_nonceLoyaltyCard[loyaltyCardAddress] = s_nonceLoyaltyCard[loyaltyCardAddress] + 1; 
         
-        // and 3) claim token. 
-        LoyaltyGift(payable(loyaltyGiftsAddress)).claimLoyaltyGift(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints);      
+        // // // and 3) claim token. 
+        // LoyaltyGift(payable(loyaltyGiftsAddress)).claimLoyaltyGift(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints);      
     }
 
     function redeemLoyaltyToken(
@@ -335,7 +409,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         // Check that this signer is loyaltyCard from which points are send. 
         // address signer = messageHash.recover(signature);
         // if(signer != customerAddress) {
-        //     revert  LoyaltyProgram__RequestNotFromLoyaltyCard(signer); 
+        //     revert  LoyaltyProgram__RequestInvalid(signer); 
         // } 
 
         // check if loyaltyGift is redeemable. 
@@ -364,6 +438,25 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         returns (bytes4)
     {
         return this.onERC1155BatchReceived.selector;
+    }
+
+    function hashDomain(EIP712Domain memory domain) private pure returns (bytes32) {
+        return keccak256(abi.encode(
+            keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+            keccak256(bytes(domain.name)),
+            keccak256(bytes(domain.version)),
+            domain.chainId,
+            domain.verifyingContract
+        ));
+    }
+
+     function hashMessage(RequestGift memory message) private pure returns (bytes32) {
+        return keccak256(abi.encode(
+            keccak256(bytes("RequestGift(address from,address to,string contents)")),
+            message.from,
+            message.to, 
+            keccak256(bytes(message.contents))
+        ));
     }
 
     /* internal */
@@ -430,10 +523,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         return balanceOf(loyaltyCardAddress, 0);
     }
 
-    function getNonceLoyaltyCard() external view returns (uint256) {
-        if (s_LoyaltyCards[msg.sender] == 0) {
-            revert LoyaltyProgram__LoyaltyCardNotRecognised(); 
-        }
-        return s_nonceLoyaltyCard[msg.sender];
+    function getNonceLoyaltyCard(address loyaltyCardAddress) external view returns (uint256) {
+        // should build in check here later. Only owner of card + loyalty program can request nonce. 
+        return s_nonceLoyaltyCard[loyaltyCardAddress];
     }
 }

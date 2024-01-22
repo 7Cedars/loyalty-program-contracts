@@ -32,18 +32,10 @@ contract Interactions is Script {
   address address4 = vm.addr(privateKey4); 
 
   function run() external {
-    address loyaltyProgramAddress = DevOpsTools.get_most_recent_deployment("LoyaltyProgram", block.chainid);
+    address loyaltyProgramAddress = 0x8464135c8F25Da09e49BC8782676a84730C318bC; // DevOpsTools.get_most_recent_deployment("LoyaltyProgram", block.chainid);
     LoyaltyProgram loyaltyProgram = LoyaltyProgram(payable(loyaltyProgramAddress)); 
-    address loyaltyGiftsAddress = DevOpsTools.get_most_recent_deployment("MockLoyaltyGifts", block.chainid);
+    address loyaltyGiftsAddress = 0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6; // DevOpsTools.get_most_recent_deployment("MockLoyaltyGifts", block.chainid);
     MockLoyaltyGifts loyaltyGiftsContract = MockLoyaltyGifts(payable(loyaltyGiftsAddress));
-  }
-
-  function selectAndMintLoyaltyGifts(
-    address loyaltyProgramAddress, 
-    LoyaltyProgram loyaltyProgram, 
-    address loyaltyGiftsAddress, 
-    MockLoyaltyGifts loyaltyGiftsContract
-    ) external {
 
     // step 1: mint loyalty points and cards; 
     mintLoyaltyPoints(loyaltyProgram, 1e15); 
@@ -79,37 +71,37 @@ contract Interactions is Script {
     vm.stopBroadcast();
 
     // step 6: claim loyalty gift by redeeming points 
-    address cardAddress = payable(LoyaltyProgram(loyaltyProgram).getTokenBoundAddress(4)); 
-    uint256 loyaltyGiftId = 4; 
-    uint256 loyaltyPoints = 5000; 
-    uint256 nonceLoyaltyCard = 0; 
+    // address cardAddress = payable(LoyaltyProgram(loyaltyProgram).getTokenBoundAddress(4)); 
+    // uint256 loyaltyGiftId = 4; 
+    // uint256 loyaltyPoints = 5000; 
+    // uint256 nonceLoyaltyCard = 0; 
     
-    // first make signed request 
-    bytes32 messageHash = keccak256(
-        abi
-        .encodePacked(
-          loyaltyGiftsContract, // loyaltyGiftsAddress, 
-          loyaltyGiftId, // loyaltyGiftId, -- this one should give a token. 
-          cardAddress,  // loyaltyCardAddress, 
-          address2, // customerAddress,
-          loyaltyPoints, // loyaltyPoints,
-          nonceLoyaltyCard // s_nonceLoyaltyCard[loyaltyCardAddress]
-        )).toEthSignedMessageHash();
+    // // first make signed request 
+    // bytes32 messageHash = keccak256(
+    //     abi
+    //     .encodePacked(
+    //       loyaltyGiftsContract, // loyaltyGiftsAddress, 
+    //       loyaltyGiftId, // loyaltyGiftId, -- this one should give a token. 
+    //       cardAddress,  // loyaltyCardAddress, 
+    //       address2, // customerAddress,
+    //       loyaltyPoints, // loyaltyPoints,
+    //       nonceLoyaltyCard // s_nonceLoyaltyCard[loyaltyCardAddress]
+    //     )).toEthSignedMessageHash();
 
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey2, messageHash); 
-    bytes memory signature = abi.encodePacked(r, s, v); 
+    // (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey2, messageHash); 
+    // bytes memory signature = abi.encodePacked(r, s, v); 
     
-    vm.startBroadcast(); 
-    // then call function at loyaltyProgram to mint 
-    LoyaltyProgram(loyaltyProgram).claimLoyaltyGift(
-      address(loyaltyGiftsContract), // loyaltyGiftsAddress, 
-      loyaltyGiftId, // loyaltyGiftId, -- this one should give a token. 
-      cardAddress,  // loyaltyCardAddress, 
-      address2, // customerAddress,
-      loyaltyPoints, // loyaltyPoints,
-      signature // bytes memory signature
-    ); 
-    vm.stopBroadcast();
+    // vm.startBroadcast(); 
+    // // then call function at loyaltyProgram to mint 
+    // LoyaltyProgram(loyaltyProgram).claimLoyaltyGift(
+    //   address(loyaltyGiftsContract), // loyaltyGiftsAddress, 
+    //   loyaltyGiftId, // loyaltyGiftId, -- this one should give a token. 
+    //   cardAddress,  // loyaltyCardAddress, 
+    //   address2, // customerAddress,
+    //   loyaltyPoints, // loyaltyPoints,
+    //   signature // bytes memory signature
+    // ); 
+    // vm.stopBroadcast();
     }
 
     function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
