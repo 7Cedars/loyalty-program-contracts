@@ -328,7 +328,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         requestExecuted[digest] = 1;
         // 2) create new pseudorandom nonce. 
         s_nonceLoyaltyCard[loyaltyCardAddress] = uint256(keccak256(abi.encodePacked(s_nonceLoyaltyCard[loyaltyCardAddress] + 1))); 
-        
+        _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, ""); 
         // and 3) claim token. 
         LoyaltyGift(payable(loyaltyGiftsAddress)).claimLoyaltyGift(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints);      
     }

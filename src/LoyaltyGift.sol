@@ -54,7 +54,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
      */
     function claimLoyaltyGift(address loyaltyCard, uint256 loyaltyGiftId, uint256 loyaltyPoints) public returns (bool success) {
 
-        if (s_tokenised[loyaltyGiftId] == 1) {
+        if (s_tokenised[loyaltyGiftId] == 0) {
             return requirementsLoyaltyGiftMet(loyaltyCard, loyaltyGiftId, loyaltyPoints); 
         }
 
@@ -62,7 +62,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
             revert LoyaltyGift__NoTokensAvailable(address(this));
         }
 
-        LoyaltyProgram(payable(msg.sender)).safeTransferFrom(loyaltyCard, LoyaltyProgram(payable(msg.sender)).getOwner(), 0, loyaltyPoints, ""); 
+        // _safeTransferFrom(loyaltyCard, LoyaltyProgram(payable(msg.sender)).getOwner(), 0, loyaltyPoints, ""); 
         safeTransferFrom(msg.sender, loyaltyCard, loyaltyGiftId, 1, "");
         return true; // TEST if this does not come through when safeTransferFrom reverts. 
     }
