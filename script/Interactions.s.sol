@@ -17,7 +17,9 @@ contract Interactions is Script {
 
   uint256 POINTS_TO_MINT = 500000000; 
   uint256 CARDS_TO_MINT = 5; 
-  uint256[] GIFTS_TO_SELECT = [0, 2, 5]; 
+  uint256[] GIFTS_TO_SELECT = [0, 3, 5];
+  uint256[] TOKENS_TO_MINT = [3, 5]; 
+  uint256[] AMOUNT_TOKENS_TO_MINT = [24, 34]; 
   uint256[] GIFTS_TO_DESELECT = [2]; 
 
   uint256 privateKey0 = vm.envUint("DEFAULT_ANVIL_KEY_0");
@@ -49,13 +51,13 @@ contract Interactions is Script {
 
     // step 3: transfer loyalty points to cards, through discrete transfers;
     for (uint i = 0; 33 > i; i++) {
-        giftLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 1, 450); 
+        giftLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 1, 1450); 
     }
     for (uint i = 0; 23 > i; i++) {
-        giftLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 2, 350); 
+        giftLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 2, 1350); 
     }
     for (uint i = 0; 13 > i; i++) {
-        giftLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 4, 1250); 
+        giftLoyaltyPoints(loyaltyProgram, loyaltyProgram.getOwner(), 4, 2250); 
     }
 
     // step 4: select and mint Loyalty Gifts. 
@@ -63,6 +65,7 @@ contract Interactions is Script {
     for (uint i = 0; GIFTS_TO_SELECT.length > i; i++) {
       LoyaltyProgram(loyaltyProgram).addLoyaltyGift(payable(loyaltyGiftsAddress), GIFTS_TO_SELECT[i]); 
     }
+    LoyaltyProgram(loyaltyProgram).mintLoyaltyTokens(payable(loyaltyGiftsAddress), TOKENS_TO_MINT, AMOUNT_TOKENS_TO_MINT); 
     vm.stopBroadcast(); 
       
     // step 5: transfer loyalty cards between customers; 
