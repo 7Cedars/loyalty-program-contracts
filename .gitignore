@@ -13,3 +13,5 @@ docs/
 # Dotenv file
 .env
 /broadcast
+lib/foundry-devops
+lib/openzeppelin-contracts
