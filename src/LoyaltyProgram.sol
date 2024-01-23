@@ -70,7 +70,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     error LoyaltyProgram__InSufficientPoints();
     error LoyaltyProgram__LoyaltyCardNotRecognised();
     error LoyaltyProgram__RequestAlreadyExecuted();
-    error LoyaltyProgram__RequestInvalid(address signer, bytes32 digest, RequestGift message); 
+    error LoyaltyProgram__RequestInvalid(address signer, bytes32 digest); 
     error LoyaltyProgram__LoyaltyGiftNotRecognised();
     error LoyaltyProgram__LoyaltyGiftNotClaimable(); 
     error LoyaltyProgram__LoyaltyTokensNotRedeemable();
@@ -102,6 +102,14 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         address to;
         string gift;
         string cost;
+        uint256 nonce;
+    }
+
+    // Redeem token message struct
+    struct RedeemToken {
+        address from;
+        address to;
+        string gift;
         uint256 nonce;
     }
 
@@ -301,7 +309,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             message.gift = _gift;  
             message.cost = _cost; 
             message.nonce = s_nonceLoyaltyCard[loyaltyCardAddress]; 
-            bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashMessage(message)); 
+            bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message)); 
 
             // Check that this signature hasn't already been executed
             if(requestExecuted[digest] == 1) {
@@ -311,7 +319,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             // Check that this signer is loyaltyCard from which points are send. 
             address signer = digest.recover(signature);
             if(signer != customerAddress) { 
-                revert  LoyaltyProgram__RequestInvalid(signer, digest, message); 
+                revert  LoyaltyProgram__RequestInvalid(signer, digest); 
             }
 
             // check if Loyalty Token is active to be claimed. 
@@ -331,50 +339,45 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     }
 
     function redeemLoyaltyToken(
+        string memory _gift,
         address loyaltyGift, 
         uint256 loyaltyGiftId, 
         address loyaltyCardAddress,
         address customerAddress, 
         bytes memory signature
-        )
-        external
-        nonReentrant
-        onlyOwner
-    {
-        // note: nonce passed into messageHAsh here. 
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            loyaltyGift, 
-            loyaltyGiftId,
-            loyaltyCardAddress,
-            customerAddress,
-            s_nonceLoyaltyCard[loyaltyCardAddress]
-            )).toEthSignedMessageHash();
+        ) 
+        external nonReentrant onlyOwner 
+        {
+            RedeemToken memory message; 
+            message.from = loyaltyCardAddress; 
+            message.to = address(this);  
+            message.gift = _gift;  
+            message.nonce = s_nonceLoyaltyCard[loyaltyCardAddress]; 
+            bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRedeemToken(message)); 
 
+            // Check that this signature hasn't already been executed
+            if(requestExecuted[digest] == 1) {
+                revert LoyaltyProgram__RequestAlreadyExecuted(); 
+            }
             
-        // Check that this signature hasn't already been executed
-        // if(requestExecuted[messageHash] == 1) {
-        //     revert LoyaltyProgram__RequestAlreadyExecuted(); 
-        // }
-        
-        // Check that this signer is loyaltyCard from which points are send. 
-        // address signer = messageHash.recover(signature);
-        // if(signer != customerAddress) {
-        //     revert  LoyaltyProgram__RequestInvalid(signer); 
-        // } 
+            // Check that this signer is loyaltyCard from which points are send. 
+            address signer = digest.recover(signature);
+            if(signer != customerAddress) {
+                revert LoyaltyProgram__RequestInvalid(signer, digest); 
+            } 
 
-        // check if loyaltyGift is redeemable. 
-        // if (s_LoyaltyGiftsRedeemable[loyaltyGift] == 0) {
-        //     revert LoyaltyProgram__LoyaltyTokensNotRedeemable();
-        // }
+            // check if loyaltyGift is redeemable. 
+            if (s_LoyaltyGiftsRedeemable[loyaltyGift][loyaltyGiftId] == 0) {
+                revert LoyaltyProgram__LoyaltyTokensNotRedeemable();
+            }
 
-        // if check pass:  
-        // 1) set executed to true..  
-        requestExecuted[messageHash] = 1;
-        s_nonceLoyaltyCard[loyaltyCardAddress] = uint256(keccak256(abi.encodePacked(s_nonceLoyaltyCard[loyaltyCardAddress] + 1))); 
+            // if check pass:  
+            // 1) set executed to true..  
+            requestExecuted[digest] = 1;
+            s_nonceLoyaltyCard[loyaltyCardAddress] = uint256(keccak256(abi.encodePacked(s_nonceLoyaltyCard[loyaltyCardAddress] + 1))); 
 
-        // 2) redeem loyalty token (emits a transferSingle event.)
-        LoyaltyGift(payable(loyaltyGift)).reclaimLoyaltyToken(loyaltyCardAddress, loyaltyGiftId);
-
+            // 2) redeem loyalty token (emits a transferSingle event.)
+            LoyaltyGift(payable(loyaltyGift)).reclaimLoyaltyToken(loyaltyCardAddress, loyaltyGiftId);
     }
 
     // Without these transactions are declined. 
@@ -400,13 +403,23 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         ));
     }
 
-     function hashMessage(RequestGift memory message) private pure returns (bytes32) {
+    function hashRequestGift(RequestGift memory message) private pure returns (bytes32) {
         return keccak256(abi.encode(
             keccak256(bytes("RequestGift(address from,address to,string gift,string cost,uint256 nonce)")),
             message.from,
             message.to, 
             keccak256(bytes(message.gift)), 
             keccak256(bytes(message.cost)),
+            message.nonce
+        ));
+    }
+
+    function hashRedeemToken(RedeemToken memory message) private pure returns (bytes32) {
+        return keccak256(abi.encode(
+            keccak256(bytes("RequestGift(address from,address to,string gift,uint256 nonce)")),
+            message.from,
+            message.to, 
+            keccak256(bytes(message.gift)),
             message.nonce
         ));
     }
