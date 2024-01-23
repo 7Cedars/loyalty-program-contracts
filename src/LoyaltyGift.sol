@@ -52,7 +52,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
      *
      *
      */
-    function claimLoyaltyGift(address loyaltyCard, uint256 loyaltyGiftId, uint256 loyaltyPoints) public returns (bool success) {
+    function issueLoyaltyGift(address loyaltyCard, uint256 loyaltyGiftId, uint256 loyaltyPoints) public returns (bool success) {
 
         if (s_tokenised[loyaltyGiftId] == 0) {
             return requirementsLoyaltyGiftMet(loyaltyCard, loyaltyGiftId, loyaltyPoints); 
@@ -75,7 +75,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
      *  
      *
      */
-    function redeemLoyaltyToken(address loyaltyCard, uint256 loyaltyGiftId) public returns (bool success) {
+    function reclaimLoyaltyToken(address loyaltyCard, uint256 loyaltyGiftId) public returns (bool success) {
         // check if this loyaltyGift actually has tokens.
         if (s_tokenised[loyaltyGiftId] == 0) {
             revert LoyaltyGift__NotTokenised(address(this), loyaltyGiftId); 

@@ -71,7 +71,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     error LoyaltyProgram__LoyaltyCardNotRecognised();
     error LoyaltyProgram__RequestAlreadyExecuted();
     error LoyaltyProgram__RequestInvalid(address signer, bytes32 digest, RequestGift message); 
-    error LoyaltyProgram__Valid(address signer, bytes32 messageHash); 
     error LoyaltyProgram__LoyaltyGiftNotRecognised();
     error LoyaltyProgram__LoyaltyGiftNotClaimable(); 
     error LoyaltyProgram__LoyaltyTokensNotRedeemable();
@@ -167,7 +166,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         uint256[] memory mintNfts = new uint256[](numberOfLoyaltyCards);
         uint256 counter = s_loyaltyCardCounter;
 
-        /** @dev note that I log these addresses internally BEFORE they have actually been minted.  */
+        /** @dev note that I log these addresses as TBAs BEFORE they have actually been minted.  */
         for (uint256 i; i < numberOfLoyaltyCards; i++) {
             // i starts at 0.... right? TEST!
             counter = counter + 1;
@@ -294,43 +293,41 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         uint256 loyaltyPoints,  
         bytes memory signature
         )
-        external
-        nonReentrant
-        onlyOwner
-    {   
+        external nonReentrant onlyOwner 
+        {   
+            RequestGift memory message; 
+            message.from = loyaltyCardAddress; 
+            message.to = address(this);  
+            message.gift = _gift;  
+            message.cost = _cost; 
+            message.nonce = s_nonceLoyaltyCard[loyaltyCardAddress]; 
+            bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashMessage(message)); 
 
-        RequestGift memory message; 
-        message.from = loyaltyCardAddress; 
-        message.to = address(this);  
-        message.gift = _gift;  
-        message.cost = _cost; 
-        message.nonce = s_nonceLoyaltyCard[loyaltyCardAddress]; 
-        bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashMessage(message)); 
+            // Check that this signature hasn't already been executed
+            if(requestExecuted[digest] == 1) {
+                revert LoyaltyProgram__RequestAlreadyExecuted(); 
+            }
+            
+            // Check that this signer is loyaltyCard from which points are send. 
+            address signer = digest.recover(signature);
+            if(signer != customerAddress) { 
+                revert  LoyaltyProgram__RequestInvalid(signer, digest, message); 
+            }
 
-        // Check that this signature hasn't already been executed
-        if(requestExecuted[digest] == 1) {
-            revert LoyaltyProgram__RequestAlreadyExecuted(); 
-        }
-        
-        // Check that this signer is loyaltyCard from which points are send. 
-        address signer = digest.recover(signature);
-        if(signer != customerAddress) { 
-            revert  LoyaltyProgram__RequestInvalid(signer, digest, message); 
-        }
+            // check if Loyalty Token is active to be claimed. 
+            if (s_LoyaltyGiftsClaimable[loyaltyGiftsAddress][loyaltyGiftId] == 0) {
+                revert LoyaltyProgram__LoyaltyGiftNotClaimable();
+            }
 
-        // check if Loyalty Token is active to be claimed. 
-        if (s_LoyaltyGiftsClaimable[loyaltyGiftsAddress][loyaltyGiftId] == 0) {
-            revert LoyaltyProgram__LoyaltyGiftNotClaimable();
-        }
-
-        // if all checks passed: 
-        // 1) set executed to true..  
-        requestExecuted[digest] = 1;
-        // 2) create new pseudorandom nonce. 
-        s_nonceLoyaltyCard[loyaltyCardAddress] = uint256(keccak256(abi.encodePacked(s_nonceLoyaltyCard[loyaltyCardAddress] + 1))); 
-        _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, ""); 
-        // and 3) claim token. 
-        LoyaltyGift(payable(loyaltyGiftsAddress)).claimLoyaltyGift(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints);      
+            // if all checks passed: 
+            // 1) set executed to true..  
+            requestExecuted[digest] = 1;
+            // 2) create new pseudorandom nonce. 
+            s_nonceLoyaltyCard[loyaltyCardAddress] = uint256(keccak256(abi.encodePacked(s_nonceLoyaltyCard[loyaltyCardAddress] + 3479883427))); 
+            // 3) retrieve loyalty points from customer 
+            _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, ""); 
+            // and 3) transfer token. 
+            LoyaltyGift(payable(loyaltyGiftsAddress)).issueLoyaltyGift(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints);      
     }
 
     function redeemLoyaltyToken(
@@ -376,7 +373,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         s_nonceLoyaltyCard[loyaltyCardAddress] = uint256(keccak256(abi.encodePacked(s_nonceLoyaltyCard[loyaltyCardAddress] + 1))); 
 
         // 2) redeem loyalty token (emits a transferSingle event.)
-        LoyaltyGift(payable(loyaltyGift)).redeemLoyaltyToken(loyaltyCardAddress, loyaltyGiftId);
+        LoyaltyGift(payable(loyaltyGift)).reclaimLoyaltyToken(loyaltyCardAddress, loyaltyGiftId);
 
     }
 

@@ -25,12 +25,12 @@ interface ILoyaltyGift is IERC1155 {
     /**
      * @dev natspecs TBI 
      */
-    function claimLoyaltyGift(address loyaltyCard, uint256 loyaltyTokenId, uint256 loyaltyPoints) external returns (bool success);
+    function issueLoyaltyGift(address loyaltyCard, uint256 loyaltyTokenId, uint256 loyaltyPoints) external returns (bool success);
 
     /**
      * @dev natspecs TBI 
      */
-    function redeemLoyaltyToken(address loyaltyCard, uint256 tokenId) external returns (bool success);
+    function reclaimLoyaltyToken(address loyaltyCard, uint256 tokenId) external returns (bool success);
 
     /**
      * @dev natspecs TBI 
