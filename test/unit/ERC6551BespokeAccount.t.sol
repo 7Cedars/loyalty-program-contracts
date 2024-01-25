@@ -5,8 +5,8 @@
 pragma solidity ^0.8.0;
 
 import {Test} from "forge-std/Test.sol";
-import {ERC6551Registry} from "../../src/ERC6551Registry.sol";
-import {ERC6551BespokeAccount} from "../../src/ERC6551BespokeAccount.sol";
+import {ERC6551Registry} from "../../src/mocks/ERC6551Registry.sol";
+import {ERC6551BespokeAccount} from "../../src/mocks/ERC6551BespokeAccount.sol";
 import {MockERC1155} from "../mocks/MockERC1155.sol";
 import {MockERC6551Account} from "../mocks/MockERC6551Account.sol";
 import {IERC6551Account} from "../../src/interfaces/IERC6551Account.sol";

@@ -5,43 +5,23 @@
 // see for a concrete implementation with front end https://medium.com/coinmonks/eip-712-example-d5877a1600bd 
 // see: https://solidity-by-example.org/structs/ re how to create structs
 
-// Structure contract //
-/* version */
-/* imports */
-/* errors */
-/* interfaces, libraries, contracts */
-/* Type declarations */
-/* State variables */
-/* Events */
-/* Modifiers */
-
-/* FUNCTIONS: */
-/* constructor */
-/* receive function (if exists) */
-/* fallback function (if exists) */
-/* external */
-/* public */
-/* internal */
-/* private */
-/* internal & private view & pure functions */
-/* external & public view & pure functions */
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
-
-import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
-import {ERC165Checker} from  "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
-import {LoyaltyGift} from "./LoyaltyGift.sol";
-import {ILoyaltyGift} from "./interfaces/ILoyaltyGift.sol";
-import {ERC6551Registry} from "./ERC6551Registry.sol";
-import {ERC6551BespokeAccount} from "./ERC6551BespokeAccount.sol";
-import {IERC6551Account} from "../src/interfaces/IERC6551Account.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import {IERC6551Account} from "../src/interfaces/IERC6551Account.sol";
+import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import {ILoyaltyGift} from "./interfaces/ILoyaltyGift.sol";
+
+import {ERC165Checker} from  "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {ERC6551Registry} from "./mocks/ERC6551Registry.sol";
+import {ERC6551BespokeAccount} from "./mocks/ERC6551BespokeAccount.sol";
+import {LoyaltyGift} from "./mocks/LoyaltyGift.sol";
 
 /**
  * @title LoyaltyProgram
@@ -87,7 +67,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
     /* State variables */
     uint256 public constant LOYALTY_POINTS_ID = 0;
-    address public constant s_erc6551RegistryAddress = 0x000000006551c19487814612e58FE06813775758; // also at anvil local chain? 
 
     // EIP712 domain separator
     struct EIP712Domain {
@@ -145,16 +124,17 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * @param uri the uri linked to the loyalty program. See for example layout of this Uri the LoyaltyPrograms folder. 
      * 
      * @notice s_owner is now set as msg-sender and cannot be changed later on.
-     * @notice setup for ERC6551 Token Based Accounts registry at construction. // THIS SHOULD NOT BE IN HERE! 
+     * @notice input for erc6551Registry and erc6551Implementation addresses. This is to allow for easy testing (addresses on test networks for registry and implementation contracts might differ from standard addresses.)
      * @notice setup of  ERC-712 DOMAIN_SEPARATOR
      * 
      * emits a DeployedLoyaltyProgram event.  
      */
-    constructor(string memory uri) ERC1155(uri) {
+    constructor(string memory uri, address erc6551Registry, address payable erc6551Implementation) ERC1155(uri) {
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
-        s_erc6551Registry = new ERC6551Registry(); // this one should be part of config. NOT of contract! 
-        s_erc6551Implementation = new ERC6551BespokeAccount(); // NB! this one is different than standard one. Keep it in! (can I change name to make this clear without issues? TEST! )
+        s_erc6551Registry = ERC6551Registry(erc6551Registry); // this one should be part of config. NOT of contract! 
+        s_erc6551Implementation = ERC6551BespokeAccount(erc6551Implementation); // NB! this one is different than standard one. Keep it in! (can I change name to make this clear without issues? TEST! )
+        
         DOMAIN_SEPARATOR = hashDomain(EIP712Domain({
             name: "Loyalty Program",
             version: "1",
@@ -506,3 +486,24 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         return s_nonceLoyaltyCard[loyaltyCardAddress];
     }
 }
+
+// Structure contract //
+/* version */
+/* imports */
+/* errors */
+/* interfaces, libraries, contracts */
+/* Type declarations */
+/* State variables */
+/* Events */
+/* Modifiers */
+
+/* FUNCTIONS: */
+/* constructor */
+/* receive function (if exists) */
+/* fallback function (if exists) */
+/* external */
+/* public */
+/* internal */
+/* private */
+/* internal & private view & pure functions */
+/* external & public view & pure functions */

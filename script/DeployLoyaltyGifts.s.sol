@@ -2,7 +2,7 @@
 pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
-import {MockLoyaltyGifts} from "../src/MockLoyaltyGifts.sol";
+import {MockLoyaltyGifts} from "../src/mocks/MockLoyaltyGifts.sol";
 
 contract DeployMockLoyaltyGifts is Script {
 

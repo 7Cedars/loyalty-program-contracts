@@ -2,20 +2,21 @@
 pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
-import {LoyaltyGift} from "../src/LoyaltyGift.sol";
-import {ERC6551Registry} from "../src/ERC6551Registry.sol";
-import {ERC6551BespokeAccount} from "../src/ERC6551BespokeAccount.sol";
+import {LoyaltyGift} from "../src/mocks/LoyaltyGift.sol";
+import {ERC6551Registry} from "../src/mocks/ERC6551Registry.sol";
+import {ERC6551BespokeAccount} from "../src/mocks/ERC6551BespokeAccount.sol";
 import {IERC6551Account} from "../src/interfaces/IERC6551Account.sol";
 
 contract HelperConfig is Script {
+    // these are all the same for networks with deployed ERC6551 - local anvil chain obv does not have one.  
 
     struct NetworkConfig {
+        string uri; 
         uint256 initialSupply; // can differ between chains.
-        // uint256 interval;
-        // address erc65511Registry; // these are all the same for networks with deployed ERC6551 - local anvil chain obv does not have one.  
-        // address erc65511Proxy; 
-        // address erc65511Implementation;
-        // uint32 callbackGasLimit; 
+        uint256 interval;
+        address erc65511Registry; 
+        address payable erc65511Implementation;
+        uint32  callbackGasLimit; 
     }
     NetworkConfig public activeNetworkConfig;
     ERC6551Registry public s_erc6551Registry;
@@ -46,11 +47,12 @@ contract HelperConfig is Script {
     function getSepoliaEthConfig() public returns (NetworkConfig memory) {
 
         NetworkConfig memory sepoliaConfig = NetworkConfig({
-            initialSupply: 1e25 
-            // interval: 30, 
-            // erc65511Registry: 0x000000006551c19487814612e58FE06813775758, // these are all the same for networks with deployed ERC6551 - local anvil chain obv does not have one.  
-            // erc65511Implementation: 0x41C8f39463A868d3A88af00cd0fe7102F30E44eC, 
-            // callbackGasLimit: 50000 
+            uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD", 
+            initialSupply: 1e25,
+            interval: 30, 
+            erc65511Registry: 0x000000006551c19487814612e58FE06813775758, // these are all the same for networks with deployed ERC6551 - local anvil chain obv does not have one.  
+            erc65511Implementation: payable(0x41C8f39463A868d3A88af00cd0fe7102F30E44eC), 
+            callbackGasLimit: 50000 
         });
         return sepoliaConfig;
     }
@@ -58,11 +60,7 @@ contract HelperConfig is Script {
     // function getOPSepoliaEthConfig() public returns (NetworkConfig memory) {
 
     //     NetworkConfig memory opSepoliaConfig = NetworkConfig({
-    //         initialSupply: 1e25, 
-    //         interval: 30, 
-    //         erc65511Registry: 0x000000006551c19487814612e58FE06813775758,   
-    //         erc65511Implementation: 0x41C8f39463A868d3A88af00cd0fe7102F30E44eC, 
-    //         callbackGasLimit: 50000 
+    //              FILL OUT LATER - TODO 
     //     });
     //     return opSepoliaConfig;
     // }
@@ -70,11 +68,7 @@ contract HelperConfig is Script {
     // function getArbitrumSepoliaEthConfig() public returns (NetworkConfig memory) {
 
     //     NetworkConfig memory arbitrumSepoliaConfig = NetworkConfig({
-    //         initialSupply: 1e25, 
-    //         interval: 30, 
-    //         erc65511Registry: 0x000000006551c19487814612e58FE06813775758,  
-    //         erc65511Implementation: 0x41C8f39463A868d3A88af00cd0fe7102F30E44eC, 
-    //         callbackGasLimit: 50000 
+   //              FILL OUT LATER - TODO 
     //     });
     //     return arbitrumSepoliaConfig;
     // }
@@ -82,11 +76,7 @@ contract HelperConfig is Script {
     // function getMumbaiMaticConfig() public returns (NetworkConfig memory) {
 
     //     NetworkConfig memory mumbaiConfig = NetworkConfig({
-    //         initialSupply: 1e25, 
-    //         interval: 30, 
-    //         erc65511Registry: 0x000000006551c19487814612e58FE06813775758,
-    //         erc65511Implementation: 0x41C8f39463A868d3A88af00cd0fe7102F30E44eC, 
-    //         callbackGasLimit: 50000 
+   //              FILL OUT LATER - TODO 
     //     });
     //     return mumbaiConfig;
     // }
@@ -97,14 +87,18 @@ contract HelperConfig is Script {
           return activeNetworkConfig;
         }
         
-        // vm.startBroadcast();
-        // s_erc6551Registry = new ERC6551Registry();
-        // s_erc6551Implementation = new ERC6551Account();
-        // vm.stopBroadcast();
+        vm.startBroadcast();
+        s_erc6551Registry = new ERC6551Registry();
+        s_erc6551Implementation = new ERC6551BespokeAccount();
+        vm.stopBroadcast();
 
         NetworkConfig memory anvilConfig = NetworkConfig({
-            initialSupply: 1e25 
-            // loyaltyGiftsContract: loyaltyGiftsContract
+            uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD", 
+            initialSupply: 1e25, 
+            interval: 30, 
+            erc65511Registry: address(s_erc6551Registry),  
+            erc65511Implementation: payable(s_erc6551Implementation),  
+            callbackGasLimit: 50000
             });
 
         return anvilConfig;

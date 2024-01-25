@@ -15,12 +15,12 @@ contract LoyaltyProgramTest is Test {
   event RemovedLoyaltyGiftClaimable(address indexed loyaltyGift, uint256 loyaltyGiftId);
   event RemovedLoyaltyGiftRedeemable(address indexed loyaltyGift, uint256 loyaltyGiftId);
 
-
   ///////////////////////////////////////////////
   ///                   Setup                 ///
   ///////////////////////////////////////////////
 
   LoyaltyProgram loyaltyProgram;
+  HelperConfig helperConfig; 
 
   uint256 CARDS_TO_MINT = 5; 
   uint256[] CARDS_MINTED = [1,2,3,4,5]; 
@@ -37,7 +37,7 @@ contract LoyaltyProgramTest is Test {
 
   function setUp() external {
     DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
-    loyaltyProgram = deployer.run();
+    (loyaltyProgram, helperConfig) = deployer.run();
   }
 
   function testLoyaltyProgramHasOwner() public {

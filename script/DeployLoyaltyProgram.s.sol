@@ -2,11 +2,12 @@
 pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
-import {ERC6551BespokeAccount} from "../src/ERC6551BespokeAccount.sol";
 import {LoyaltyProgram} from "../src/LoyaltyProgram.sol";
-import {MockLoyaltyGifts} from "../src/MockLoyaltyGifts.sol";
-import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
+
+import {ERC6551BespokeAccount} from "../src/mocks/ERC6551BespokeAccount.sol";
+import {MockLoyaltyGifts} from "../src/mocks/MockLoyaltyGifts.sol";
+import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
@@ -14,14 +15,27 @@ contract DeployLoyaltyProgram is Script {
     LoyaltyProgram loyaltyProgram;
 
     // NB: If I need a helper config, see helperConfig.s.sol + learning/foundry-fund-me-f23
-    function run() external returns (LoyaltyProgram) {
-      vm.startBroadcast();
-      loyaltyProgram = new LoyaltyProgram("https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD");
-      vm.stopBroadcast();
-      return (loyaltyProgram);
-    }
+    function run() external returns (LoyaltyProgram, HelperConfig) {
+       HelperConfig helperConfig = new HelperConfig(); 
 
-    
+        ( string memory uri,
+          ,
+          ,
+          address erc65511Registry, 
+          address payable erc65511Implementation, 
+
+        ) = helperConfig.activeNetworkConfig();  
+
+      vm.startBroadcast();
+      loyaltyProgram = new LoyaltyProgram(
+        uri, 
+        erc65511Registry,
+        erc65511Implementation
+        );
+      vm.stopBroadcast();
+
+      return (loyaltyProgram, helperConfig);
+    }    
 }
 
 // contract Interactions is Script {
