@@ -37,7 +37,7 @@ import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Re
 import {LoyaltyGift} from "./LoyaltyGift.sol";
 import {ILoyaltyGift} from "./interfaces/ILoyaltyGift.sol";
 import {ERC6551Registry} from "./ERC6551Registry.sol";
-import {ERC6551Account} from "./ERC6551Account.sol";
+import {ERC6551BespokeAccount} from "./ERC6551BespokeAccount.sol";
 import {IERC6551Account} from "../src/interfaces/IERC6551Account.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -124,7 +124,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     mapping(address loyaltyGiftsAddress => mapping (uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyGiftsRedeemable; // 0 = false & 1 = true.
     uint256 private s_loyaltyCardCounter;
     ERC6551Registry public s_erc6551Registry; 
-    ERC6551Account public s_erc6551Implementation;
+    ERC6551BespokeAccount public s_erc6551Implementation;
 
     /* Events */
     event DeployedLoyaltyProgram(address indexed owner);
@@ -154,7 +154,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
         s_erc6551Registry = new ERC6551Registry(); // this one should be part of config. NOT of contract! 
-        s_erc6551Implementation = new ERC6551Account(); // NB! this one is different than standard one. Keep it in! (can I change name to make this clear without issues? TEST! )
+        s_erc6551Implementation = new ERC6551BespokeAccount(); // NB! this one is different than standard one. Keep it in! (can I change name to make this clear without issues? TEST! )
         DOMAIN_SEPARATOR = hashDomain(EIP712Domain({
             name: "Loyalty Program",
             version: "1",

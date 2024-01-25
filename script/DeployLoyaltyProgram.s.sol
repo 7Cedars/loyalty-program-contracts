@@ -2,7 +2,7 @@
 pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
-import {ERC6551Account} from "../src/ERC6551Account.sol";
+import {ERC6551BespokeAccount} from "../src/ERC6551BespokeAccount.sol";
 import {LoyaltyProgram} from "../src/LoyaltyProgram.sol";
 import {MockLoyaltyGifts} from "../src/MockLoyaltyGifts.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";

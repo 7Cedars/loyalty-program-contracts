@@ -3,7 +3,6 @@ pragma solidity ^0.8.21;
 
 import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
-import {ERC6551Account} from "../../src/ERC6551Account.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 
@@ -22,7 +21,6 @@ contract LoyaltyProgramTest is Test {
   ///////////////////////////////////////////////
 
   LoyaltyProgram loyaltyProgram;
-  ERC6551Account ercAccount;
 
   uint256 CARDS_TO_MINT = 5; 
   uint256[] CARDS_MINTED = [1,2,3,4,5]; 

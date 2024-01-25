@@ -2,7 +2,6 @@
 pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
-import {ERC6551Account} from "../src/ERC6551Account.sol";
 import {LoyaltyProgram} from "../src/LoyaltyProgram.sol";
 import {MockLoyaltyGifts} from "../src/MockLoyaltyGifts.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
@@ -13,7 +12,6 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 contract Interactions is Script {
   using ECDSA for bytes32;
   using MessageHashUtils for bytes32;
-  ERC6551Account ercAccount;
 
   uint256 POINTS_TO_MINT = 500000000; 
   uint256 CARDS_TO_MINT = 5; 
@@ -73,38 +71,8 @@ contract Interactions is Script {
     LoyaltyProgram(loyaltyProgram).safeTransferFrom(address2, address3, 1, 1, "");
     vm.stopBroadcast();
 
-    // step 6: claim loyalty gift by redeeming points 
-    // address cardAddress = payable(LoyaltyProgram(loyaltyProgram).getTokenBoundAddress(4)); 
-    // uint256 loyaltyGiftId = 4; 
-    // uint256 loyaltyPoints = 5000; 
-    // uint256 nonceLoyaltyCard = 0; 
-    
-    // // first make signed request 
-    // bytes32 messageHash = keccak256(
-    //     abi
-    //     .encodePacked(
-    //       loyaltyGiftsContract, // loyaltyGiftsAddress, 
-    //       loyaltyGiftId, // loyaltyGiftId, -- this one should give a token. 
-    //       cardAddress,  // loyaltyCardAddress, 
-    //       address2, // customerAddress,
-    //       loyaltyPoints, // loyaltyPoints,
-    //       nonceLoyaltyCard // s_nonceLoyaltyCard[loyaltyCardAddress]
-    //     )).toEthSignedMessageHash();
+    // should also include claiming tokens to various cards WIP 
 
-    // (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey2, messageHash); 
-    // bytes memory signature = abi.encodePacked(r, s, v); 
-    
-    // vm.startBroadcast(); 
-    // // then call function at loyaltyProgram to mint 
-    // LoyaltyProgram(loyaltyProgram).claimLoyaltyGift(
-    //   address(loyaltyGiftsContract), // loyaltyGiftsAddress, 
-    //   loyaltyGiftId, // loyaltyGiftId, -- this one should give a token. 
-    //   cardAddress,  // loyaltyCardAddress, 
-    //   address2, // customerAddress,
-    //   loyaltyPoints, // loyaltyPoints,
-    //   signature // bytes memory signature
-    // ); 
-    // vm.stopBroadcast();
     }
 
     function mintLoyaltyPoints(LoyaltyProgram lpInstance, uint256 numberOfPoints) public {
@@ -116,11 +84,6 @@ contract Interactions is Script {
     function mintLoyaltyCards(LoyaltyProgram lpInstance, uint256 numberOfCards) public {
       vm.startBroadcast();
       LoyaltyProgram(lpInstance).mintLoyaltyCards(numberOfCards);
-      // for (uint i = 0; numberOfCards > i; i++) {
-      //   address cardAddress = payable(LoyaltyProgram(lpInstance).getTokenBoundAddress(i)); 
-      //   (bool sent, bytes memory data) = cardAddress.call{value: 1000000000000000000}("");
-      //   require(sent, "failed to send ether"); 
-      // }
       vm.stopBroadcast();
     }
 
@@ -137,19 +100,6 @@ contract Interactions is Script {
       vm.stopBroadcast();
     }
 
-    // function addLoyaltyGift(
-    //   LoyaltyProgram lpInstance, 
-    //   uint256 loyaltyTokenId
-    //   ) public {
-    //     vm.startBroadcast();
-    //     LoyaltyProgram(lpInstance).addLoyaltyGift(loyaltyGiftsContract, loyaltyTokenId);
-    //     vm.stopBroadcast();
-    // }
-
-    // function mintLoyaltyTokens(
-    //   address payable loyaltyGiftAddress, 
-    //   uint256[] memory loyaltyGiftIds, 
-    //   uint256[] memory numberOfTokens)
     function mintLoyaltyGifts(
       LoyaltyProgram lpInstance, 
       address payable loyaltyGiftAddress, 
@@ -160,12 +110,5 @@ contract Interactions is Script {
       LoyaltyProgram(lpInstance).mintLoyaltyTokens(loyaltyGiftAddress, loyaltyGiftIds, numberOfTokens);
       vm.stopBroadcast();
     }
-    
-//     function claimLoyaltyGifts(LoyaltyProgram lpInstance, address payable loyaltyTokenAddress, uint256 numberOfPoints, uint256 loyaltyCardId)  public {
-//       uint256 ownerPrivateKey = vm.envUint("DEFAULT_ANVIL_KEY_3");
-//       vm.startBroadcast(ownerPrivateKey);
-//       LoyaltyProgram(lpInstance).redeemLoyaltyPoints(loyaltyTokenAddress, numberOfPoints, loyaltyCardId);
-//       vm.stopBroadcast();
-//     }
 }
 
