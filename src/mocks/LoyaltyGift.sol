@@ -47,8 +47,24 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     }
 
     /**
-     * @dev Note that this function does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract. 
+     * @dev Note that anyone can call this function. 
      *
+     */
+    function mintLoyaltyTokens(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) public {
+        // check if any of the loyaltyGiftIds is not tokenised.
+        for (uint256 i; i < loyaltyGiftIds.length; i++) {
+            if (s_tokenised[loyaltyGiftIds[i]] == 0) {
+                revert LoyaltyGift__NotTokenised(address(this), loyaltyGiftIds[i]); 
+            }
+        }
+
+        _mintBatch(msg.sender, loyaltyGiftIds, numberOfTokens, ""); // emits batchtransfer event
+    }
+
+
+    /**
+     * @notice Note that this function does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract. 
+     * @notice also does not check if address is TBA / loyaltyCard
      *
      */
     function issueLoyaltyGift(address loyaltyCard, uint256 loyaltyGiftId, uint256 loyaltyPoints) public returns (bool success) {
@@ -84,20 +100,6 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
         return true; // TEST if this does not come through when _safeTransferFrom reverts. 
     }
 
-    /**
-     * @dev Note that anyone can call this function. 
-     *
-     */
-    function mintLoyaltyTokens(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) public {
-        // check if any of the loyaltyGiftIds is not tokenised.
-        for (uint256 i; i < loyaltyGiftIds.length; i++) {
-            if (s_tokenised[loyaltyGiftIds[i]] == 0) {
-                revert LoyaltyGift__NotTokenised(address(this), loyaltyGiftIds[i]); 
-            }
-        }
-
-        _mintBatch(msg.sender, loyaltyGiftIds, numberOfTokens, ""); // emits batchtransfer event
-    }
 
     // = Implemented. 
     // As it is now, loyaltyTokens minted in one program, CAN BE EXCHANGED in ANOTHER PROGRAM! 
@@ -124,5 +126,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     }
 
     /* getter functions */
-
+    function getTokenised() external view returns (uint256[] memory) {
+        return s_tokenised; 
+    }
 }
