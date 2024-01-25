@@ -1,10 +1,10 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.21;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.21;
 
-// import {Test, console} from "forge-std/Test.sol";
-// import {LoyaltyGift} from "../../src/LoyaltyGift.sol";
-// import {HelperConfig} from "../../script/HelperConfig.s.sol";
-// import {DeployLoyaltyGift} from "../../script/DeployLoyaltyGifts.s.sol";
+import {Test, console} from "forge-std/Test.sol";
+import {LoyaltyGift} from "../../src/LoyaltyGift.sol";
+import {HelperConfig} from "../../script/HelperConfig.s.sol";
+import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
 
 // ///////////////////////////////////////////////
 // ///                   Setup                 ///
@@ -16,7 +16,6 @@
 //     address public loyaltyProgramAddress = makeAddr("LoyaltyProgramContract");
 //     address public userOne = makeAddr("user1");
 //     address public userTwo = makeAddr("user2");
-//     string public constant FREE_COFFEE_URI = "ipfs://QmTzKTU5VQmt3aDJSjBfWhkpzSr7GDPaL3ModEHbmiNRE7";
 
 //     modifier usersHaveLoyaltyGifts(uint256 numberLoyaltyGifts1, uint256 numberLoyaltyGifts2) {
 //         vm.prank(loyaltyProgramAddress);

@@ -45,7 +45,7 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 
 /**
  * @title LoyaltyProgram
- * @author 7 Cedars
+ * @author Seven Cedars
  * @notice Customer Loyalty program: issues loyalty cards (a non-fungible token) to customers, that enables
  * - collection of loyalty points (a fungible token) as gifted by vendor.
  * - redeeming loyalty points to claim loyalty tokens (a semi-fungible token) that represent vendor gifts, events, etc
@@ -86,7 +86,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     using MessageHashUtils for bytes32;
 
     /* State variables */
-    uint256 public constant LOYALTY_POINTS = 0;
+    uint256 public constant LOYALTY_POINTS_ID = 0;
 
     // EIP712 domain separator
     struct EIP712Domain {
@@ -140,7 +140,14 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     }
 
     /**
-     * Emits a DeployedLoyaltyProgram event. 
+     * @dev minting ERC6551 loyaltyCards: NFTs linked to token bound account.  
+     * @param uri the uri linked to the loyalty program. See for example layout of this Uri the LoyaltyPrograms folder. 
+     * 
+     * @notice s_owner is now set as msg-sender and cannot be changed later on.
+     * @notice setup for ERC6551 Token Based Accounts registry at construction.
+     * @notice setup of  ERC-712 DOMAIN_SEPARATOR
+     * 
+     * emits a DeployedLoyaltyProgram event.  
      */
     constructor(string memory uri) ERC1155(uri) {
         s_owner = msg.sender;
@@ -157,7 +164,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         emit DeployedLoyaltyProgram(msg.sender);
     }
 
-    receive() external payable {}
+    // receive() external payable {}
 
     /**
      * @dev minting ERC6551 loyaltyCards: NFTs linked to token bound account.  
@@ -198,7 +205,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * - emits transferSingle event. 
      */
     function mintLoyaltyPoints(uint256 numberOfPoints) public onlyOwner {
-        _mint(s_owner, LOYALTY_POINTS, numberOfPoints, "");
+        _mint(s_owner, LOYALTY_POINTS_ID, numberOfPoints, "");
     }
 
     /** 
@@ -213,7 +220,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * - emits a AddedLoyaltyGift event
      */
 
-    function addLoyaltyGift(address payable loyaltyGiftAddress, uint256 loyaltyGiftId) public onlyOwner {
+    function addLoyaltyGift(address loyaltyGiftAddress, uint256 loyaltyGiftId) public onlyOwner {
         // CAUSES many reverts :D Needs bug fixing... 
         // bytes4 interfaceId = type(ILoyaltyGift).interfaceId; 
         // if (ERC165Checker.supportsERC165InterfaceUnchecked(loyaltyGift, interfaceId) == false) {
@@ -258,6 +265,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         if (s_LoyaltyGiftsRedeemable[loyaltyGiftAddress][loyaltyGiftId] == 0) {
             revert LoyaltyProgram__LoyaltyGiftNotRecognised();
         }
+        s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = 0;
         s_LoyaltyGiftsRedeemable[loyaltyGiftAddress][loyaltyGiftId] = 0;
 
         emit RemovedLoyaltyGiftRedeemable(loyaltyGiftAddress, loyaltyGiftId);
@@ -416,7 +424,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
     function hashRedeemVoucher(RedeemVoucher memory message) private pure returns (bytes32) {
         return keccak256(abi.encode(
-            keccak256(bytes("RequestGift(address from,address to,string voucher,uint256 nonce)")),
+            keccak256(bytes("RedeemVoucher(address from,address to,string voucher,uint256 nonce)")),
             message.from,
             message.to, 
             keccak256(bytes(message.voucher)),
@@ -438,7 +446,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         override
     {
         for (uint256 i; i < ids.length; ++i) {
-            if (ids[i] == LOYALTY_POINTS) {
+            if (ids[i] == LOYALTY_POINTS_ID) {
                 if (                             // if ...  
                     s_LoyaltyCards[to] == 0 &&   // points are not transferred to loyalty cards...
                     to != s_owner // ...or to owner... 
@@ -447,7 +455,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
                     revert LoyaltyProgram__TransferDenied();
                 }
             } 
-            if (ids[i] != LOYALTY_POINTS) {
+            if (ids[i] != LOYALTY_POINTS_ID) {
                  if (s_LoyaltyCards[to] == 1) {
                     revert LoyaltyProgram__TransferDenied();
                  } 
@@ -478,6 +486,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
     function getLoyaltyGiftsIsClaimable(address loyaltyGiftAddress, uint256 loyaltyGiftId) external view returns (uint256) {
         return s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId];
+    }
+
+    function getLoyaltyGiftsIsRedeemable(address loyaltyGiftAddress, uint256 loyaltyGiftId) external view returns (uint256) {
+        return s_LoyaltyGiftsRedeemable[loyaltyGiftAddress][loyaltyGiftId];
     }
 
     function getNumberLoyaltyCardsMinted() external view returns (uint256) {

@@ -26,6 +26,19 @@
 //     ///                   Setup                 ///
 //     ///////////////////////////////////////////////
 
+
+  // uint256 privateKey0 = vm.envUint("DEFAULT_ANVIL_KEY_0");
+  // address address0 = vm.addr(privateKey0); 
+  // uint256 privateKey1 = vm.envUint("DEFAULT_ANVIL_KEY_1");
+  // address address1 = vm.addr(privateKey1); 
+  // uint256 privateKey2 = vm.envUint("DEFAULT_ANVIL_KEY_2");
+  // address address2 = vm.addr(privateKey2); 
+  // uint256 privateKey3 = vm.envUint("DEFAULT_ANVIL_KEY_3");
+  // address address3 = vm.addr(privateKey3); 
+  // uint256 privateKey4 = vm.envUint("DEFAULT_ANVIL_KEY_4");
+  // address address4 = vm.addr(privateKey4); 
+
+
 //     LoyaltyProgram loyaltyProgramA;
 //     LoyaltyProgram loyaltyProgramB;
 //     HelperConfig helperConfig;

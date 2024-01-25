@@ -1,113 +1,185 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.21;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.21;
 
-// import {Test, console} from "forge-std/Test.sol";
-// import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
-// import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
-// import {HelperConfig} from "../../script/HelperConfig.s.sol";
+import {Test, console} from "forge-std/Test.sol";
+import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
+import {ERC6551Account} from "../../src/ERC6551Account.sol";
+import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
+import {HelperConfig} from "../../script/HelperConfig.s.sol";
 
-// contract LoyaltyProgramTest is Test {
-//     /* events */
-//     event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
-//     event AddedLoyaltyTokenContract(address indexed loyaltyToken);
-//     event RemovedLoyaltyTokenClaimable(address indexed loyaltyToken);
+contract LoyaltyProgramTest is Test {
+  /* events */
+  event DeployedLoyaltyProgram(address indexed owner);
+  event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
+  event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values);
+  event AddedLoyaltyGift(address indexed loyaltyGift, uint256 loyaltyGiftId);
+  event RemovedLoyaltyGiftClaimable(address indexed loyaltyGift, uint256 loyaltyGiftId);
+  event RemovedLoyaltyGiftRedeemable(address indexed loyaltyGift, uint256 loyaltyGiftId);
 
-//     ///////////////////////////////////////////////
-//     ///                   Setup                 ///
-//     ///////////////////////////////////////////////
 
-//     LoyaltyProgram loyaltyProgramA;
-//     LoyaltyProgram loyaltyProgramB;
-//     HelperConfig helperConfig;
-//     uint256 minCustomerInteractions;
-//     uint256 maxCustomerInteractions;
-//     uint256 minPointsPerInteraction;
-//     uint256 maxPointsPerInteraction;
+  ///////////////////////////////////////////////
+  ///                   Setup                 ///
+  ///////////////////////////////////////////////
 
-//     struct Transaction {
-//         uint256 points;
-//         uint256 timestamp;
-//         bool redeemed;
-//     }
+  LoyaltyProgram loyaltyProgram;
+  ERC6551Account ercAccount;
 
-//     address public vendorA;
-//     address public vendorB;
-//     address public customerOne = makeAddr("customer1");
-//     address public customerTwo = makeAddr("customer2");
-//     address public customerThree = makeAddr("customer3");
-//     address public loyaltyTokenContractA = makeAddr("loyaltyTokenA");
-//     address public loyaltyTokenContractB = makeAddr("loyaltyTokenB");
-//     address cardOneProgramA;
-//     address cardTwoProgramA;
-//     address cardOneProgramB;
-//     address cardTwoProgramB;
+  uint256 CARDS_TO_MINT = 5; 
+  uint256[] CARDS_MINTED = [1,2,3,4,5]; 
+  uint256[] CARDS_AMOUNT = [1,1,1,1,1];
+  uint256 POINTS_TO_MINT = 500000000; 
+  uint256[] GIFTS_TO_SELECT = [0, 3, 5];
+  uint256[] TOKENS_TO_MINT = [3, 5]; 
+  uint256[] AMOUNT_TOKENS_TO_MINT = [24, 34]; 
+  uint256[] GIFTS_TO_DESELECT = [2];
+  address MOCK_LOYALTY_GIFT_ADDRESS = 0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6; 
 
-//     uint256 constant STARTING_BALANCE = 10 ether;
-//     uint256 constant GAS_PRICE = 1;
+  uint256 vendorKey = vm.envUint("DEFAULT_ANVIL_KEY_0");
+  address vendorAddress = vm.addr(vendorKey); 
 
-//     /**
-//      * @dev this modifier sets up a fuzzy context consisting of
-//      * - 2 customers,
-//      */
-//     modifier setUpContext() 
-//     // uint256 random1,
-//     // uint256 random2,
-//     // uint256 random3
-//     {
-//         // transfer single loyalty card to customers
-//         vm.prank(vendorA);
-//         loyaltyProgramA.safeTransferFrom(vendorA, customerOne, 1, 1, "");
-//         vm.prank(vendorA);
-//         loyaltyProgramA.safeTransferFrom(vendorA, customerTwo, 2, 1, "");
-//         vm.prank(vendorB);
-//         loyaltyProgramB.safeTransferFrom(vendorB, customerTwo, 1, 1, "");
-//         vm.prank(vendorB);
-//         loyaltyProgramB.safeTransferFrom(vendorB, customerThree, 2, 1, "");
+  function setUp() external {
+    DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
+    loyaltyProgram = deployer.run();
+  }
 
-//         vm.prank(vendorA);
-//         loyaltyProgramA.safeTransferFrom(vendorA, cardOneProgramA, 0, 200, "");
-//         vm.prank(vendorA);
-//         loyaltyProgramA.safeTransferFrom(vendorA, cardTwoProgramA, 0, 400, "");
-//         vm.prank(vendorB);
-//         loyaltyProgramB.safeTransferFrom(vendorB, cardOneProgramB, 0, 250, "");
-//         vm.prank(vendorB);
-//         loyaltyProgramB.safeTransferFrom(vendorB, cardTwoProgramB, 0, 555, "");
-//         _;
-//     }
+  function testLoyaltyProgramHasOwner() public {
+    assertNotEq(address(0), loyaltyProgram.getOwner());
+  }
 
-//     function setUp() external {
-//         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
-//         loyaltyProgramA = deployer.run();
-//         loyaltyProgramB = deployer.run();
+  // still need to test that deployment emits event... todo! 
 
-//         vendorA = loyaltyProgramA.getOwner();
-//         vendorB = loyaltyProgramB.getOwner();
+  ///////////////////////////////////////////////
+  ///      Test Mint Points and Card          ///
+  ///////////////////////////////////////////////
 
-//         // minting loyalty cards and points by vendors
-//         vm.prank(vendorA);
-//         loyaltyProgramA.mintLoyaltyCards(3);
-//         vm.prank(vendorA);
-//         loyaltyProgramA.mintLoyaltyPoints(500000);
-//         vm.prank(vendorB);
-//         loyaltyProgramB.mintLoyaltyCards(7);
-//         vm.prank(vendorB);
-//         loyaltyProgramB.mintLoyaltyPoints(1500000);
+  function testLoyaltyProgramMintsPoints() public {
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.mintLoyaltyPoints(POINTS_TO_MINT);
+    
+    assertEq(loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 0), POINTS_TO_MINT);
+  }
 
-//         // getting addresses of tokenBoundAccounts
-//         cardOneProgramA = loyaltyProgramA.getTokenBoundAddress(1);
-//         cardTwoProgramA = loyaltyProgramA.getTokenBoundAddress(2);
-//         cardOneProgramB = loyaltyProgramB.getTokenBoundAddress(1);
-//         cardTwoProgramB = loyaltyProgramB.getTokenBoundAddress(2);
-//     }
+  function testMintingPointsEmitsEvent() public {
+    vm.expectEmit(true, false, false, false, address(loyaltyProgram)); 
 
-//     function testLoyaltyProgramHasOwner() public {
-//         assertEq(vendorA, loyaltyProgramA.getOwner());
-//         assertEq(vendorB, loyaltyProgramB.getOwner());
-//     }
+    emit TransferSingle(
+      loyaltyProgram.getOwner(),  // address indexed operator, 
+      loyaltyProgram.getOwner(), // address indexed from, 
+      loyaltyProgram.getOwner(), // address indexed to, 
+      0, // uint256 id,
+      POINTS_TO_MINT // uint256 value 
+      );
 
-//     ///////////////////////////////////////////////
-//     ///   Test Mint and Transfer LoyaltyCards   ///
-//     ///////////////////////////////////////////////
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.mintLoyaltyPoints(POINTS_TO_MINT);
+  }
+
+  function testLoyaltyProgramMintsCards() public {
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);
+
+    for (uint256 i = 1; i < CARDS_TO_MINT + 1; i++) {
+      assertEq(loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), i), 1);
+    }
+  }
+
+  function testMintingCardsEmitsEvent() public {
+    vm.expectEmit(true, false, false, false, address(loyaltyProgram));
+    emit TransferBatch(
+      loyaltyProgram.getOwner(),  // address indexed operator, 
+      loyaltyProgram.getOwner(), // address indexed from, 
+      loyaltyProgram.getOwner(), // address indexed to, 
+      CARDS_MINTED,
+      CARDS_AMOUNT
+      );
+
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);
+  }
+
+  ///////////////////////////////////////////////
+  ///       Creating Token Based Accounts      //
+  ///////////////////////////////////////////////
+
+    // TODO 
+    // getting addresses of tokenBoundAccounts
+    // cardOneProgramA = loyaltyProgramA.getTokenBoundAddress(1);
+    // cardTwoProgramA = loyaltyProgramA.getTokenBoundAddress(2);
+    // cardOneProgramB = loyaltyProgramB.getTokenBoundAddress(1);
+    // cardTwoProgramB = loyaltyProgramB.getTokenBoundAddress(2);
+
+
+  ///////////////////////////////////////////////
+  ///    Adding and Removing LoyaltyGifts      //
+  ///////////////////////////////////////////////
+
+  function testLoyaltyGiftContractCanBeAdded() public {
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+    // Act / Assert
+    assertEq(loyaltyProgram.getLoyaltyGiftsIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
+    assertEq(loyaltyProgram.getLoyaltyGiftsIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
+  }
+
+  function testEmitsEventOnAddingLoyaltyGiftContract() public {
+    // Arrange
+    vm.expectEmit(true, false, false, false, address(loyaltyProgram));
+    emit AddedLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+    // Act / Assert
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.addLoyaltyGift(payable(MOCK_LOYALTY_GIFT_ADDRESS), 0);
+  }
+
+  function testLoyaltyGiftClaimCanBeRemoved() public {
+    vm.startPrank(loyaltyProgram.getOwner());
+    loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+    loyaltyProgram.removeLoyaltyGiftClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+    vm.stopPrank(); 
+
+    // Act / Assert
+    assertEq(loyaltyProgram.getLoyaltyGiftsIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
+    assertEq(loyaltyProgram.getLoyaltyGiftsIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
+  }
+
+  function testLoyaltyGiftRedeemCanBeRemoved() public {
+    vm.startPrank(loyaltyProgram.getOwner());
+    loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+    loyaltyProgram.removeLoyaltyGiftRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+    vm.stopPrank(); 
+
+    // Act / Assert
+    assertEq(loyaltyProgram.getLoyaltyGiftsIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
+    assertEq(loyaltyProgram.getLoyaltyGiftsIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
+  }
+
+  function testEmitsEventOnRemovingLoyaltyGiftClaim() public {
+    // Arrange
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+
+    vm.expectEmit(true, false, false, false, address(loyaltyProgram));
+    emit RemovedLoyaltyGiftClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+    
+    // Act / Assert
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.removeLoyaltyGiftClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+  }
+
+  function testEmitsEventOnRemovingLoyaltyGiftRedeem() public {
+    // Arrange
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+
+    vm.expectEmit(true, false, false, false, address(loyaltyProgram));
+    emit RemovedLoyaltyGiftRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+    
+    // Act / Assert
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.removeLoyaltyGiftRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+  }
+}
+
+
 
 //     function testOwnerCanMintLoyaltyCards(uint256 numberToMint) public {
 //         uint256 totalSupplyBefore;

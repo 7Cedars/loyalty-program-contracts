@@ -23,7 +23,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     error LoyaltyGift__NotTokenised(address loyaltyToken, uint256 loyaltyGiftId); 
     error LoyaltyGift__IllegalRedeem(address mintedAt, address redeemedFrom);
     error LoyaltyGift__TransferDenied(address loyaltyToken);
-
+ 
     /* State variables */
     uint256[] private s_tokenised; // 0 == false, 1 == true.  
     
@@ -35,7 +35,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
         emit DiscoverableLoyaltyGift(msg.sender, s_tokenised); 
     }
 
-    receive() external virtual payable {}
+    // receive() external virtual payable {}
 
     /**
      * @dev Here NFT specific requirements are inserted through super statements 
@@ -43,7 +43,6 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
      *
      */
     function requirementsLoyaltyGiftMet(address /*loyaltyCard*/, uint256 /*loyaltyGiftId*/, uint256 /*loyaltyPoints*/) public virtual returns (bool success) {
-       
         return true;
     }
 
