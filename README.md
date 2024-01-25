@@ -69,12 +69,12 @@ Deployment
   - [x] etc. -- come up with many different scenarios.
 - [ ] Check: on what chains is ERC6551 deployed?  
   - [ ] Sepolia (= testnet mainnet Ethereum ) // see: https://www.quicknode.com/guides/ethereum-development/nfts/how-to-create-and-deploy-an-erc-6551-nft
-  - [ ] OP Goerli ( = testnet Optimism )
+  - [ ] OP Sepolia ( = testnet Optimism )
   - [ ] Mumbai (= testnet Polygon )
   - [ ] Nothing about Arbitrum. -- but any EVM compatible chain can bery easily deploy a registry - so should have one.. 
 - [ ] Run rest on forked testnets.
   - [ ] L1: Sepolia 
-  - [ ] OP Goerli ( = testnet Optimism )
+  - [ ] OP Sepolia ( = testnet Optimism )
   - [ ] Arbitrum Sepolia See here: https://docs.arbitrum.io/for-devs/concepts/public-chains 
   - [ ] Polygon zvEVM? 
 - [ ] Deploy on actual testnet - and test.

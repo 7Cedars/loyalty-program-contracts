@@ -13,6 +13,8 @@ import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Re
 import {IERC6551Account} from "./interfaces/IERC6551Account.sol";
 import {ERC6551AccountLib} from "./lib/ERC6551AccountLib.sol";
 
+// NB! this is an EXPANDED VERSION OF the standard ERC6551Account! should make that clear.. 
+// But do not want to get in trouble with registry... 
 contract ERC6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver {
     uint256 public nonce;
 

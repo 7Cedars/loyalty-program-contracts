@@ -87,6 +87,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
     /* State variables */
     uint256 public constant LOYALTY_POINTS_ID = 0;
+    address public constant s_erc6551RegistryAddress = 0x000000006551c19487814612e58FE06813775758; // also at anvil local chain? 
 
     // EIP712 domain separator
     struct EIP712Domain {
@@ -115,14 +116,14 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
     address private s_owner;
     bytes32 private DOMAIN_SEPARATOR;
-
+    
     mapping(bytes32 => uint256 executed) requestExecuted; // 0 = false & 1 = true.
     mapping(address loyaltyCard => uint256 nonce) private s_nonceLoyaltyCard;
     mapping(address loyaltyCardAddress => uint256 exists) private s_LoyaltyCards; // 0 = false & 1 = true.
     mapping(address loyaltyGiftsAddress => mapping (uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyGiftsClaimable; // 0 = false & 1 = true.
     mapping(address loyaltyGiftsAddress => mapping (uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyGiftsRedeemable; // 0 = false & 1 = true.
     uint256 private s_loyaltyCardCounter;
-    ERC6551Registry public s_erc6551Registry;
+    ERC6551Registry public s_erc6551Registry; 
     ERC6551Account public s_erc6551Implementation;
 
     /* Events */
@@ -144,7 +145,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * @param uri the uri linked to the loyalty program. See for example layout of this Uri the LoyaltyPrograms folder. 
      * 
      * @notice s_owner is now set as msg-sender and cannot be changed later on.
-     * @notice setup for ERC6551 Token Based Accounts registry at construction.
+     * @notice setup for ERC6551 Token Based Accounts registry at construction. // THIS SHOULD NOT BE IN HERE! 
      * @notice setup of  ERC-712 DOMAIN_SEPARATOR
      * 
      * emits a DeployedLoyaltyProgram event.  
@@ -152,8 +153,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     constructor(string memory uri) ERC1155(uri) {
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
-        s_erc6551Registry = new ERC6551Registry();
-        s_erc6551Implementation = new ERC6551Account();
+        s_erc6551Registry = new ERC6551Registry(); // this one should be part of config. NOT of contract! 
+        s_erc6551Implementation = new ERC6551Account(); // NB! this one is different than standard one. Keep it in! (can I change name to make this clear without issues? TEST! )
         DOMAIN_SEPARATOR = hashDomain(EIP712Domain({
             name: "Loyalty Program",
             version: "1",
