@@ -5,6 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
+import {ERC6551Registry} from "../../src/mocks/ERC6551Registry.sol";
 
 contract LoyaltyProgramTest is Test {
   /* events */
@@ -31,6 +32,7 @@ contract LoyaltyProgramTest is Test {
   uint256[] AMOUNT_TOKENS_TO_MINT = [24, 34]; 
   uint256[] GIFTS_TO_DESELECT = [2];
   address MOCK_LOYALTY_GIFT_ADDRESS = 0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6; 
+  uint256 SALT = 3947539732098357; 
 
   uint256 vendorKey = vm.envUint("DEFAULT_ANVIL_KEY_0");
   address vendorAddress = vm.addr(vendorKey); 
@@ -45,11 +47,12 @@ contract LoyaltyProgramTest is Test {
   }
 
   function testDeployEmitsevent() public {
-    ( string memory uri,
-        ,
-        ,
-        address erc65511Registry, 
-        address payable erc65511Implementation, 
+  (   , 
+      string memory uri,
+      ,
+      ,
+      address erc65511Registry, 
+      address payable erc65511Implementation, 
 
       ) = helperConfig.activeNetworkConfig();  
 
@@ -66,7 +69,7 @@ contract LoyaltyProgramTest is Test {
   }
 
   ///////////////////////////////////////////////
-  ///      Test Mint Points and Card          ///
+  ///      Test Mint Points and Cards         ///
   ///////////////////////////////////////////////
 
   function testLoyaltyProgramMintsPoints() public {
@@ -114,17 +117,33 @@ contract LoyaltyProgramTest is Test {
     loyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);
   }
 
-  ///////////////////////////////////////////////
-  ///       Creating Token Based Accounts      //
-  ///////////////////////////////////////////////
+  function testMintingCardsCreatesValidTokenBasedAccounts() public {
+    (uint256 chainid, 
+      ,
+      ,
+      ,
+      address erc65511Registry, 
+      address payable erc65511Implementation, 
+    ) = helperConfig.activeNetworkConfig();  
 
-    // TODO 
-    // getting addresses of tokenBoundAccounts
-    // cardOneProgramA = loyaltyProgramA.getTokenBoundAddress(1);
-    // cardTwoProgramA = loyaltyProgramA.getTokenBoundAddress(2);
-    // cardOneProgramB = loyaltyProgramB.getTokenBoundAddress(1);
-    // cardTwoProgramB = loyaltyProgramB.getTokenBoundAddress(2);
+    vm.prank(loyaltyProgram.getOwner());
+    loyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);
+    
+    for (uint256 i = 0; i < CARDS_MINTED.length; i++) {
+      address deployedTBAAccount; 
+      deployedTBAAccount = loyaltyProgram.getTokenBoundAddress(CARDS_MINTED[i]); 
 
+      address registryComputedAddress =
+        ERC6551Registry(erc65511Registry).account(
+        address(erc65511Implementation), 
+        chainid, 
+        address(loyaltyProgram), 
+        CARDS_MINTED[i], 
+        SALT);
+      
+      assertEq(deployedTBAAccount, registryComputedAddress);
+    }
+  }
 
   ///////////////////////////////////////////////
   ///    Adding and Removing LoyaltyGifts      //

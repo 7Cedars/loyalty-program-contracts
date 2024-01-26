@@ -18,11 +18,12 @@ contract DeployLoyaltyProgram is Script {
     function run() external returns (LoyaltyProgram, HelperConfig) {
        HelperConfig helperConfig = new HelperConfig(); 
 
-        ( string memory uri,
+        ( , 
+          string memory uri,
           ,
           ,
           address erc65511Registry, 
-          address payable erc65511Implementation, 
+          address erc65511Implementation, 
 
         ) = helperConfig.activeNetworkConfig();  
 
@@ -30,7 +31,7 @@ contract DeployLoyaltyProgram is Script {
       loyaltyProgram = new LoyaltyProgram(
         uri, 
         erc65511Registry,
-        erc65511Implementation
+        payable(erc65511Implementation)
         );
       vm.stopBroadcast();
 

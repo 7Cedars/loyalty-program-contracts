@@ -11,6 +11,7 @@ contract HelperConfig is Script {
     // these are all the same for networks with deployed ERC6551 - local anvil chain obv does not have one.  
 
     struct NetworkConfig {
+        uint256 chainid; 
         string uri; 
         uint256 initialSupply; // can differ between chains.
         uint256 interval;
@@ -47,6 +48,7 @@ contract HelperConfig is Script {
     function getSepoliaEthConfig() public returns (NetworkConfig memory) {
 
         NetworkConfig memory sepoliaConfig = NetworkConfig({
+            chainid: 11155111, 
             uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD", 
             initialSupply: 1e25,
             interval: 30, 
@@ -93,6 +95,7 @@ contract HelperConfig is Script {
         vm.stopBroadcast();
 
         NetworkConfig memory anvilConfig = NetworkConfig({
+            chainid: 31337, 
             uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD", 
             initialSupply: 1e25, 
             interval: 30, 

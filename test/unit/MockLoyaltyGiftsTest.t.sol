@@ -82,9 +82,5 @@ contract MockLoyaltyGiftsTest is Test {
       mockLoyaltyGifts.requirementsLoyaltyGiftMet(addressOne, i, GIFT_PRICES[i] - 1);  
     }
   }
-
-          
-  /// See integration tests /// 
-
-    
+      
 }
