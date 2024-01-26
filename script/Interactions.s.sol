@@ -63,7 +63,7 @@ contract Interactions is Script {
     for (uint i = 0; GIFTS_TO_SELECT.length > i; i++) {
       LoyaltyProgram(loyaltyProgram).addLoyaltyGift(payable(loyaltyGiftsAddress), GIFTS_TO_SELECT[i]); 
     }
-    LoyaltyProgram(loyaltyProgram).mintLoyaltyTokens(payable(loyaltyGiftsAddress), TOKENS_TO_MINT, AMOUNT_TOKENS_TO_MINT); 
+    LoyaltyProgram(loyaltyProgram).mintLoyaltyVouchers(payable(loyaltyGiftsAddress), TOKENS_TO_MINT, AMOUNT_TOKENS_TO_MINT); 
     vm.stopBroadcast(); 
       
     // step 5: transfer loyalty cards between customers; 
@@ -107,7 +107,7 @@ contract Interactions is Script {
       uint256[] memory numberOfTokens
       ) public {
       vm.startBroadcast();
-      LoyaltyProgram(lpInstance).mintLoyaltyTokens(loyaltyGiftAddress, loyaltyGiftIds, numberOfTokens);
+      LoyaltyProgram(lpInstance).mintLoyaltyVouchers(loyaltyGiftAddress, loyaltyGiftIds, numberOfTokens);
       vm.stopBroadcast();
     }
 }

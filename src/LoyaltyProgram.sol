@@ -263,8 +263,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * 
      * - emits transferBatch event 
      */
-    function mintLoyaltyTokens(address payable loyaltyGiftAddress, uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) public onlyOwner nonReentrant {
-        LoyaltyGift(loyaltyGiftAddress).mintLoyaltyTokens(loyaltyGiftIds, numberOfTokens);
+    function mintLoyaltyVouchers(address payable loyaltyGiftAddress, uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) public onlyOwner nonReentrant {
+        LoyaltyGift(loyaltyGiftAddress).mintLoyaltyVouchers(loyaltyGiftIds, numberOfTokens);
     }
 
     /** 
@@ -366,7 +366,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             s_nonceLoyaltyCard[loyaltyCardAddress] = s_nonceLoyaltyCard[loyaltyCardAddress] + 1; 
 
             // 2) redeem loyalty token (emits a transferSingle event.)
-            LoyaltyGift(payable(loyaltyGift)).reclaimLoyaltyToken(loyaltyCardAddress, loyaltyGiftId);
+            LoyaltyGift(payable(loyaltyGift)).reclaimLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
     }
 
     // Without these transactions are declined. 

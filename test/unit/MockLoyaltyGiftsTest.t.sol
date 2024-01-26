@@ -2,7 +2,8 @@
 pragma solidity ^0.8.21;
 
 import {Test, console} from "forge-std/Test.sol";
-import {LoyaltyGift} from "../../src/mocks/LoyaltyGift.sol";
+import {MockLoyaltyGifts} from "../../src/mocks/MockLoyaltyGifts.sol";
+import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
 
@@ -10,111 +11,80 @@ import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
 // ///                   Setup                 ///
 // ///////////////////////////////////////////////
 
-// contract LoyaltyGiftTest is Test {
-//     DeployLoyaltyGift public deployer;
-//     LoyaltyGift public loyaltyToken;
-//     address public loyaltyProgramAddress = makeAddr("LoyaltyProgramContract");
-//     address public userOne = makeAddr("user1");
-//     address public userTwo = makeAddr("user2");
+contract MockLoyaltyGiftsTest is Test {
+    /** events */
+  event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
+  event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values);
+  event LoyaltyGiftDeployed(address indexed issuer, uint256[] tokenised);
 
-//     modifier usersHaveLoyaltyGifts(uint256 numberLoyaltyGifts1, uint256 numberLoyaltyGifts2) {
-//         vm.prank(loyaltyProgramAddress);
-//         loyaltyToken.mintLoyaltyGifts(75);
+  uint256 keyZero = vm.envUint("DEFAULT_ANVIL_KEY_0");
+  address addressZero = vm.addr(keyZero); 
+  uint256 keyOne = vm.envUint("DEFAULT_ANVIL_KEY_1");
+  address addressOne = vm.addr(keyOne); 
 
-//         numberLoyaltyGifts1 = bound(numberLoyaltyGifts1, 11, 35);
-//         numberLoyaltyGifts2 = bound(numberLoyaltyGifts2, 18, 21);
+  string GIFT_URI = "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmSshfobzx5jtA14xd7zJ1PtmG8xFaPkAq2DZQagiAkSET/{id}"; 
+  uint256[] TOKENISED = [0, 0, 0, 1, 1, 1]; 
+  uint256[] VOUCHERS_TO_MINT = [1]; 
+  uint256[] AMOUNT_VOUCHERS_TO_MINT = [24]; 
+  uint256[] NON_TOKENISED_TO_MINT = [0]; 
+  uint256[] AMOUNT_NON_TOKENISED_TO_MINT = [1]; 
+  uint256[] GIFT_PRICES = [2500, 4500, 50000, 2500, 4500, 50000];
 
-//         // for loop in solidity: initialisation, condition, updating. See https://dev.to/shlok2740/loops-in-solidity-2pmp.
-//         for (uint256 i = 0; i < numberLoyaltyGifts1; i++) {
-//             vm.prank(loyaltyProgramAddress);
-//             loyaltyToken.claimLoyaltyGift(userOne);
-//         }
-//         for (uint256 i = 0; i < numberLoyaltyGifts2; i++) {
-//             vm.prank(loyaltyProgramAddress);
-//             loyaltyToken.claimLoyaltyGift(userTwo);
-//         }
-//         _;
-//     }
+  ///////////////////////////////////////////////
+  ///                   Setup                 ///
+  ///////////////////////////////////////////////
 
-//     function setUp() public {
-//         deployer = new DeployLoyaltyGift();
-//         loyaltyToken = deployer.run();
-//     }
+  MockLoyaltyGifts mockLoyaltyGifts;
 
-//     ///////////////////////////////////////////////
-//     ///         Test Minting LoyaltyPoints      ///
-//     ///////////////////////////////////////////////
+  function setUp() external {
+    DeployMockLoyaltyGifts deployer = new DeployMockLoyaltyGifts();
+    mockLoyaltyGifts = deployer.run();
+  }
 
-//     function testAnyoneCanMintLoyaltyGifts(uint256 numberOfTokens) public {
-//         numberOfTokens = bound(numberOfTokens, 10, 99);
-//         uint256 numberTokensBefore1;
-//         uint256 numberTokensAfter1;
-//         uint256 numberTokensBefore2;
-//         uint256 numberTokensAfter2;
+  function testLoyaltyGiftHasTokenised() public {
+    uint256[] memory tokenised = mockLoyaltyGifts.getTokenised(); 
+    assertEq(tokenised, TOKENISED);
+  }
+  
+  function testDeployEmitsevent() public {
+    vm.expectEmit(true, false, false, false);
+    emit LoyaltyGiftDeployed(
+      addressZero,
+      TOKENISED);
 
-//         for (uint256 i = 1; i < numberOfTokens; i++) {
-//             numberTokensBefore1 = numberTokensBefore1 + loyaltyToken.balanceOf(loyaltyProgramAddress, i);
-//         }
+    vm.prank(addressZero);
+    mockLoyaltyGifts = new MockLoyaltyGifts();
+  }
 
-//         for (uint256 i = 1; i < numberOfTokens; i++) {
-//             numberTokensBefore2 = numberTokensBefore2 + loyaltyToken.balanceOf(loyaltyProgramAddress, i);
-//         }
+  /////////////////////////////////////////////////////////
+  ///          Test Different Requirement Test          /// 
+  /////////////////////////////////////////////////////////
 
-//         vm.prank(loyaltyProgramAddress);
-//         loyaltyToken.mintLoyaltyGifts(numberOfTokens);
-//         vm.prank(userOne);
-//         loyaltyToken.mintLoyaltyGifts(numberOfTokens);
+  function testRequirementsReturnTrueWhenMet() public {
+    for (uint256 i = 0; i < GIFT_PRICES.length; i++) {
+      bool success;  
+      
+      (success) = mockLoyaltyGifts.requirementsLoyaltyGiftMet(addressOne, i, GIFT_PRICES[i]);  
+      assertEq(success, true);
+    }
+  }
 
-//         for (uint256 i = 1; i <= numberOfTokens; i++) {
-//             numberTokensAfter1 = numberTokensAfter1 + loyaltyToken.balanceOf(loyaltyProgramAddress, i);
-//         }
+  function testRequirementsRevertsWhenNotMet() public {
+    for (uint256 i = 0; i < GIFT_PRICES.length; i++) {
+      vm.expectRevert(
+        abi.encodeWithSelector(
+          ILoyaltyGift.LoyaltyGift__RequirementsNotMet.selector, 
+          address(mockLoyaltyGifts),
+          i
+        )
+      );
+      
+      mockLoyaltyGifts.requirementsLoyaltyGiftMet(addressOne, i, GIFT_PRICES[i] - 1);  
+    }
+  }
 
-//         for (uint256 i = 1; i <= numberOfTokens; i++) {
-//             numberTokensAfter2 = numberTokensAfter2 + loyaltyToken.balanceOf(loyaltyProgramAddress, i);
-//         }
-
-//         assertEq(numberTokensBefore1 + numberOfTokens, numberTokensAfter1);
-//         assertEq(numberTokensBefore2 + numberOfTokens, numberTokensAfter2);
-//     }
-
-//     /////////////////////////////////////////////////////////
-//     ///      Test Requirements Check Loyalty Tokens       ///
-//     /////////////////////////////////////////////////////////
-
-//     function testUserCanClaimAndHaveBalance() public {
-//         uint256 tokenId;
-
-//         vm.prank(loyaltyProgramAddress);
-//         loyaltyToken.mintLoyaltyGifts(20);
-//         vm.prank(loyaltyProgramAddress);
-//         loyaltyToken.claimLoyaltyGift(userOne);
-
-//         assert(loyaltyToken.balanceOf(userOne, 19) == 1);
-//         assert(keccak256(abi.encodePacked(FREE_COFFEE_URI)) == keccak256(abi.encodePacked(loyaltyToken.uri(tokenId))));
-//     }
-
-//     function testUserCanCheckAvailableTokens() public {
-//         uint256[] memory numberOfTokens;
-
-//         vm.prank(loyaltyProgramAddress);
-//         loyaltyToken.mintLoyaltyGifts(20);
-//         vm.prank(loyaltyProgramAddress);
-//         loyaltyToken.claimLoyaltyGift(userOne);
-
-//         numberOfTokens = loyaltyToken.getAvailableTokens(userOne);
-
-//         for (uint256 i = 1; i < numberOfTokens.length; i++) {
-//             console.logUint(numberOfTokens[i]); 
-//         }
-        
-        
-//     }
-
-//     /////////////////////////////////////////////////////////
-//     ///     Test Claiming and Redeeming Loyalty Tokens    ///
-//     /////////////////////////////////////////////////////////
-
-//     /// See integration tests /// 
+          
+  /// See integration tests /// 
 
     
-// }
+}

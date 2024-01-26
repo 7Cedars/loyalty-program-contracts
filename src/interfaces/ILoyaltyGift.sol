@@ -14,7 +14,7 @@ interface ILoyaltyGift is IERC1155 {
     /**
      * @dev natspecs TBI 
      */
-    event DiscoverableLoyaltyGift(address indexed issuer, uint256[] tokenised);
+    event LoyaltyGiftDeployed(address indexed issuer, uint256[] tokenised);
 
     // receive() external payable;
     /**
@@ -25,15 +25,16 @@ interface ILoyaltyGift is IERC1155 {
     /**
      * @dev natspecs TBI 
      */
+    function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) external; 
+
+    /**
+     * @dev natspecs TBI 
+     */
     function issueLoyaltyGift(address loyaltyCard, uint256 loyaltyTokenId, uint256 loyaltyPoints) external returns (bool success);
 
     /**
      * @dev natspecs TBI 
      */
-    function reclaimLoyaltyToken(address loyaltyCard, uint256 tokenId) external returns (bool success);
+    function reclaimLoyaltyVoucher(address loyaltyCard, uint256 tokenId) external returns (bool success);
 
-    /**
-     * @dev natspecs TBI 
-     */
-    function mintLoyaltyTokens(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) external; 
 }

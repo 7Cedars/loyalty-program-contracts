@@ -44,7 +44,26 @@ contract LoyaltyProgramTest is Test {
     assertNotEq(address(0), loyaltyProgram.getOwner());
   }
 
-  // still need to test that deployment emits event... todo! 
+  function testDeployEmitsevent() public {
+    ( string memory uri,
+        ,
+        ,
+        address erc65511Registry, 
+        address payable erc65511Implementation, 
+
+      ) = helperConfig.activeNetworkConfig();  
+
+    vm.expectEmit(true, false, false, false);
+    emit DeployedLoyaltyProgram(
+      vendorAddress );
+
+    vm.prank(vendorAddress);
+    loyaltyProgram = new LoyaltyProgram(
+        uri, 
+        erc65511Registry,
+        erc65511Implementation
+        );
+  }
 
   ///////////////////////////////////////////////
   ///      Test Mint Points and Card          ///
@@ -177,6 +196,12 @@ contract LoyaltyProgramTest is Test {
   }
 }
 
+  ///////////////////////////////////////////////
+  ///     Claim Gifts and redeem Vouchers      //
+  ///////////////////////////////////////////////
+
+  // For Claim Gifts and redeem Vouchers tests see interaction tests. 
+   
 
 
 //     function testOwnerCanMintLoyaltyCards(uint256 numberToMint) public {

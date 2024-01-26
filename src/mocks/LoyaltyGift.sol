@@ -32,7 +32,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     /* FUNCTIONS: */
     constructor(string memory loyaltyTokenUri, uint256[] memory tokenised) ERC1155(loyaltyTokenUri) {
         s_tokenised = tokenised; 
-        emit DiscoverableLoyaltyGift(msg.sender, s_tokenised); 
+        emit LoyaltyGiftDeployed(msg.sender, s_tokenised); 
     }
 
     // receive() external virtual payable {}
@@ -48,9 +48,9 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
 
     /**
      * @dev Note that anyone can call this function. 
-     *
+     * When one token is minted, will emit a TransferSINGLE event. 
      */
-    function mintLoyaltyTokens(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) public {
+    function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) public {
         // check if any of the loyaltyGiftIds is not tokenised.
         for (uint256 i; i < loyaltyGiftIds.length; i++) {
             if (s_tokenised[loyaltyGiftIds[i]] == 0) {
@@ -68,7 +68,6 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
      *
      */
     function issueLoyaltyGift(address loyaltyCard, uint256 loyaltyGiftId, uint256 loyaltyPoints) public returns (bool success) {
-
         if (s_tokenised[loyaltyGiftId] == 0) {
             return requirementsLoyaltyGiftMet(loyaltyCard, loyaltyGiftId, loyaltyPoints); 
         }
@@ -77,9 +76,8 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
             revert LoyaltyGift__NoTokensAvailable(address(this));
         }
 
-        // _safeTransferFrom(loyaltyCard, LoyaltyProgram(payable(msg.sender)).getOwner(), 0, loyaltyPoints, ""); 
         safeTransferFrom(msg.sender, loyaltyCard, loyaltyGiftId, 1, "");
-        return true; // TEST if this does not come through when safeTransferFrom reverts. 
+        return true; // Yep - reverts and then stops. Do I need this return? If not - take out. 
     }
    
     /**
@@ -90,7 +88,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
      *  
      *
      */
-    function reclaimLoyaltyToken(address loyaltyCard, uint256 loyaltyGiftId) public returns (bool success) {
+    function reclaimLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId) public returns (bool success) {
         // check if this loyaltyGift actually has tokens.
         if (s_tokenised[loyaltyGiftId] == 0) {
             revert LoyaltyGift__NotTokenised(address(this), loyaltyGiftId); 
