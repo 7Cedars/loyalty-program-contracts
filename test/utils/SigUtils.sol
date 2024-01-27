@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity 0.8.21;
 
 // This contract is based on foundry book example: https://book.getfoundry.sh/tutorials/testing-eip712
-contract SigUtilRequestGift {
+contract SigUtils {
     address internal loyaltyProgramAddress;
 
     constructor(address _loyaltyProgramAddress) {
@@ -12,13 +12,13 @@ contract SigUtilRequestGift {
     bytes32 internal DOMAIN_SEPARATOR = hashDomain(EIP712Domain({
             name: "Loyalty Program",
             version: "1",
-            chainId: block.chainid,
+            chainId: 31337,
             verifyingContract: loyaltyProgramAddress
         }));
 
-    // keccak256("RequestGift(address from,address to,string gift,string cost,uint256 nonce)");
-    bytes32 public constant REQUEST_GIFT__TYPEHASH =
-        0xcdc9dd19ef04fac55ad1978d894ba812ceb6c6198bef5842a2da30174fd28aba;
+    // // keccak256("RequestGift(address from,address to,string gift,string cost,uint256 nonce)");
+    // bytes32 public constant REQUEST_GIFT__TYPEHASH =
+    //     0xcdc9dd19ef04fac55ad1978d894ba812ceb6c6198bef5842a2da30174fd28aba;
 
     // EIP712 domain separator
     struct EIP712Domain {
@@ -28,11 +28,20 @@ contract SigUtilRequestGift {
         address verifyingContract; 
     }
 
+    // RequestGift message struct
     struct RequestGift {
         address from;
         address to;
         string gift;
         string cost;
+        uint256 nonce;
+    }
+
+    // Redeem token message struct
+    struct RedeemVoucher {
+        address from;
+        address to;
+        string voucher;
         uint256 nonce;
     }
 
@@ -47,7 +56,7 @@ contract SigUtilRequestGift {
     }
 
     // computes the hash of a permit
-    function getStructHash(RequestGift memory _requestGift)
+    function getHashRequestGift(RequestGift memory _requestGift)
         internal
         pure
         returns (bytes32)
@@ -55,11 +64,11 @@ contract SigUtilRequestGift {
         return
             keccak256(
                 abi.encode(
-                    REQUEST_GIFT__TYPEHASH,
+                    keccak256(bytes("RequestGift(address from,address to,string gift,string cost,uint256 nonce)")),
                     _requestGift.from,
                     _requestGift.to,
-                    _requestGift.gift,
-                    _requestGift.cost,
+                    keccak256(bytes(_requestGift.gift)),
+                    keccak256(bytes(_requestGift.cost)),
                     _requestGift.nonce
                 )
             );
@@ -76,7 +85,7 @@ contract SigUtilRequestGift {
                 abi.encodePacked(
                     "\x19\x01",
                     DOMAIN_SEPARATOR,
-                    getStructHash(_requestGift)
+                    getHashRequestGift(_requestGift)
                 )
             );
     }
