@@ -146,8 +146,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         emit DeployedLoyaltyProgram(msg.sender);
     }
 
-    // receive() external payable {}
-
     /**
      * @dev minting ERC6551 loyaltyCards: NFTs linked to token bound account.  
      * @param numberOfLoyaltyCards amount of loyaltycards to be minted.
@@ -262,9 +260,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
      * @notice only owner can remove contracts from whitelist. 
      * @notice added nonReentrant guard. 
      * 
-     * - emits transferBatch event 
+     * - emits transferSingle event when one token is minted. 
+     * - emits transferBatch when more tokens are minted?  
      */
-    function mintLoyaltyVouchers(address payable loyaltyGiftAddress, uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) public onlyOwner nonReentrant {
+    function mintLoyaltyVouchers(address loyaltyGiftAddress, uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) public onlyOwner nonReentrant {
         LoyaltyGift(loyaltyGiftAddress).mintLoyaltyVouchers(loyaltyGiftIds, numberOfTokens);
     }
 
@@ -301,17 +300,17 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             message.nonce = s_nonceLoyaltyCard[loyaltyCardAddress]; 
             bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message)); 
 
-            // Check that this signature hasn't already been executed
-            if(requestExecuted[digest] == 1) {
-                revert LoyaltyProgram__RequestAlreadyExecuted(); 
-            }
-            
             // Check that this signer is loyaltyCard from which points are send. 
             address signer = digest.recover(signature);
             if(signer != customerAddress) { 
                 revert  LoyaltyProgram__RequestInvalid(signer, digest); 
             }
 
+            // Check that this signature hasn't already been executed
+            if(requestExecuted[digest] == 1) {
+                revert LoyaltyProgram__RequestAlreadyExecuted(); 
+            }
+ 
             // check if Loyalty Token is active to be claimed. 
             if (s_LoyaltyGiftsClaimable[loyaltyGiftsAddress][loyaltyGiftId] == 0) {
                 revert LoyaltyProgram__LoyaltyGiftNotClaimable();
@@ -325,7 +324,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             // 3) retrieve loyalty points from customer 
             _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, ""); 
             // and 3) transfer token. 
-            LoyaltyGift(payable(loyaltyGiftsAddress)).issueLoyaltyGift(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints);      
+            LoyaltyGift(loyaltyGiftsAddress).issueLoyaltyGift(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints);      
     }
 
     function redeemLoyaltyToken(
@@ -367,7 +366,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             s_nonceLoyaltyCard[loyaltyCardAddress] = s_nonceLoyaltyCard[loyaltyCardAddress] + 1; 
 
             // 2) redeem loyalty token (emits a transferSingle event.)
-            LoyaltyGift(payable(loyaltyGift)).reclaimLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
+            LoyaltyGift(loyaltyGift).reclaimLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
     }
 
     // Without these transactions are declined. 

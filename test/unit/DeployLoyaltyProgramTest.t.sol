@@ -7,17 +7,22 @@ import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {HelperConfig} from "../../../script/HelperConfig.s.sol";
 
 contract DeployLoyaltyProgramTest is Test {
-    address public vendorA = makeAddr("vendorA");
+    DeployLoyaltyProgram deployer; 
     LoyaltyProgram loyaltyProgram; 
     HelperConfig helperConfig; 
+    uint256 LOYALTYCARDS_TO_MINT= 5; 
 
     function setUp() public {
-        DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
-        (loyaltyProgram, helperConfig) = deployer.run();
-    } 
+      deployer = new DeployLoyaltyProgram();  
+    }
   
-    function testDeploymentLoyaltyProgramIsSuccess() public {
-      // can insert here more tests 
-      assertEq(0, loyaltyProgram.balanceOf(loyaltyProgram.getOwner(), 0));
+    function testNameDeployedLoyaltyProgramIsCorrect() public {
+      (loyaltyProgram, helperConfig) = deployer.run();
+      ( , string memory uri, , , , , ) = helperConfig.activeNetworkConfig();  
+
+      vm.prank(loyaltyProgram.getOwner());
+      loyaltyProgram.mintLoyaltyCards(LOYALTYCARDS_TO_MINT);
+      string memory actualUri = loyaltyProgram.uri(1);
+      assert(keccak256(abi.encodePacked(uri)) == keccak256(abi.encodePacked(actualUri)));
     }
 }
