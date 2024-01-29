@@ -10,7 +10,6 @@ import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {ERC6551Registry} from "../../src/mocks/ERC6551Registry.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import {SigUtils} from "../utils/SigUtils.sol";
 
 contract CardsToProgramToGiftsTest is Test {
   /* events */
@@ -24,7 +23,6 @@ contract CardsToProgramToGiftsTest is Test {
   LoyaltyProgram loyaltyProgram;
   MockLoyaltyGifts mockLoyaltyGifts; 
   HelperConfig helperConfig; 
-  SigUtils sigUtils; 
 
   uint256[] GIFTS_TO_SELECT = [0, 3, 5];
   uint256[] VOUCHERS_TO_MINT = [3, 5]; 
@@ -37,7 +35,7 @@ contract CardsToProgramToGiftsTest is Test {
   uint256[] POINTS_TO_TRANSFER = [10000, 12000, 14000]; 
   uint256 SALT_TOKEN_BASED_ACCOUNT = 3947539732098357; 
 
-  uint256 customerOneKey = vm.envUint("DEFAULT_ANVIL_KEY_2");
+  uint256 customerOneKey = vm.envUint("DEFAULT_ANVIL_KEY_1");
   address customerOneAddress = vm.addr(customerOneKey); 
   uint256 customerTwoKey = vm.envUint("DEFAULT_ANVIL_KEY_3");
   address customerTwoAddress = vm.addr(customerTwoKey); 
@@ -67,16 +65,52 @@ contract CardsToProgramToGiftsTest is Test {
       uint256 nonce;
   }
 
-  bytes32 internal DOMAIN_SEPARATOR = hashDomain(EIP712Domain({
-      name: "Loyalty Program",
-      version: "1",
-      chainId: block.chainid,
-      // Following line fails in testing.. 
-      // address(loyaltyProgram) comes up with random / 0 address at this point. Need to hard code address... 
-      // is there a solution to this?! 
-      verifyingContract: 0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3 
-  }));
+  // domain seperator.  
+  bytes32 internal DOMAIN_SEPARATOR = keccak256(abi.encode(
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+        keccak256(bytes("Loyalty Program")), // name
+        keccak256(bytes("1")), // version
+        block.chainid, // chainId
+        0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3 // verifyingContract
+    ));
 
+  // this modifier gives one voucher to CustomerCard1 owned by customerOne. 
+  modifier giftClaimedAndVoucherReceived() {
+    uint256 giftId = 3; 
+    uint256 loyaltyCardId = 1; 
+    address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1); 
+
+    // customer creates request
+    RequestGift memory message = RequestGift({
+      from: loyaltyCardOne, 
+      to: address(loyaltyProgram),
+      gift: "This is a test gift", 
+      cost: "1500 points", 
+      nonce: 0
+    });
+
+    // customer signs request
+    bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message)); 
+    console.logBytes32(digest);
+   
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOneKey, digest);
+    bytes memory signature = abi.encodePacked(r, s, v);
+
+    // owner of loyaltyprogram uses signature when executing claimLoyaltyGift function. 
+    vm.prank(loyaltyProgram.getOwner()); 
+    loyaltyProgram.claimLoyaltyGift(
+      "This is a test gift", // string memory _gift,
+      "1500 points", // string memory _cost, 
+      address(mockLoyaltyGifts), // address loyaltyGiftsAddress, 
+      giftId,  // uint256 loyaltyGiftId, 
+      loyaltyCardId, // address loyaltyCardAddress,
+      customerOneAddress,// address customerAddress, 
+      2500, // uint256 loyaltyPoints,  
+      signature // bytes memory signature
+    );
+
+    _; 
+  }
 
   ///////////////////////////////////////////////
   ///                   Setup                 ///
@@ -87,8 +121,6 @@ contract CardsToProgramToGiftsTest is Test {
     (loyaltyProgram, helperConfig) = deployer.run();
     DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts(); 
     mockLoyaltyGifts = giftDeployer.run();
-
-    sigUtils = new SigUtils(address(loyaltyProgram)); 
 
     // an extensive interaction context needed in all tests below. 
     // (hence no modifier used)
@@ -121,65 +153,23 @@ contract CardsToProgramToGiftsTest is Test {
         ""
       ); 
     }
-    vm.stopPrank();
 
-    // Transferring one card to customerOne and customerTwo.
-    // THIS FAILS on ERC1155MISSINGapproval. 
-
-
-  //   vm.prank(loyaltyProgram.getOwner());
-  //   loyaltyProgram.safeTransferFrom( 
-  //     loyaltyProgram.getOwner(), customerTwoAddress, 2, 1, ""
-  //   ); 
+    loyaltyProgram.safeTransferFrom(
+      loyaltyProgram.getOwner(), customerOneAddress, 1, 1, ""
+    ); 
+    vm.stopPrank(); 
   }
 
   ///////////////////////////////////////////////
   ///       Claiming Gifts and Voucher        ///
   ///////////////////////////////////////////////
-  
-  // Helper function - creating domain seperator    
 
-  
-  // Helper function - Hashing domain signature 
-  function hashDomain(EIP712Domain memory domain) private pure returns (bytes32) {
-      return keccak256(abi.encode(
-          keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-          keccak256(bytes(domain.name)),
-          keccak256(bytes(domain.version)),
-          domain.chainId,
-          domain.verifyingContract
-      ));
-    }
-
-  // Helper function - create customer messages and signature.
-  function hashRequestGift(RequestGift memory message) private pure returns (bytes32) {
-        return keccak256(abi.encode(
-            // keccak256(bytes("RequestGift(uint256 nonce)")),
-            keccak256(bytes("RequestGift(address from,address to,string gift,string cost,uint256 nonce)")),
-            message.from,
-            message.to, 
-            keccak256(bytes(message.gift)), 
-            keccak256(bytes(message.cost)),
-            message.nonce
-        ));
-    }
-
-  // claiming gift
-
-
-  // claiming gift reverts 
+  // claiming gift - happy path  
   function testCustomerCanClaimGift() public {
     uint256 giftId = 3; 
     uint256 loyaltyCardId = 1; 
-    
-    // loyaltyCard is transferred to customerOne
-    vm.startPrank(loyaltyProgram.getOwner());
-    loyaltyProgram.safeTransferFrom(
-      loyaltyProgram.getOwner(), customerOneAddress, loyaltyCardId, 1, ""
-    ); 
-    vm.stopPrank(); 
-
     address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1); 
+
     // customer creates request
     RequestGift memory message = RequestGift({
       from: loyaltyCardOne, 
@@ -197,37 +187,31 @@ contract CardsToProgramToGiftsTest is Test {
     bytes memory signature = abi.encodePacked(r, s, v);
 
     // owner of loyaltyprogram uses signature when executing claimLoyaltyGift function. 
-    vm.startPrank(loyaltyProgram.getOwner()); 
+    vm.prank(loyaltyProgram.getOwner()); 
     loyaltyProgram.claimLoyaltyGift(
       "This is a test gift", // string memory _gift,
       "1500 points", // string memory _cost, 
       address(mockLoyaltyGifts), // address loyaltyGiftsAddress, 
       giftId,  // uint256 loyaltyGiftId, 
-      loyaltyCardOne, // address loyaltyCardAddress,
+      loyaltyCardId, // address loyaltyCardAddress,
       customerOneAddress,// address customerAddress, 
       2500, // uint256 loyaltyPoints,  
       signature // bytes memory signature
     );
-    vm.stopPrank(); 
 
     assertEq(mockLoyaltyGifts.balanceOf(
-      loyaltyProgram.getTokenBoundAddress(loyaltyCardId), giftId
-     ), 1); 
+      loyaltyCardOne, giftId
+      ), 1); 
   }
 
-    function testClaimGiftRevertsWithInvalidKey() public {
+  function testClaimGiftRevertsWithInvalidKey() public {
+    // PREPARE 
     uint256 giftId = 3; 
     uint256 loyaltyCardId = 1; 
-    
-    // loyaltyCard is transferred to customerOne
-    vm.startPrank(loyaltyProgram.getOwner());
-    loyaltyProgram.safeTransferFrom(
-      loyaltyProgram.getOwner(), customerOneAddress, loyaltyCardId, 1, ""
-    ); 
-    vm.stopPrank(); 
+    address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
+    address owner = loyaltyProgram.getOwner(); 
 
-    address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1); 
-    // customer creates request
+    // customer creates request.. 
     RequestGift memory message = RequestGift({
       from: loyaltyCardOne, 
       to: address(loyaltyProgram),
@@ -235,58 +219,240 @@ contract CardsToProgramToGiftsTest is Test {
       cost: "1500 points", 
       nonce: 0
     });
-
-    // customer signs request
+    // .. & signs request
     bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message)); 
-    console.logBytes32(digest);
-   
-    // Message signed by customerTwo 
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerTwoKey, digest);
     bytes memory signature = abi.encodePacked(r, s, v);
 
-    // owner of loyaltyprogram uses signature when executing claimLoyaltyGift function. 
-
-    vm.expectRevert(
-        abi.encodeWithSelector(
-          LoyaltyProgram.LoyaltyProgram__RequestInvalid.selector, 
-          customerTwoAddress,
-          digest
-        )
-      );
-
-    vm.startPrank(loyaltyProgram.getOwner()); 
+    // EXPECT: revert. 
+    vm.expectRevert(LoyaltyProgram.LoyaltyProgram__RequestInvalid.selector); // 
+    // ACT owner of loyaltyprogram uses signature when executing claimLoyaltyGift function.
+    vm.prank(owner); 
     loyaltyProgram.claimLoyaltyGift(
       "This is a test gift", // string memory _gift,
       "1500 points", // string memory _cost, 
       address(mockLoyaltyGifts), // address loyaltyGiftsAddress, 
       giftId,  // uint256 loyaltyGiftId, 
-      loyaltyCardOne, // address loyaltyCardAddress,
+      loyaltyCardId, // address loyaltyCardAddress,
       customerOneAddress,// address customerAddress, 
       2500, // uint256 loyaltyPoints,  
       signature // bytes memory signature
     );
-    vm.stopPrank(); 
   }
 
+  function testClaimGiftRevertsIfAlreadyExecuted() public {
+    // PREPARE 
+    uint256 giftId = 3; 
+    uint256 loyaltyCardId = 1; 
+    address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
+    address owner = loyaltyProgram.getOwner(); 
 
+    // customer creates request.. 
+    RequestGift memory message = RequestGift({
+      from: loyaltyCardOne, 
+      to: address(loyaltyProgram),
+      gift: "This is a test gift", 
+      cost: "1500 points", 
+      nonce: 0
+    });
+    // .. & signs request
+    bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message)); 
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOneKey, digest);
+    bytes memory signature = abi.encodePacked(r, s, v);
 
-  // claiming gift Event emit
+    vm.prank(owner); 
+    loyaltyProgram.claimLoyaltyGift(
+      "This is a test gift", // string memory _gift,
+      "1500 points", // string memory _cost, 
+      address(mockLoyaltyGifts), // address loyaltyGiftsAddress, 
+      giftId,  // uint256 loyaltyGiftId, 
+      loyaltyCardId, // address loyaltyCardAddress,
+      customerOneAddress,// address customerAddress, 
+      2500, // uint256 loyaltyPoints,  
+      signature // bytes memory signature
+    );
 
-  
-  // claiming voucher 
+    // EXPECT: revert. 
+    vm.expectRevert(LoyaltyProgram.LoyaltyProgram__RequestAlreadyExecuted.selector); // 
+    // ACT owner of executes request second time.
+    vm.prank(owner); 
+    loyaltyProgram.claimLoyaltyGift(
+      "This is a test gift", // string memory _gift,
+      "1500 points", // string memory _cost, 
+      address(mockLoyaltyGifts), // address loyaltyGiftsAddress, 
+      giftId,  // uint256 loyaltyGiftId, 
+      loyaltyCardId, // address loyaltyCardAddress,
+      customerOneAddress,// address customerAddress, 
+      2500, // uint256 loyaltyPoints,  
+      signature // bytes memory signature
+    );
+  }
 
+  function testClaimGiftRevertsIfGiftNotClaimable() public {
+    // PREPARE 
+    uint256 giftId = 2; // NOTICE: gift ID that has NOT been selected at setup.   
+    uint256 loyaltyCardId = 1; 
+    address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
+    address owner = loyaltyProgram.getOwner(); 
 
-  // claiming voucher event emits. 
+    // customer creates request.. 
+    RequestGift memory message = RequestGift({
+      from: loyaltyCardOne, 
+      to: address(loyaltyProgram),
+      gift: "This is a test gift", 
+      cost: "1500 points", 
+      nonce: 0
+    });
+    // .. & signs request
+    bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message)); 
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOneKey, digest);
+    bytes memory signature = abi.encodePacked(r, s, v);
+
+    // EXPECT: revert. 
+    vm.expectRevert(LoyaltyProgram.LoyaltyProgram__LoyaltyGiftNotClaimable.selector); // 
+    // ACT owner of executes request second time.
+    vm.prank(owner); 
+    loyaltyProgram.claimLoyaltyGift(
+      "This is a test gift", // string memory _gift,
+      "1500 points", // string memory _cost, 
+      address(mockLoyaltyGifts), // address loyaltyGiftsAddress, 
+      giftId,  // uint256 loyaltyGiftId, 
+      loyaltyCardId, // address loyaltyCardAddress,
+      customerOneAddress,// address customerAddress, 
+      2500, // uint256 loyaltyPoints,  
+      signature // bytes memory signature
+    );
+  }
+
+  function testClaimGiftEmitsTransferSingleEventAtLoyaltyProgram() public {
+    // PREPARE 
+    uint256 giftId = 3;   
+    uint256 loyaltyCardId = 1; 
+    address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
+    address owner = loyaltyProgram.getOwner(); 
+    uint256 loyaltyPoints = 2500; 
+
+    // customer creates request.. 
+    RequestGift memory message = RequestGift({
+      from: loyaltyCardOne, 
+      to: address(loyaltyProgram),
+      gift: "This is a test gift", 
+      cost: "1500 points", 
+      nonce: 0
+    });
+    // .. & signs request
+    bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message)); 
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOneKey, digest);
+    bytes memory signature = abi.encodePacked(r, s, v);
+
+    //EXPECT: Emit transferSingle at LoyaltyProgram: gift is paid. 
+    vm.expectEmit(true, false, false, false);
+    emit TransferSingle(
+      owner,  // address indexed operator, 
+      loyaltyCardOne, // address indexed from, 
+      owner, // address indexed to, 
+      0, // uint256 id,
+      loyaltyPoints // uint256 value 
+    );
+
+    // ACT owner of executes request second time.
+    vm.prank(owner); 
+    loyaltyProgram.claimLoyaltyGift(
+      "This is a test gift", // string memory _gift,
+      "1500 points", // string memory _cost, 
+      address(mockLoyaltyGifts), // address loyaltyGiftsAddress, 
+      giftId,  // uint256 loyaltyGiftId, 
+      loyaltyCardId, // address loyaltyCardAddress,
+      customerOneAddress,// address customerAddress, 
+      loyaltyPoints, // uint256 loyaltyPoints,  
+      signature // bytes memory signature
+    );
+  }
+
+  function testClaimGiftEmitsTransferSingleEventAtMockLoyaltyGiftsWhenVoucherisExchanged() public {
+    // PREPARE 
+    uint256 giftId = 3; // NOTICE: this gift is a voucher. 
+    uint256 loyaltyCardId = 1; 
+    address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
+    address owner = loyaltyProgram.getOwner(); 
+    uint256 loyaltyPoints = 2500; 
+
+    // customer creates request.. 
+    RequestGift memory message = RequestGift({
+      from: loyaltyCardOne, 
+      to: address(loyaltyProgram),
+      gift: "This is a test gift", 
+      cost: "1500 points", 
+      nonce: 0
+    });
+    // .. & signs request
+    bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message)); 
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOneKey, digest);
+    bytes memory signature = abi.encodePacked(r, s, v);
+
+    //EXPECT: Emit transferSingle at LoyaltyProgram: Voucher exchanged
+    vm.expectEmit(true, false, false, false);
+    emit TransferSingle(
+      address(loyaltyProgram),  // address indexed operator, 
+      address(loyaltyProgram), 
+      loyaltyCardOne, // address indexed from, 
+      giftId, // uint256 id,
+      1 // uint256 value 
+    );
+
+    // ACT owner of executes request second time.
+    vm.prank(owner); 
+    loyaltyProgram.claimLoyaltyGift(
+      "This is a test gift", // string memory _gift,
+      "1500 points", // string memory _cost, 
+      address(mockLoyaltyGifts), // address loyaltyGiftsAddress, 
+      giftId,  // uint256 loyaltyGiftId, 
+      loyaltyCardId, // address loyaltyCardAddress,
+      customerOneAddress,// address customerAddress, 
+      loyaltyPoints, // uint256 loyaltyPoints,  
+      signature // bytes memory signature
+    );
+  }
 
 
   ///////////////////////////////////////////////
   ///               Redeemt Voucher           /// 
   ///////////////////////////////////////////////
 
-  // Helper function - create customer messages and signature.
+  // redeeming voucher success - happy path.
+  function testCustomerCanRedeemVoucher() public giftClaimedAndVoucherReceived {
+    uint256 giftId = 3; 
+    uint256 loyaltyCardId = 1; 
+    address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1); 
 
+    // customer creates request
+    RedeemVoucher memory message = RedeemVoucher({
+      from: loyaltyCardOne, 
+      to: address(loyaltyProgram),
+      voucher: "This is a test redeem",
+      nonce: 1
+    });
 
-  // redeeming voucher success. 
+    // customer signs request
+    bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRedeemVoucher(message)); 
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOneKey, digest);
+    bytes memory signature = abi.encodePacked(r, s, v);
+
+    // owner of loyaltyprogram uses signature when executing claimLoyaltyGift function. 
+    vm.prank(loyaltyProgram.getOwner()); 
+    loyaltyProgram.redeemLoyaltyToken(
+      "This is a test redeem", // string memory _gift,
+      address(mockLoyaltyGifts), // address loyaltyGiftsAddress, 
+      giftId,  // uint256 loyaltyGiftId, 
+      loyaltyCardId, // address loyaltyCardAddress,
+      customerOneAddress,// address customerAddress, 
+      signature // bytes memory signature
+    );
+
+    assertEq(mockLoyaltyGifts.balanceOf(
+      loyaltyCardOne, giftId
+      ), 0); 
+  }
 
 
   // redeeming voucher reverts. 
@@ -295,6 +461,35 @@ contract CardsToProgramToGiftsTest is Test {
   // redeeming voucher event emits. 
 
 
+
+
+  ///////////////////////////////////////////////
+  ///      Helper Functions Voucher           /// 
+  ///////////////////////////////////////////////
+
+  // helper function hashRequestGift
+  function hashRequestGift(RequestGift memory message) private pure returns (bytes32) {
+    return keccak256(abi.encode(
+        // keccak256(bytes("RequestGift(uint256 nonce)")),
+        keccak256(bytes("RequestGift(address from,address to,string gift,string cost,uint256 nonce)")),
+        message.from,
+        message.to, 
+        keccak256(bytes(message.gift)), 
+        keccak256(bytes(message.cost)),
+        message.nonce
+    ));
+  }
+
+  // helper function hashRedeemVoucher
+  function hashRedeemVoucher(RedeemVoucher memory message) private pure returns (bytes32) {
+    return keccak256(abi.encode(
+        keccak256(bytes("RedeemVoucher(address from,address to,string voucher,uint256 nonce)")),
+        message.from,
+        message.to, 
+        keccak256(bytes(message.voucher)),
+        message.nonce
+    ));
+  }
 
 
 } 

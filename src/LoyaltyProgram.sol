@@ -50,9 +50,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     error LoyaltyProgram__InSufficientPoints();
     error LoyaltyProgram__LoyaltyCardNotRecognised();
     error LoyaltyProgram__RequestAlreadyExecuted();
-    error LoyaltyProgram__RequestInvalid(address signer, bytes32 digest); 
+    error LoyaltyProgram__RequestInvalid(); 
     error LoyaltyProgram__LoyaltyGiftNotRecognised();
     error LoyaltyProgram__LoyaltyGiftNotClaimable(); 
+    error LoyaltyProgram__DoesNotOwnLoyaltyCard(); 
     error LoyaltyProgram__LoyaltyTokensNotRedeemable();
     error LoyaltyProgram__CardCanOnlyReceivePoints();
     error LoyaltyProgram__LoyaltyCardNotAvailable();
@@ -287,13 +288,15 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         string memory _cost, 
         address loyaltyGiftsAddress, 
         uint256 loyaltyGiftId, 
-        address loyaltyCardAddress,
+        uint256 loyaltyCardId,
         address customerAddress, 
         uint256 loyaltyPoints,  
         bytes memory signature
         )
         external nonReentrant onlyOwner 
         {   
+            address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId); 
+            
             RequestGift memory message; 
             message.from = loyaltyCardAddress; 
             message.to = address(this);  
@@ -304,8 +307,14 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
             // Check that this signer is loyaltyCard from which points are send. 
             address signer = digest.recover(signature);
-            if(signer != customerAddress) { 
-                revert  LoyaltyProgram__RequestInvalid(signer, digest); 
+            
+            if(signer != customerAddress) {  //customerAddress
+                revert LoyaltyProgram__RequestInvalid(); 
+            }
+
+            // check if signer owns loyaltyCard 
+            if (balanceOf(signer, loyaltyCardId) == 0) {
+                revert LoyaltyProgram__DoesNotOwnLoyaltyCard(); 
             }
 
             // Check that this signature hasn't already been executed
@@ -333,12 +342,14 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         string memory _voucher,
         address loyaltyGift, 
         uint256 loyaltyGiftId, 
-        address loyaltyCardAddress,
+        uint256 loyaltyCardId,
         address customerAddress, 
         bytes memory signature
         ) 
         external nonReentrant onlyOwner 
         {
+            address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId); 
+
             RedeemVoucher memory message; 
             message.from = loyaltyCardAddress; 
             message.to = address(this);  
@@ -346,17 +357,22 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             message.nonce = s_nonceLoyaltyCard[loyaltyCardAddress]; 
             bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRedeemVoucher(message)); 
 
+            // Check that this signer is loyaltyCard from which points are send. 
+            address signer = digest.recover(signature);
+            if(signer != customerAddress) {
+                revert LoyaltyProgram__RequestInvalid(); 
+            } 
+
+            // check if signer owns loyaltyCard 
+            if (balanceOf(signer, loyaltyCardId) == 0) {
+                revert LoyaltyProgram__DoesNotOwnLoyaltyCard(); 
+            }
+
             // Check that this signature hasn't already been executed
             if(requestExecuted[digest] == 1) {
                 revert LoyaltyProgram__RequestAlreadyExecuted(); 
             }
             
-            // Check that this signer is loyaltyCard from which points are send. 
-            address signer = digest.recover(signature);
-            if(signer != customerAddress) {
-                revert LoyaltyProgram__RequestInvalid(signer, digest); 
-            } 
-
             // check if loyaltyGift is redeemable. 
             if (s_LoyaltyGiftsRedeemable[loyaltyGift][loyaltyGiftId] == 0) {
                 revert LoyaltyProgram__LoyaltyTokensNotRedeemable();
