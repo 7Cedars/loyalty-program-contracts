@@ -338,7 +338,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             LoyaltyGift(loyaltyGiftsAddress).issueLoyaltyGift(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints);      
     }
 
-    function redeemLoyaltyToken(
+    function redeemLoyaltyVoucher(
         string memory _voucher,
         address loyaltyGift, 
         uint256 loyaltyGiftId, 
