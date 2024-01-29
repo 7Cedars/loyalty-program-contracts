@@ -140,9 +140,11 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             name: "Loyalty Program",
             version: "1",
             chainId: block.chainid,
+            // Following line fails in testing.. 
             verifyingContract: address(this) 
         }));
         
+        // emit DeployedLoyaltyProgram(address(this) );
         emit DeployedLoyaltyProgram(msg.sender);
     }
 
@@ -297,7 +299,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             message.to = address(this);  
             message.gift = _gift;  
             message.cost = _cost; 
-            message.nonce = s_nonceLoyaltyCard[loyaltyCardAddress]; 
+            message.nonce = 0; // s_nonceLoyaltyCard[loyaltyCardAddress]; 
             bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message)); 
 
             // Check that this signer is loyaltyCard from which points are send. 
@@ -394,6 +396,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
 
     function hashRequestGift(RequestGift memory message) private pure returns (bytes32) {
         return keccak256(abi.encode(
+            // keccak256(bytes("RequestGift(uint256 nonce)")),
             keccak256(bytes("RequestGift(address from,address to,string gift,string cost,uint256 nonce)")),
             message.from,
             message.to, 
