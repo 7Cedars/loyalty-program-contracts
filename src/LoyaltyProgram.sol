@@ -6,7 +6,7 @@
 // see: https://solidity-by-example.org/structs/ re how to create structs
 
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.19;
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
@@ -46,6 +46,7 @@ import {LoyaltyGift} from "./mocks/LoyaltyGift.sol";
 contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     /* errors */
     error LoyaltyProgram__TransferDenied();
+    error LoyaltyProgram__TransferDeniedX();
     error LoyaltyProgram__OnlyOwner();
     error LoyaltyProgram__InSufficientPoints();
     error LoyaltyProgram__LoyaltyCardNotRecognised();
@@ -134,8 +135,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     constructor(string memory uri, address erc6551Registry, address payable erc6551Implementation) ERC1155(uri) {
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
-        s_erc6551Registry = ERC6551Registry(erc6551Registry); // this one should be part of config. NOT of contract! 
-        s_erc6551Implementation = ERC6551BespokeAccount(erc6551Implementation); // NB! this one is different than standard one. Keep it in! (can I change name to make this clear without issues? TEST! )
+        s_erc6551Registry = ERC6551Registry(erc6551Registry); 
+        s_erc6551Implementation = ERC6551BespokeAccount(erc6551Implementation);
         
         DOMAIN_SEPARATOR = hashDomain(EIP712Domain({
             name: "Loyalty Program",
@@ -457,7 +458,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             } 
             if (ids[i] != LOYALTY_POINTS_ID) {
                  if (s_LoyaltyCards[to] == 1) {
-                    revert LoyaltyProgram__TransferDenied();
+                    revert LoyaltyProgram__TransferDeniedX();
                  } 
             }
         }

@@ -67,11 +67,14 @@ Deployment
   - [x] colleting points, claim and redeeming LoyaltyTokens
   - [x] colleting points, transfer loyaltyCard, claim tokens, transfer loyaltyCard, redeem tokens. 
   - [x] etc. -- come up with many different scenarios.
-- [ ] Check: on what chains is ERC6551 deployed?  
-  - [ ] Sepolia (= testnet mainnet Ethereum ) // see: https://www.quicknode.com/guides/ethereum-development/nfts/how-to-create-and-deploy-an-erc-6551-nft
-  - [ ] OP Sepolia ( = testnet Optimism )
-  - [ ] Mumbai (= testnet Polygon )
-  - [ ] Nothing about Arbitrum. -- but any EVM compatible chain can bery easily deploy a registry - so should have one.. 
+- [x] Check: on what chains is ERC6551 deployed?  
+  - [x] Sepolia (= testnet mainnet Ethereum ) // see: https://www.quicknode.com/guides/ethereum-development/nfts/how-to-create-and-deploy-an-erc-6551-nft
+  - [x] OP Sepolia ( = testnet Optimism )
+  - [x] Mumbai (= testnet Polygon )
+  - [x] Nothing about Arbitrum. -- but any EVM compatible chain can bery easily deploy a registry - so should have one.. 
+- [ ] Get management keys straight 
+  - [ ] See here: https://book.getfoundry.sh/reference/cast/cast-wallet
+  - [ ] Can import wallets into a keystore. 
 - [ ] Run rest on forked testnets.
   - [ ] L1: Sepolia 
   - [ ] OP Sepolia ( = testnet Optimism )

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.19;
 
 // NB: see ERC1155 contract from openZeppelin for good example of how to use natspecs.
 // 

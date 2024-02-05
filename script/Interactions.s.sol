@@ -32,7 +32,7 @@ contract Interactions is Script {
   address address4 = vm.addr(privateKey4); 
 
   function run() external {
-    address loyaltyProgramAddress = 0x8464135c8F25Da09e49BC8782676a84730C318bC; // DevOpsTools.get_most_recent_deployment("LoyaltyProgram", block.chainid);
+    address loyaltyProgramAddress = 0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F; // DevOpsTools.get_most_recent_deployment("LoyaltyProgram", block.chainid);
     LoyaltyProgram loyaltyProgram = LoyaltyProgram(payable(loyaltyProgramAddress)); 
     address loyaltyGiftsAddress = 0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6; // DevOpsTools.get_most_recent_deployment("MockLoyaltyGifts", block.chainid);
     MockLoyaltyGifts loyaltyGiftsContract = MockLoyaltyGifts(payable(loyaltyGiftsAddress));
