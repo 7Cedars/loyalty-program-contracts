@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import {Script} from "forge-std/Script.sol";
+import {Script, console} from "forge-std/Script.sol";
 import {LoyaltyGift} from "../src/mocks/LoyaltyGift.sol";
 import {ERC6551Registry} from "../src/mocks/ERC6551Registry.sol";
 import {ERC6551BespokeAccount} from "../src/mocks/ERC6551BespokeAccount.sol";
@@ -103,6 +103,8 @@ contract HelperConfig is Script {
             erc65511Implementation: payable(s_erc6551Implementation),  
             callbackGasLimit: 50000
             });
+
+        console.logAddress(address(s_erc6551Implementation)); 
 
         return anvilConfig;
     }

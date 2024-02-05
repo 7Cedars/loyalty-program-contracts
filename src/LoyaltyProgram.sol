@@ -303,7 +303,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
             message.to = address(this);  
             message.gift = _gift;  
             message.cost = _cost; 
-            message.nonce = 0; // s_nonceLoyaltyCard[loyaltyCardAddress]; 
+            message.nonce = s_nonceLoyaltyCard[loyaltyCardAddress]; 
             bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message)); 
 
             // Check that this signer is loyaltyCard from which points are send. 

@@ -34,31 +34,33 @@ format :; forge fmt
 
 anvil :; anvil -m 'test test test test test test test test test test test junk' --steps-tracing --block-time 1
 
-NETWORK_ARGS_0 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_0) --broadcast
-NETWORK_ARGS_1 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_1) --broadcast
-NETWORK_ARGS_2 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_2) --broadcast
-NETWORK_ARGS_3 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_3) --broadcast
-NETWORK_ARGS_4 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_4) --broadcast
+ANVIL_ARGS_0 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_0) --broadcast
+ANVIL_ARGS_1 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_1) --broadcast
+ANVIL_ARGS_2 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_2) --broadcast
+ANVIL_ARGS_3 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_3) --broadcast
+ANVIL_ARGS_4 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_4) --broadcast
+
+SEPOLIA_FORK_ARGS := --fork-url $(SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS}
 
 ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
 	NETWORK_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --private-key $(PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 endif
 
-scenarioOne:
-	@forge script script/DeployRegistry.s.sol:DeployRegistry $(NETWORK_ARGS_0)
-	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(NETWORK_ARGS_1)
-	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(NETWORK_ARGS_4)
-	@forge script script/Interactions.s.sol:Interactions $(NETWORK_ARGS_1)
+sepoliaForkDeploy: 
+# @forge script script/DeployRegistry.s.sol:DeployRegistry $(SEPOLIA_FORK_ARGS)
+# @forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(SEPOLIA_FORK_ARGS)
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(SEPOLIA_FORK_ARGS)
+	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(SEPOLIA_FORK_ARGS)
 
-	
-	
-#	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgramB $(NETWORK_ARGS_2) 
-#	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgramC $(NETWORK_ARGS_2) 
-	
+scenarioOne:
+	@forge script script/DeployRegistry.s.sol:DeployRegistry $(ANVIL_ARGS_0)
+	@forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(ANVIL_ARGS_0)
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ANVIL_ARGS_1)
+	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(ANVIL_ARGS_4)
+	@forge script script/Interactions.s.sol:Interactions $(ANVIL_ARGS_1)
 	
 transferPoints: 
-	@forge script script/Interactions.s.sol:TransferPoints $(NETWORK_ARGS_0) 
-
+	@forge script script/Interactions.s.sol:TransferPoints $(ANVIL_ARGS_0) 
 
 # cast abi-encode "constructor(uint256)" 1000000000000000000000000 -> 0x00000000000000000000000000000000000000000000d3c21bcecceda1000000
 # Update with your contract address, constructor arguments and anything else
