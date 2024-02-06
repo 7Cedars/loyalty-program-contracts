@@ -52,8 +52,8 @@ contract HelperConfig is Script {
             uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD", 
             initialSupply: 1e25,
             interval: 30, 
-            erc65511Registry: 0x000000006551c19487814612e58FE06813775758, // these are all the same for networks with deployed ERC6551 - local anvil chain obv does not have one.  
-            erc65511Implementation: payable(0x41C8f39463A868d3A88af00cd0fe7102F30E44eC), 
+            erc65511Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921, // 0x000000006551c19487814612e58FE06813775758, // these are all the same for networks with deployed ERC6551 - local anvil chain obv does not have one.  
+            erc65511Implementation: payable(0x41C8f39463A868d3A88af00cd0fe7102F30E44eC), // payable(0x2D25602551487C3f3354dD80D76D54383A243358), //  payable(0x41C8f39463A868d3A88af00cd0fe7102F30E44eC), 
             callbackGasLimit: 50000 
         });
         return sepoliaConfig;
