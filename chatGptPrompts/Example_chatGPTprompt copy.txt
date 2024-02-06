@@ -9,7 +9,7 @@ Here is my solidity ERC721 token.
 // contracts/OurToken.sol
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.19;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Transaction} from "./LoyaltyProgram.sol";
@@ -107,7 +107,7 @@ And here our my first couple of tests written in solidity.
 
 ```
 /// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.19;
 
 import {Test, console} from "forge-std/Test.sol"; 
 import {LoyaltyNft} from "../../src/LoyaltyNft.sol";

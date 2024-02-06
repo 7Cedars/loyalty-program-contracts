@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.19;
 
 import {Script} from "forge-std/Script.sol";
 import {MockLoyaltyGifts} from "../test/mocks/MockLoyaltyGifts.sol";
 import {LoyaltyGift} from "../test/mocks/LoyaltyGift.sol";
 
 contract DeployMockLoyaltyGifts is Script {
-
     function run() external returns (MockLoyaltyGifts) {
         vm.startBroadcast();
         MockLoyaltyGifts mockGifts = new MockLoyaltyGifts();
@@ -16,9 +15,8 @@ contract DeployMockLoyaltyGifts is Script {
 }
 
 contract DeployLoyaltyGift is Script {
-
-    // create a config file for this? -- decide later. 
-    uint256[] public tokenised = [0, 1]; // 0 == false, 1 == true.  
+    // create a config file for this? -- decide later.
+    uint256[] public tokenised = [0, 1]; // 0 == false, 1 == true.
 
     function run() external returns (LoyaltyGift) {
         vm.startBroadcast();
@@ -30,4 +28,3 @@ contract DeployLoyaltyGift is Script {
         return loyaltyGift;
     }
 }
-

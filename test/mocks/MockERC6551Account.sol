@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
 
 import {IERC6551Account} from "../../src/interfaces/IERC6551Account.sol";
 import {ERC6551AccountLib} from "../../src/lib/ERC6551AccountLib.sol";

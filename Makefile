@@ -56,15 +56,18 @@ sepoliaForkDeploy:
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(SEPOLIA_FORK_ARGS)
 	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(SEPOLIA_FORK_ARGS)
 
-scenarioOne:
+anvilInitiate:
 	@forge script script/DeployRegistry.s.sol:DeployRegistry $(ANVIL_ARGS_0)
 	@forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(ANVIL_ARGS_0)
+
+anvilDeployProgram:
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ANVIL_ARGS_1)
+
+anvilDeployGifts:
 	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(ANVIL_ARGS_4)
+
+anvilInteractions: 
 	@forge script script/Interactions.s.sol:Interactions $(ANVIL_ARGS_1)
-	
-transferPoints: 
-	@forge script script/Interactions.s.sol:TransferPoints $(ANVIL_ARGS_0) 
 
 # cast abi-encode "constructor(uint256)" 1000000000000000000000000 -> 0x00000000000000000000000000000000000000000000d3c21bcecceda1000000
 # Update with your contract address, constructor arguments and anything else

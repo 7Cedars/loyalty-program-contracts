@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.19;
 
 /**
  * To be implemented:
- * Create One function for claiming and one for redeeming 
- * Create pseudo random in put of amount and types of points, cards, gifts. 
- * through if statements select what error message is expected at what combination. 
- * or - emit of event when succesful.   
+ * Create One function for claiming and one for redeeming
+ * Create pseudo random in put of amount and types of points, cards, gifts.
+ * through if statements select what error message is expected at what combination.
+ * or - emit of event when succesful.
  */
-
-
 
 // import {Test} from "forge-std/Test.sol";
 // import {console} from "forge-std/console.sol";
@@ -22,9 +20,8 @@ pragma solidity ^0.8.21;
 // import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 // import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-// // NB: invariant (stateful fuzz) testing in foundry see PC course at 3:23 - Implement! 
-// // at 3.45: handlers. 
-
+// // NB: invariant (stateful fuzz) testing in foundry see PC course at 3:23 - Implement!
+// // at 3.45: handlers.
 
 // contract IntegrationLoyaltyProgramTest is Test {
 //     /* events */
@@ -36,18 +33,16 @@ pragma solidity ^0.8.21;
 //     ///                   Setup                 ///
 //     ///////////////////////////////////////////////
 
-
-  // uint256 privateKey0 = vm.envUint("DEFAULT_ANVIL_KEY_0");
-  // address address0 = vm.addr(privateKey0); 
-  // uint256 privateKey1 = vm.envUint("DEFAULT_ANVIL_KEY_1");
-  // address address1 = vm.addr(privateKey1); 
-  // uint256 privateKey2 = vm.envUint("DEFAULT_ANVIL_KEY_2");
-  // address address2 = vm.addr(privateKey2); 
-  // uint256 privateKey3 = vm.envUint("DEFAULT_ANVIL_KEY_3");
-  // address address3 = vm.addr(privateKey3); 
-  // uint256 privateKey4 = vm.envUint("DEFAULT_ANVIL_KEY_4");
-  // address address4 = vm.addr(privateKey4); 
-
+// uint256 privateKey0 = vm.envUint("DEFAULT_ANVIL_KEY_0");
+// address address0 = vm.addr(privateKey0);
+// uint256 privateKey1 = vm.envUint("DEFAULT_ANVIL_KEY_1");
+// address address1 = vm.addr(privateKey1);
+// uint256 privateKey2 = vm.envUint("DEFAULT_ANVIL_KEY_2");
+// address address2 = vm.addr(privateKey2);
+// uint256 privateKey3 = vm.envUint("DEFAULT_ANVIL_KEY_3");
+// address address3 = vm.addr(privateKey3);
+// uint256 privateKey4 = vm.envUint("DEFAULT_ANVIL_KEY_4");
+// address address4 = vm.addr(privateKey4);
 
 //     LoyaltyProgram loyaltyProgramA;
 //     LoyaltyProgram loyaltyProgramB;
@@ -58,11 +53,11 @@ pragma solidity ^0.8.21;
 //     uint256 maxPointsPerInteraction;
 //     address public vendorA;
 //     address public vendorB;
-//     uint256 internal customerOnePrivateKey; 
-//     uint256 internal customerTwoPrivateKey; 
-//     uint256 internal customerThreePrivateKey; 
+//     uint256 internal customerOnePrivateKey;
+//     uint256 internal customerTwoPrivateKey;
+//     uint256 internal customerThreePrivateKey;
 //     address internal customerOne;
-//     address internal customerTwo; 
+//     address internal customerTwo;
 //     address internal customerThree;
 //     address public loyaltyTokenContractA = makeAddr("loyaltyTokenA");
 //     address public loyaltyTokenContractB = makeAddr("loyaltyTokenB");
@@ -82,7 +77,7 @@ pragma solidity ^0.8.21;
 //      * @dev this modifier sets up a fuzzy context consisting of
 //      * - 2 customers,
 //      */
-//     modifier setUpContext() 
+//     modifier setUpContext()
 //     {
 //         // transfer single loyalty card to customers
 //         vm.prank(vendorA);
@@ -107,9 +102,9 @@ pragma solidity ^0.8.21;
 //         vendorA = loyaltyProgramA.getOwner();
 //         vendorB = loyaltyProgramB.getOwner();
 
-//         customerOnePrivateKey = 0xA11CE; 
-//         customerTwoPrivateKey = 0xF155E; 
-//         customerThreePrivateKey = 0xB210E; 
+//         customerOnePrivateKey = 0xA11CE;
+//         customerTwoPrivateKey = 0xF155E;
+//         customerThreePrivateKey = 0xB210E;
 
 //         customerOne = vm.addr(customerOnePrivateKey);
 //         customerTwo = vm.addr(customerTwoPrivateKey);
@@ -137,7 +132,7 @@ pragma solidity ^0.8.21;
 //         loyaltyProgramA.safeTransferFrom(vendorA, tokenOneProgramA, 0, 50000, "");
 //         loyaltyProgramA.safeTransferFrom(vendorA, tokenTwoProgramA, 0, 65000, "");
 //         vm.stopPrank();
-        
+
 //         vm.prank(vendorB);
 //         loyaltyProgramB.safeTransferFrom(vendorB, tokenOneProgramB, 0, 2500, "");
 //         vm.prank(vendorB);
@@ -273,9 +268,9 @@ pragma solidity ^0.8.21;
 //             payable(loyaltyProgramA),
 //             0,
 //             abi.encodeCall(
-//                 LoyaltyProgram.redeemLoyaltyPoints, 
-//                 (payable(address(loyaltyToken2500)), 
-//                 numberOfLoyaltyPoints, 
+//                 LoyaltyProgram.redeemLoyaltyPoints,
+//                 (payable(address(loyaltyToken2500)),
+//                 numberOfLoyaltyPoints,
 //                 1)
 //                 )
 //         );
@@ -289,8 +284,8 @@ pragma solidity ^0.8.21;
 //         //     payable(loyaltyProgramA),
 //         //     0,
 //         //     abi.encodeCall(
-//         //         LoyaltyProgram.redeemLoyaltyGift, 
-//         //         (payable(address(loyaltyToken2500)), 
+//         //         LoyaltyProgram.redeemLoyaltyGift,
+//         //         (payable(address(loyaltyToken2500)),
 //         //         10,
 //         //         LoyaltyProgram.getTokenBoundAddress(1)
 //         //      )
@@ -302,13 +297,13 @@ pragma solidity ^0.8.21;
 //     function testCustomerCanClaimLoyaltyPointsThroughSignedMessage() public setUpContext {
 //         // Setup:
 //         uint256 numberOfLoyaltyPoints = 5000;
-//         uint256 nonce = 1; 
-        
+//         uint256 nonce = 1;
+
 //         // whitelist loyalty token contract & mint tokens ..
 //         vm.startPrank(vendorA);
 //         loyaltyProgramA.addLoyaltyGiftContract(payable(address(loyaltyToken2500)));
 //         loyaltyProgramA.mintLoyaltyGifts(payable(address(loyaltyToken2500)), 10);
-//         vm.stopPrank();  
+//         vm.stopPrank();
 //         // customer calls loyalty token contract from loyaltycard to
 //         // redeem points for loyalty token.
 
@@ -317,31 +312,31 @@ pragma solidity ^0.8.21;
 //             abi
 //             .encodePacked(
 //                 payable(address(loyaltyToken2500)), // address loyaltyToken,
-//                 customerOne, // address customerAddress, 
-//                 numberOfLoyaltyPoints, // uint256 loyaltyPoints, 
+//                 customerOne, // address customerAddress,
+//                 numberOfLoyaltyPoints, // uint256 loyaltyPoints,
 //                 nonce
 //             )).toEthSignedMessageHash();
 
-//         (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOnePrivateKey, messageHash); 
-//         bytes memory signature = abi.encodePacked(r, s, v); 
-//         vm.stopPrank(); 
+//         (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOnePrivateKey, messageHash);
+//         bytes memory signature = abi.encodePacked(r, s, v);
+//         vm.stopPrank();
 
 //         console.logAddress(customerOne);
 //         console.logAddress(address(vendorA));
 //         console.logAddress(address(loyaltyProgramA.getTokenBoundAddress(1)));
 //         console.logAddress(address(loyaltyProgramA));
 //         console.logAddress(address(loyaltyToken2500));
-        
+
 //         /////////////////
-//         vm.startPrank(vendorA); 
+//         vm.startPrank(vendorA);
 //         loyaltyProgramA.redeemLoyaltyPointsUsingSignedMessage(
 //             address(loyaltyToken2500), // address payable loyaltyToken,
 //             loyaltyProgramA.getTokenBoundAddress(1), // address loyaltyCardAddress,
-//             customerOne, 
-//             5000, // uint256 loyaltyPoints, 
-//             1, // uint nonce, // can, I think, be blocknumber. --just meant so same type of request do not end up being reverted. 
+//             customerOne,
+//             5000, // uint256 loyaltyPoints,
+//             1, // uint nonce, // can, I think, be blocknumber. --just meant so same type of request do not end up being reverted.
 //             signature // signature bytes32
-//         ); 
+//         );
 //         vm.stopPrank();
 
 //         uint256 balanceToken10 = loyaltyToken2500.balanceOf(tokenOneProgramA, 10);
@@ -351,15 +346,15 @@ pragma solidity ^0.8.21;
 //        // See explanation here: https://book.getfoundry.sh/tutorials/testing-eip712
 //     function testCustomerCanRedeemLoyaltyGiftThroughSignedMessage() public setUpContext {
 //         // Setup:
-//         uint256 nonce = 1; 
-//         uint256 loyaltyTokenId = 9; 
+//         uint256 nonce = 1;
+//         uint256 loyaltyTokenId = 9;
 //         uint256 numberOfLoyaltyPoints = 5000;
-        
+
 //         // whitelist loyalty token contract & mint tokens ..
 //         vm.startPrank(vendorA);
 //         loyaltyProgramA.addLoyaltyGiftContract(payable(address(loyaltyToken2500)));
 //         loyaltyProgramA.mintLoyaltyGifts(payable(address(loyaltyToken2500)), 10);
-//         vm.stopPrank(); 
+//         vm.stopPrank();
 
 //         // customer One claims token
 //         vm.prank(customerOne);
@@ -367,45 +362,44 @@ pragma solidity ^0.8.21;
 //             payable(loyaltyProgramA),
 //             0,
 //             abi.encodeCall(
-//                 LoyaltyProgram.redeemLoyaltyPoints, 
-//                 (payable(address(loyaltyToken2500)), 
-//                 numberOfLoyaltyPoints, 
+//                 LoyaltyProgram.redeemLoyaltyPoints,
+//                 (payable(address(loyaltyToken2500)),
+//                 numberOfLoyaltyPoints,
 //                 1)
 //                 )
 //         );
 
-//         // Now redeeming this token through signed message: Create signature by customer  
+//         // Now redeeming this token through signed message: Create signature by customer
 //         vm.startPrank(customerOne);
 //         bytes32 messageHash = keccak256(
 //             abi
 //             .encodePacked(
 //                 payable(loyaltyToken2500), // address loyaltyToken,
 //                 loyaltyTokenId,
-//                 customerOne, 
-//                 loyaltyProgramA.getTokenBoundAddress(1), // uint256 loyaltyPoints, 
+//                 customerOne,
+//                 loyaltyProgramA.getTokenBoundAddress(1), // uint256 loyaltyPoints,
 //                 nonce
 //             )).toEthSignedMessageHash();
 
-//         (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOnePrivateKey, messageHash); 
-//         bytes memory signature = abi.encodePacked(r, s, v); 
-//         vm.stopPrank(); 
-        
-//         // Use signature as approval to redeem token by vendor. 
-//         vm.startPrank(vendorA); 
+//         (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOnePrivateKey, messageHash);
+//         bytes memory signature = abi.encodePacked(r, s, v);
+//         vm.stopPrank();
+
+//         // Use signature as approval to redeem token by vendor.
+//         vm.startPrank(vendorA);
 //         loyaltyProgramA.redeemLoyaltyGiftUsingSignedMessage(
 //             payable(loyaltyToken2500), // address payable loyaltyToken,
-//             customerOne, // address customerAddress, 
+//             customerOne, // address customerAddress,
 //             loyaltyTokenId, // loyaltyTokenId
 //             loyaltyProgramA.getTokenBoundAddress(1) // address loyaltyCardAddress,
-//             // nonce, // uint nonce, // can, I think, be blocknumber. --just meant so same type of request do not end up being reverted. 
+//             // nonce, // uint nonce, // can, I think, be blocknumber. --just meant so same type of request do not end up being reverted.
 //             // signature // signature bytes32
-//         ); 
+//         );
 //         vm.stopPrank();
 
 //         uint256 balanceToken10 = loyaltyToken2500.balanceOf(tokenOneProgramA, 9);
 //         console.log("balanceToken10", balanceToken10);
 //     }
-
 
 //     // function testOwnerCanTransferTokenstouserOne(uint256 amount) public {
 //     //   // Arrange
@@ -454,8 +448,6 @@ pragma solidity ^0.8.21;
 //     /// Test Transfer Loyalty Tokens Between Loyalty Card Holders ////
 //     //////////////////////////////////////////////////////////////////
 // }
-
-
 
 // contract LoyaltyGiftTest is Test {
 //     DeployLoyaltyGift public deployer;
@@ -551,8 +543,7 @@ pragma solidity ^0.8.21;
 //         numberOfTokens = loyaltyToken.getAvailableTokens(userOne);
 
 //         for (uint256 i = 1; i < numberOfTokens.length; i++) {
-//             console.logUint(numberOfTokens[i]); 
+//             console.logUint(numberOfTokens[i]);
 //         }
-        
-        
+
 //     }
