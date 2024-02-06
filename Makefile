@@ -48,7 +48,10 @@ ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
 endif
 
 sepoliaForkTest: 
-	@forge test --match-contract CardsToProgramToGifts $(SEPOLIA_FORK_TEST_ARGS) -vvvv
+#	@forge test --match-test testCustomerCanClaimGift $(SEPOLIA_FORK_TEST_ARGS) -vvvv 
+	@forge test $(SEPOLIA_FORK_TEST_ARGS)  
+# @forge test --match-contract CardsToProgramToGifts $(SEPOLIA_FORK_TEST_ARGS) 
+# CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
 	
 sepoliaForkDeploy: 
 # @forge script script/DeployRegistry.s.sol:DeployRegistry $(SEPOLIA_FORK_ARGS)

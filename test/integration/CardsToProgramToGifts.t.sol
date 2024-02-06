@@ -68,15 +68,16 @@ contract CardsToProgramToGiftsTest is Test {
     }
 
     // domain seperator.
-    bytes32 internal DOMAIN_SEPARATOR = keccak256(
-        abi.encode(
-            keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-            keccak256(bytes("Loyalty Program")), // name
-            keccak256(bytes("1")), // version
-            block.chainid, // chainId
-            0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3 // verifyingContract
-        )
-    );
+    bytes32 internal DOMAIN_SEPARATOR; 
+    //  = keccak256(
+    //     abi.encode(
+    //         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+    //         keccak256(bytes("Loyalty Program")), // name
+    //         keccak256(bytes("1")), // version
+    //         block.chainid, // chainId
+    //         address(loyaltyProgram) //  0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3 // verifyingContract
+    //     )
+    // );
 
     // this modifier gives one voucher to CustomerCard1 owned by customerOne.
     modifier giftClaimedAndVoucherReceived() {
@@ -84,6 +85,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request
         RequestGift memory message = RequestGift({
@@ -164,6 +166,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request
         RequestGift memory message = RequestGift({
@@ -173,6 +176,8 @@ contract CardsToProgramToGiftsTest is Test {
             cost: "1500 points",
             nonce: 0
         });
+
+        console.logUint(loyaltyProgram.getNonceLoyaltyCard(loyaltyCardOne));
 
         // customer signs request
         bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message));
@@ -203,6 +208,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request..
         RequestGift memory message = RequestGift({
@@ -239,6 +245,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request..
         RequestGift memory message = RequestGift({
@@ -287,6 +294,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request..
         RequestGift memory message = RequestGift({
@@ -324,6 +332,7 @@ contract CardsToProgramToGiftsTest is Test {
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
         uint256 loyaltyPoints = 2500;
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request..
         RequestGift memory message = RequestGift({
@@ -369,6 +378,7 @@ contract CardsToProgramToGiftsTest is Test {
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
         uint256 loyaltyPoints = 2500;
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request..
         RequestGift memory message = RequestGift({
@@ -416,6 +426,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 giftId = 3;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request
         RedeemVoucher memory message = RedeemVoucher({
@@ -450,6 +461,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request
         RedeemVoucher memory message = RedeemVoucher({
@@ -482,6 +494,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request
         RedeemVoucher memory message = RedeemVoucher({
@@ -514,6 +527,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // removing voucher as being redeemable.
         vm.prank(owner);
@@ -552,6 +566,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request
         RedeemVoucher memory message = RedeemVoucher({
@@ -617,6 +632,20 @@ contract CardsToProgramToGiftsTest is Test {
                 message.nonce
             )
         );
+    }
+
+    // helper function separator
+    function hashDomainSeparator () public view returns (bytes32) {
+        
+        return keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(bytes("Loyalty Program")), // name
+                keccak256(bytes("1")), // version
+                block.chainid, // chainId
+                loyaltyProgram //  0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3 // verifyingContract
+            )
+    );
     }
 }
 
