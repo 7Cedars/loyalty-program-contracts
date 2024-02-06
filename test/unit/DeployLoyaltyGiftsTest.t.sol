@@ -3,8 +3,8 @@ pragma solidity ^0.8.21;
 
 import {Test, console} from "forge-std/Test.sol";
 import {DeployMockLoyaltyGifts, DeployLoyaltyGift} from "../../script/DeployLoyaltyGifts.s.sol";
-import {MockLoyaltyGifts} from "../../src/mocks/MockLoyaltyGifts.sol";
-import {LoyaltyGift} from "../../src/mocks/LoyaltyGift.sol";
+import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";
+import {LoyaltyGift} from "../mocks/LoyaltyGift.sol";
 
 contract DeployLoyaltyGiftTest is Test {
   DeployLoyaltyGift public deployer;

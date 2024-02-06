@@ -19,9 +19,9 @@ import {ILoyaltyGift} from "./interfaces/ILoyaltyGift.sol";
 
 import {ERC165Checker} from  "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {ERC6551Registry} from "./mocks/ERC6551Registry.sol";
-import {ERC6551BespokeAccount} from "./mocks/ERC6551BespokeAccount.sol";
-import {LoyaltyGift} from "./mocks/LoyaltyGift.sol";
+import {ERC6551Registry} from "../test/mocks/ERC6551Registry.sol";
+import {LoyaltyCard6551Account} from "./LoyaltyCard6551Account.sol";
+import {LoyaltyGift} from "../test/mocks/LoyaltyGift.sol";
 
 /**
  * @title LoyaltyProgram
@@ -106,7 +106,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
     mapping(address loyaltyGiftsAddress => mapping (uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyGiftsRedeemable; // 0 = false & 1 = true.
     uint256 private s_loyaltyCardCounter;
     ERC6551Registry public s_erc6551Registry; 
-    ERC6551BespokeAccount public s_erc6551Implementation;
+    LoyaltyCard6551Account public s_erc6551Implementation;
 
     /* Events */
     event DeployedLoyaltyProgram(address indexed owner);
@@ -136,7 +136,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ReentrancyGuard {
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
         s_erc6551Registry = ERC6551Registry(erc6551Registry); 
-        s_erc6551Implementation = ERC6551BespokeAccount(erc6551Implementation);
+        s_erc6551Implementation = LoyaltyCard6551Account(erc6551Implementation);
         
         DOMAIN_SEPARATOR = hashDomain(EIP712Domain({
             name: "Loyalty Program",

@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Script} from "forge-std/Script.sol";
 import {Create2} from "@openzeppelin/contracts/utils/Create2.sol";
-import {ERC6551Registry} from "../src/mocks/ERC6551Registry.sol";
+import {ERC6551Registry} from "../test/mocks/ERC6551Registry.sol";
 
 contract DeployRegistry is Script {
     function run() external {

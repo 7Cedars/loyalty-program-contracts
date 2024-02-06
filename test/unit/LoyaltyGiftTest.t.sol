@@ -3,7 +3,7 @@ pragma solidity ^0.8.21;
 
 import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
-import {LoyaltyGift} from "../../src/mocks/LoyaltyGift.sol";
+import {LoyaltyGift} from "../mocks/LoyaltyGift.sol";
 import { DeployLoyaltyGift } from "../../script/DeployLoyaltyGifts.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 

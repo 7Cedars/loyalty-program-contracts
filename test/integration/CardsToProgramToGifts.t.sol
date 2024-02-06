@@ -3,11 +3,11 @@ pragma solidity ^0.8.21;
 
 import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
-import {MockLoyaltyGifts} from "../../src/mocks/MockLoyaltyGifts.sol";  
+import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";  
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
-import {ERC6551Registry} from "../../src/mocks/ERC6551Registry.sol";
+import {ERC6551Registry} from "../mocks/ERC6551Registry.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 

@@ -3,7 +3,7 @@ pragma solidity ^0.8.21;
 
 import {Script} from "forge-std/Script.sol";
 import {LoyaltyProgram} from "../src/LoyaltyProgram.sol";
-import {MockLoyaltyGifts} from "../src/mocks/MockLoyaltyGifts.sol";
+import {MockLoyaltyGifts} from "../test/mocks/MockLoyaltyGifts.sol";
 import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -35,7 +35,6 @@ contract Interactions is Script {
     address loyaltyProgramAddress = 0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F; // DevOpsTools.get_most_recent_deployment("LoyaltyProgram", block.chainid);
     LoyaltyProgram loyaltyProgram = LoyaltyProgram(payable(loyaltyProgramAddress)); 
     address loyaltyGiftsAddress = 0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6; // DevOpsTools.get_most_recent_deployment("MockLoyaltyGifts", block.chainid);
-    MockLoyaltyGifts loyaltyGiftsContract = MockLoyaltyGifts(payable(loyaltyGiftsAddress));
 
     // step 1: mint loyalty points and cards; 
     mintLoyaltyPoints(loyaltyProgram, 1e15); 

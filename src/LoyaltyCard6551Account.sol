@@ -10,12 +10,12 @@ import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {IERC1271} from "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
-import {IERC6551Account} from "../interfaces/IERC6551Account.sol";
-import {ERC6551AccountLib} from "../lib/ERC6551AccountLib.sol";
+import {IERC6551Account} from "./interfaces/IERC6551Account.sol";
+import {ERC6551AccountLib} from "./lib/ERC6551AccountLib.sol";
 
 // NB! this is an EXPANDED VERSION OF the standard ERC6551Account! should make that clear.. 
 // But do not want to get in trouble with registry... 
-contract ERC6551BespokeAccount is IERC165, IERC1271, IERC6551Account, IERC1155Receiver {
+contract LoyaltyCard6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver {
     uint256 public nonce;
 
     receive() external payable {}

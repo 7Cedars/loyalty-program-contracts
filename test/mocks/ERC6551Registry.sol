@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import {Create2} from "@openzeppelin/contracts/utils/Create2.sol";
-import {IERC6551Registry} from "../interfaces/IERC6551Registry.sol";
-import {ERC6551BytecodeLib} from "../lib/ERC6551BytecodeLib.sol";
+import {Create2} from "../../lib/openzeppelin-contracts/contracts/utils/Create2.sol";
+import {IERC6551Registry} from "../../src/interfaces/IERC6551Registry.sol";
+import {ERC6551BytecodeLib} from "../../src/lib/ERC6551BytecodeLib.sol";
 
 contract ERC6551Registry is IERC6551Registry {
     error InitializationFailed();

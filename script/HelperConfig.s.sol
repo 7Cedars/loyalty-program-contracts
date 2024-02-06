@@ -1,27 +1,30 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
+// based on: Patrick Collins: helperConfig.s.sol + learning/foundry-fund-me-f23 
+
 import {Script, console} from "forge-std/Script.sol";
-import {LoyaltyGift} from "../src/mocks/LoyaltyGift.sol";
-import {ERC6551Registry} from "../src/mocks/ERC6551Registry.sol";
-import {ERC6551BespokeAccount} from "../src/mocks/ERC6551BespokeAccount.sol";
+import {LoyaltyGift} from "../test/mocks/LoyaltyGift.sol";
+import {ERC6551Registry} from "../test/mocks/ERC6551Registry.sol";
+import {LoyaltyCard6551Account} from "../src/LoyaltyCard6551Account.sol";
 import {IERC6551Account} from "../src/interfaces/IERC6551Account.sol";
 
 contract HelperConfig is Script {
     // these are all the same for networks with deployed ERC6551 - local anvil chain obv does not have one.  
+
 
     struct NetworkConfig {
         uint256 chainid; 
         string uri; 
         uint256 initialSupply; // can differ between chains.
         uint256 interval;
-        address erc65511Registry; 
-        address payable erc65511Implementation;
+        address erc6551Registry; 
+        address payable erc6551Implementation;
         uint32  callbackGasLimit; 
     }
     NetworkConfig public activeNetworkConfig;
     ERC6551Registry public s_erc6551Registry;
-    ERC6551BespokeAccount public s_erc6551Implementation;
+    LoyaltyCard6551Account public s_erc6551Implementation;
 
     /**
      * @notice for now only includes test networks. 
@@ -47,15 +50,22 @@ contract HelperConfig is Script {
     // this function can be copied to any network!
     function getSepoliaEthConfig() public returns (NetworkConfig memory) {
 
+        vm.startBroadcast();
+        s_erc6551Implementation = new LoyaltyCard6551Account();
+        vm.stopBroadcast();
+
         NetworkConfig memory sepoliaConfig = NetworkConfig({
-            chainid: 11155111, 
+            chainid: 11155111,  
             uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD", 
-            initialSupply: 1e25,
+            initialSupply: 1e25, 
             interval: 30, 
-            erc65511Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921, // 0x000000006551c19487814612e58FE06813775758, // these are all the same for networks with deployed ERC6551 - local anvil chain obv does not have one.  
-            erc65511Implementation: payable(0x41C8f39463A868d3A88af00cd0fe7102F30E44eC), // payable(0x2D25602551487C3f3354dD80D76D54383A243358), //  payable(0x41C8f39463A868d3A88af00cd0fe7102F30E44eC), 
-            callbackGasLimit: 50000 
-        });
+            erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,  
+            erc6551Implementation: payable(s_erc6551Implementation),  
+            callbackGasLimit: 50000
+            });
+
+        console.logAddress(address(s_erc6551Implementation)); 
+
         return sepoliaConfig;
     }
 
@@ -91,7 +101,7 @@ contract HelperConfig is Script {
         
         vm.startBroadcast();
         s_erc6551Registry = new ERC6551Registry();
-        s_erc6551Implementation = new ERC6551BespokeAccount();
+        s_erc6551Implementation = new LoyaltyCard6551Account();
         vm.stopBroadcast();
 
         NetworkConfig memory anvilConfig = NetworkConfig({
@@ -99,8 +109,8 @@ contract HelperConfig is Script {
             uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD", 
             initialSupply: 1e25, 
             interval: 30, 
-            erc65511Registry: address(s_erc6551Registry),  
-            erc65511Implementation: payable(s_erc6551Implementation),  
+            erc6551Registry: address(s_erc6551Registry),  
+            erc6551Implementation: payable(s_erc6551Implementation),  
             callbackGasLimit: 50000
             });
 
