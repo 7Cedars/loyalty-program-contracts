@@ -8,7 +8,6 @@ import {Test} from "forge-std/Test.sol";
 import {ERC6551Registry} from "../mocks/ERC6551Registry.sol";
 import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
 import {MockERC1155} from "../mocks/MockERC1155.sol";
-import {MockERC6551Account} from "../mocks/MockERC6551Account.sol";
 import {IERC6551Account} from "../../src/interfaces/IERC6551Account.sol";
 
 contract AccountTest is Test {

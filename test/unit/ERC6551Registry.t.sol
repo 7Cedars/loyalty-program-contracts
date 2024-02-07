@@ -6,15 +6,15 @@ import {Test} from "forge-std/Test.sol";
 import {ERC6551Registry} from "../mocks/ERC6551Registry.sol";
 import {ERC6551AccountLib} from "../../src/lib/ERC6551AccountLib.sol";
 import {MockERC1155} from "../mocks/MockERC1155.sol";
-import {MockERC6551Account} from "../mocks/MockERC6551Account.sol";
+import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
 
 contract RegistryTest is Test {
     ERC6551Registry public registry;
-    MockERC6551Account public implementation;
+    LoyaltyCard6551Account public implementation;
 
     function setUp() public {
         registry = new ERC6551Registry();
-        implementation = new MockERC6551Account();
+        implementation = new LoyaltyCard6551Account();
     }
 
     function testDeploy() public {
@@ -52,13 +52,11 @@ contract RegistryTest is Test {
         );
         assertEq(deployedAccount, libraryComputedAddress);
 
-        MockERC6551Account accountInstance = MockERC6551Account(payable(deployedAccount));
+        LoyaltyCard6551Account accountInstance = LoyaltyCard6551Account(payable(deployedAccount));
 
         (uint256 chainId_, address tokenAddress_, uint256 tokenId_) = accountInstance.token();
         assertEq(chainId_, chainId);
         assertEq(tokenAddress_, tokenAddress);
         assertEq(tokenId_, tokenId);
-
-        assertEq(salt, accountInstance.salt());
     }
 }

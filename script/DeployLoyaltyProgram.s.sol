@@ -15,6 +15,8 @@ contract DeployLoyaltyProgram is Script {
     // NB: If I need a helper config, see helperConfig.s.sol + learning/foundry-fund-me-f23
     function run() external returns (LoyaltyProgram, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
+        string memory name = "Loyalty Program"; 
+        string memory version = "1"; 
 
         (, string memory uri,,, address erc65511Registry, address erc65511Implementation,) =
             helperConfig.activeNetworkConfig();
@@ -22,6 +24,8 @@ contract DeployLoyaltyProgram is Script {
         vm.startBroadcast();
         loyaltyProgram = new LoyaltyProgram(
         uri, 
+        name,
+        version,
         erc65511Registry,
         payable(erc65511Implementation)
         );

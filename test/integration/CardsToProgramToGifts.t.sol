@@ -310,7 +310,7 @@ contract CardsToProgramToGiftsTest is Test {
         bytes memory signature = abi.encodePacked(r, s, v);
 
         // EXPECT: revert.
-        vm.expectRevert(LoyaltyProgram.LoyaltyProgram__LoyaltyGiftNotClaimable.selector); //
+        vm.expectRevert(LoyaltyProgram.LoyaltyProgram__LoyaltyGiftInvalid.selector); //
         // ACT owner of executes request second time.
         vm.prank(owner);
         loyaltyProgram.claimLoyaltyGift(
@@ -510,7 +510,7 @@ contract CardsToProgramToGiftsTest is Test {
         bytes memory signature = abi.encodePacked(r, s, v);
 
         // owner of loyaltyprogram uses signature when executing claimLoyaltyGift function.
-        vm.expectRevert(LoyaltyProgram.LoyaltyProgram__DoesNotOwnLoyaltyCard.selector); //
+        vm.expectRevert(LoyaltyProgram.LoyaltyProgram__NotOwnerLoyaltyCard.selector); //
         vm.prank(owner);
         loyaltyProgram.redeemLoyaltyVoucher(
             "This is a test redeem", // string memory _gift,
@@ -547,7 +547,7 @@ contract CardsToProgramToGiftsTest is Test {
         bytes memory signature = abi.encodePacked(r, s, v);
 
         // EXPECT
-        vm.expectRevert(LoyaltyProgram.LoyaltyProgram__LoyaltyTokensNotRedeemable.selector); //
+        vm.expectRevert(LoyaltyProgram.LoyaltyProgram__LoyaltyVoucherInvalid.selector); //
         // ACT
         vm.prank(owner);
         loyaltyProgram.redeemLoyaltyVoucher(

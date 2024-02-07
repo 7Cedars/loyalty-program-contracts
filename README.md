@@ -10,47 +10,10 @@ For personal use only.
 - eventually deploy on multiple blockchains. 
 - Design of solidity backend is on Figma. 
 
-## Development / TO DO
-LoyaltyProgram. Get to deployment of contract! 
-- [x] Implement covering gas of users by LoyaltyProgram Owner
-  - [x] See https://learnweb3.io/lessons/using-metatransaction-to-pay-for-your-users-gas for a lesson on how to do this. 
-  - [x] Implement claim gift through signed message at till 
-  - [x] Implement redeem token through signed message at till 
-- [ ] Refactor program and token logic (relating to gasless transactions above). 
-  - [x] Loyalty Token contracts have their requirement check - as is now. 
-  - [x] Loyalty Token contracts safeTransfer function is checked with requirement function. 
-  - [x] claim gift function: 
-    - [x] either gives only the bool of the requirement function.
-    - [x] In other words: Loyalty Token contracts have option to provide token (to be redeemed later) or not. 
-  - [x] Loyalty contracts have redeem function that should be disabled in contracts that do not give out loyalty tokens. 
-  - [ ] The tokens meta data should have added following fields - all in one file for all tokens in one contract: 
-    - [ ] is_token_voucher: true / false
-    - [ ] vendor_message_at_claim: string 
-    - [ ] customer_message_at_claim: string
-    - [ ] vendor_message_at_redeem: string / undefined 
-    - [ ] customer_message_at_redeem: string / undefined. 
-  - [ ] At Loyalty Program only have claim and redeem function - as was the case previsouly. But both through signing message. 
-- [ ] Build unit tests 
-  - [ ] test should run with gas > 0 
-  - [x] Do points get added to loyaltyCard (and not user address)? 
-  - [x] Does adding and removing loyaltyTokenContract work? 
-  - [x] Are loyalty cards freely transferrable to any contract address? 
-  - [ ] Check use of signature works 
-  - [ ] Check for signature replay attack 
-- [ ] Build integration
-  - [x] Does Minting loyaltyTokens by vendor work? 
-  - [x] Does claim loyaltyTokens work - do tokens get redeemd by loyaltyCards (and not customers)? 
-  - [ ] When tokens are finsihed - does it indeed stop issuing them? (are reverts bound by loyalty program)
-  - [ ] Are points and tokens bound to loyalty cards?
-- [ ] Build invariant tests
-  - [ ] implement handler contract. 
-  - [ ] implement invarient check cintract. 
+- [ ] Deploy on actual testnet - and test.
+- [ ] Deploy on actual chains! 
 
-LoyaltyToken 
-- [ ] Create mock loyalty contract in this repository for testing purposes.  
-- [x] Refatctor logic of loyaltyTokens! 
-  - [x] Needs to place multiple tokens into ONE contract. 
-  - [x] make tokens mix of NFT and fungible tokens. ERC1155 allows this.  
+## (Temp) move to Loyalty Gifts Repo 
 - [ ] Create mutliple / more loyaltyToken contracts - also using chainlink external data: in seperate repositroy 
   - [ ] Create a seperate github repository for these contracts. -- only keep mock contract in this repository.  
   - [ ] Raffle. 
@@ -61,29 +24,28 @@ LoyaltyToken
   - [ ] A DAO that distributes tokens for premium program. 
   - [ ] etc etc. 
 
-Deployment 
-- [ ] Build deployment scripts
-- [x] Build mock interaction scripts 
-  - [x] colleting points, claim and redeeming LoyaltyTokens
-  - [x] colleting points, transfer loyaltyCard, claim tokens, transfer loyaltyCard, redeem tokens. 
-  - [x] etc. -- come up with many different scenarios.
-- [x] Check: on what chains is ERC6551 deployed?  
-  - [x] Sepolia (= testnet mainnet Ethereum ) // see: https://www.quicknode.com/guides/ethereum-development/nfts/how-to-create-and-deploy-an-erc-6551-nft
-  - [x] OP Sepolia ( = testnet Optimism )
-  - [x] Mumbai (= testnet Polygon )
-  - [x] Nothing about Arbitrum. -- but any EVM compatible chain can bery easily deploy a registry - so should have one.. 
-- [ ] Get management keys straight 
-  - [ ] See here: https://book.getfoundry.sh/reference/cast/cast-wallet
-  - [ ] Can import wallets into a keystore. 
+## testing
+- [ ] Build invariant tests
+  - [ ] implement handler contract. 
+  - [ ] implement invarient check cintract. 
+- [ ] When tokens are finsihed - does it indeed stop issuing them? (are reverts bound by loyalty program)
+- [ ] Are points and tokens bound to loyalty cards?
 - [ ] Run rest on forked testnets.
-  - [ ] L1: Sepolia 
+  - [x] L1: Sepolia 
   - [ ] OP Sepolia ( = testnet Optimism )
   - [ ] Arbitrum Sepolia See here: https://docs.arbitrum.io/for-devs/concepts/public-chains 
   - [ ] Polygon zvEVM? 
-- [ ] Deploy on actual testnet - and test.
-- [ ] Deploy on actual chains! 
 
-## Future upgrades
+## known bugs
+- [ ] @LoyaltyContract: does not check contract signature when adding loyaltygift cvontract addresses. 
+- [ ] @LoyaltyContract & LoyaltyCard6551Account: TBAs are linked to 1155 minted NFT. Problem is: these tokens are never fully non-fungible: additional tokens CAN BE MINTED. This means their might by MORE THAN ONE PERSON HAVING ACCESS TO LOYALTY CARDS. See also the check that I do in bespoke ERC6551 account. This is one huge security hole. 
+- [ ] 
+
+## Optimisations
+- [ ] @LoyaltyProgram, mintLoyaltyCards: can I batch calls to registry? -- this would save A LOT of GAS. 
+- [ ] @All: make sure I use automatic optimisations! 
+
+## Improvements
 - [ ] make ownership of LoyaltyProgram more flexible.
 - [ ] Implement account abstraction for customers.  
 - [ ] create range of token contracts, to show off possibilities. (in seperate repo).  
@@ -92,4 +54,6 @@ Deployment
 ## Resources used / I am indebted to:  
 -  Patrick Collins' Learn Solidity, Blockchain Development, & Smart Contracts course. 
    -  deploy and test templates are from his course. 
-   -  
+   -  TokenBound 
+   -  OpenZeppelin - base for all contracts. 
+   -  Foundry? Awesome framework for solidity dev. 

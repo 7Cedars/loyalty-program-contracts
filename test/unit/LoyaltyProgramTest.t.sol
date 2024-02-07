@@ -49,6 +49,8 @@ contract LoyaltyProgramTest is Test {
     }
 
     function testDeployEmitsevent() public {
+        string memory name = "Loyalty Program"; 
+        string memory version = "1"; 
         (, string memory uri,,, address erc65511Registry, address payable erc65511Implementation,) =
             helperConfig.activeNetworkConfig();
 
@@ -58,6 +60,8 @@ contract LoyaltyProgramTest is Test {
         vm.prank(vendorAddress);
         loyaltyProgram = new LoyaltyProgram(
         uri, 
+        name, 
+        version,
         erc65511Registry,
         erc65511Implementation
         );
