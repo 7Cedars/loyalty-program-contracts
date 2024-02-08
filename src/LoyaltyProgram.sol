@@ -63,7 +63,7 @@ import {LoyaltyGift} from "../test/mocks/LoyaltyGift.sol";
  *   this also goes for: https://medium.com/coinmonks/eip-712-example-d5877a1600bd
  * 
  * - Regarding ERC-6551. The website tokenbound.org was very helpful. 
- *   ... todo. 
+ *   ... £todo. 
  */
 
 contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGuard
@@ -75,11 +75,12 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     error LoyaltyProgram__RequestInvalid();
     error LoyaltyProgram__LoyaltyGiftInvalid();
     error LoyaltyProgram__LoyaltyVoucherInvalid();
-    error LoyaltyProgram__IncorrectInterface(address loyaltyGift);
+    error LoyaltyProgram__IncorrectInterface(address loyaltyGift, bytes4 interfaceId);
 
     /* Type declarations */
     using ECDSA for bytes32;
     using MessageHashUtils for bytes32;
+    using ERC165Checker for address;
 
     /* State variables */
     uint256 public constant LOYALTY_POINTS_ID = 0;
@@ -178,7 +179,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
      * @dev first id of card is 1. (not 0, this id is reserved for loyalty points). 
      * @dev no limit to the amount of cards to mint - when to many are minted, gas limits kick in. 
      * @dev each address of Token Bound Account (TBA) is stored in s_LoyaltyCards.
-     * @dev //security// it should be (and I think is now) impossible to mint more than one loyaltyCard of the same Id. 
+     * @dev £security it should be (and I think is now) impossible to mint more than one loyaltyCard of the same Id. 
      * This is crucial as the LoyaltyCard6551Account contract does not have a check for this - due to this contract being ERC-1155 based (instead of ERC-721). 
      * if more than one card of the same id are minted, you _will_ have a loyalty Card with multiple owners. 
      *
@@ -190,7 +191,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         uint256 counter = s_loyaltyCardCounter;
 
         /**
-         * @dev //security// note that I log these addresses as TBAs BEFORE they have actually been minted.
+         * @dev £security note that I log these addresses as TBAs BEFORE they have actually been minted.
          */
         for (uint256 i; i < numberOfLoyaltyCards; i++) {
             counter = counter + 1;
@@ -221,7 +222,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     /**
      * @notice whitelisting gift contracts and gift ids (these are contracts that provide requirements for redeeming loyalty points to gifts or vouchers).
      * A single gift contract can have mutliple gifts with each a seperate requirement.  
-     * //security// //todo// If contract does not have LoyaltyGift interface, it should revert. NOT YET IMPLEMENTED. 
+     * £security £todo If contract does not have LoyaltyGift interface, it should revert. NOT YET IMPLEMENTED. 
      *
      * @param loyaltyGiftAddress address of loyalty gift
      * @param loyaltyGiftId id of gift. 
@@ -236,10 +237,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
 
     function addLoyaltyGift(address loyaltyGiftAddress, uint256 loyaltyGiftId) public onlyOwner {
         // CAUSES many reverts :D Needs bug fixing...
-        // bytes4 interfaceId = type(ILoyaltyGift).interfaceId;
-        // if (ERC165Checker.supportsERC165InterfaceUnchecked(loyaltyGift, interfaceId) == false) {
-        //     revert LoyaltyProgram__IncorrectInterface(loyaltyGift);
-        // }
+        bytes4 interfaceId = type(ILoyaltyGift).interfaceId;
+        if (loyaltyGiftAddress.supportsInterface(interfaceId) == false) {
+            revert LoyaltyProgram__IncorrectInterface(loyaltyGiftAddress, interfaceId);
+        }
         s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = 1;
         s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] = 1;
         emit AddedLoyaltyGift(loyaltyGiftAddress, loyaltyGiftId);
@@ -321,7 +322,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
      *
      * @dev only one voucher can be claimed per call.
      * @dev only loyaltyCards minted through this loyalty program can be used redeem loyalty points.
-     * @dev //security// removed nonReentrant guard as CEI (Check-Effect-Interaction) structure was followed. This is correct - right? 
+     * @dev £security removed nonReentrant guard as CEI (Check-Effect-Interaction) structure was followed. This is correct - right? 
      * @dev if customer does not own TBA / loyalty card it will revert at ERC6551 account.
      *
      * - emits a TransferSingle event
@@ -377,7 +378,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         // 1) set executed to true..
         requestExecuted[digest] = 1;
         // 2) add 1 to nonce
-        s_nonceLoyaltyCard[loyaltyCardAddress] = s_nonceLoyaltyCard[loyaltyCardAddress] + 1;
+        s_nonceLoyaltyCard[loyaltyCardAddress] = s_nonceLoyaltyCard[loyaltyCardAddress]++;
 
         // Interact.
         // 3) retrieve loyalty points from customer
@@ -399,7 +400,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
      *
      * @dev only one voucher can be redeemed per call.
      * @dev only loyaltyCards minted through this loyalty program can be used redeem loyalty vouchers.
-     * @dev //security// removed nonReentrant guard as CEI (Check-Effect-Interaction) structure was followed. This is correct - right? 
+     * @dev £security removed nonReentrant guard as CEI (Check-Effect-Interaction) structure was followed. This is correct - right? 
      * @dev if customer does not own TBA / loyalty card it will revert at ERC6551 account.
      *
      * - emits a TransferSingle event
@@ -451,7 +452,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         // Execute.
         // 1) set executed to true..
         requestExecuted[digest] = 1;
-        s_nonceLoyaltyCard[loyaltyCardAddress] = s_nonceLoyaltyCard[loyaltyCardAddress] + 1;
+        s_nonceLoyaltyCard[loyaltyCardAddress] = s_nonceLoyaltyCard[loyaltyCardAddress]++;
 
         // Interact.
         // 2) redeem loyalty voucher
@@ -459,14 +460,15 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     }
 
     /**
-     * CONTINUE HERE WITH ADDING NATSPECS. 
+     * @notice implementation ERC1155 receipt check. See https://docs.openzeppelin.com/contracts/3.x/api/token/erc1155#IERC1155Receiver-onERC1155Received-address-address-uint256-uint256-bytes- 
      */
-
-    // Without these transactions are declined.
     function onERC1155Received(address, address, uint256, uint256, bytes memory) public virtual returns (bytes4) {
         return this.onERC1155Received.selector;
     }
 
+    /**
+     * @notice implementation ERC1155 receipt check. See https://docs.openzeppelin.com/contracts/3.x/api/token/erc1155#IERC1155Receiver-onERC1155Received-address-address-uint256-uint256-bytes- 
+     */
     function onERC1155BatchReceived(address, address, uint256[] memory, uint256[] memory, bytes memory)
         public
         virtual
@@ -475,45 +477,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         return this.onERC1155BatchReceived.selector;
     }
 
-    function hashDomain(EIP712Domain memory domain) private pure returns (bytes32) {
-        return keccak256(
-            abi.encode(
-                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256(bytes(domain.name)),
-                keccak256(bytes(domain.version)),
-                domain.chainId,
-                domain.verifyingContract
-            )
-        );
-    }
-
-    function hashRequestGift(RequestGift memory message) private pure returns (bytes32) {
-        return keccak256(
-            abi.encode(
-                // keccak256(bytes("RequestGift(uint256 nonce)")),
-                keccak256(bytes("RequestGift(address from,address to,string gift,string cost,uint256 nonce)")),
-                message.from,
-                message.to,
-                keccak256(bytes(message.gift)),
-                keccak256(bytes(message.cost)),
-                message.nonce
-            )
-        );
-    }
-
-    function hashRedeemVoucher(RedeemVoucher memory message) private pure returns (bytes32) {
-        return keccak256(
-            abi.encode(
-                keccak256(bytes("RedeemVoucher(address from,address to,string voucher,uint256 nonce)")),
-                message.from,
-                message.to,
-                keccak256(bytes(message.voucher)),
-                message.nonce
-            )
-        );
-    }
-
     /* internal */
+
     /**
      * @dev Loyalty points can only transferred to
      * - loyalty cards.
@@ -551,6 +516,54 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         );
 
         return tokenBoundAccount;
+    }
+
+    /* private functions */ 
+    /**
+     * @notice helper function to create EIP712 Domain separator.
+     */
+    function hashDomain(EIP712Domain memory domain) private pure returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(bytes(domain.name)),
+                keccak256(bytes(domain.version)),
+                domain.chainId,
+                domain.verifyingContract
+            )
+        );
+    }
+
+    /**
+     * @notice helper function to create digest hash from RequestGift struct.
+     */
+    function hashRequestGift(RequestGift memory message) private pure returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                // keccak256(bytes("RequestGift(uint256 nonce)")),
+                keccak256(bytes("RequestGift(address from,address to,string gift,string cost,uint256 nonce)")),
+                message.from,
+                message.to,
+                keccak256(bytes(message.gift)),
+                keccak256(bytes(message.cost)),
+                message.nonce
+            )
+        );
+    }
+
+    /**
+     * @notice helper function to create digest hash from RedeemVoucher struct.
+     */
+    function hashRedeemVoucher(RedeemVoucher memory message) private pure returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                keccak256(bytes("RedeemVoucher(address from,address to,string voucher,uint256 nonce)")),
+                message.from,
+                message.to,
+                keccak256(bytes(message.voucher)),
+                message.nonce
+            )
+        );
     }
 
     /* Getter functions */
@@ -595,9 +608,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     }
 }
 
-
-
-// Notes to self (todo): 
+// Notes to self (£todo): 
 // When reviewing this code, check: https://github.com/transmissions11/solcurity
 // see also: https://github.com/nascentxyz/simple-security-toolkit
 // see: https://solidity-by-example.org/structs/ re how to create structs

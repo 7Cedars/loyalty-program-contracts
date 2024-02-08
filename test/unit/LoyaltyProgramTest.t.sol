@@ -9,7 +9,7 @@ import {ERC6551Registry} from "../mocks/ERC6551Registry.sol";
 
 contract LoyaltyProgramTest is Test {
     /* events */
-    event DeployedLoyaltyProgram(address indexed owner);
+    event DeployedLoyaltyProgram(address indexed owner, string name, string version);
     event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
     event TransferBatch(
         address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values
@@ -55,7 +55,7 @@ contract LoyaltyProgramTest is Test {
             helperConfig.activeNetworkConfig();
 
         vm.expectEmit(true, false, false, false);
-        emit DeployedLoyaltyProgram(vendorAddress);
+        emit DeployedLoyaltyProgram(vendorAddress, name, version);
 
         vm.prank(vendorAddress);
         loyaltyProgram = new LoyaltyProgram(

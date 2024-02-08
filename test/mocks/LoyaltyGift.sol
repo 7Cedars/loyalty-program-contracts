@@ -3,7 +3,8 @@ pragma solidity ^0.8.19;
 
 // NB: see ERC1155 contract from openZeppelin for good example of how to use natspecs.
 //
-
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {ERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
 import {IERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
@@ -37,6 +38,14 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     // receive() external virtual payable {}
 
     /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    // function _registerInterface(type(ILoyaltyGift).interfaceId); 
+    function supportsInterface(bytes4 interfaceId) public view virtual override (ERC1155, IERC165) returns (bool) {
+        return interfaceId == type(ILoyaltyGift).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    /**
      * @dev Here NFT specific requirements are inserted through super statements
      * in implementations of LoyaltyGift contract.
      *
@@ -65,8 +74,8 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     }
 
     /**
-     * @notice Note that this function does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract.
-     * @notice also does not check if address is TBA / loyaltyCard
+     * @dev Note that this function does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract.
+     * @dev also does not check if address is TBA / loyaltyCard
      *
      */
     function issueLoyaltyGift(address loyaltyCard, uint256 loyaltyGiftId, uint256 loyaltyPoints)
