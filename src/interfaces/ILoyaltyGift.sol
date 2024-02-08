@@ -36,5 +36,5 @@ interface ILoyaltyGift is IERC1155 {
     /**
      * @dev natspecs TBI
      */
-    function reclaimLoyaltyVoucher(address loyaltyCard, uint256 tokenId) external returns (bool success);
+    function redeemLoyaltyVoucher(address loyaltyCard, uint256 tokenId) external returns (bool success);
 }

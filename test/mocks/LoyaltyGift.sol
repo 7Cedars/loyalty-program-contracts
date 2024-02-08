@@ -26,6 +26,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     /* State variables */
     uint256[] private s_tokenised; // 0 == false, 1 == true.
 
+
     /* FUNCTIONS: */
     /**
      * @notice constructor function. 
@@ -70,10 +71,11 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
      * £todo: CHECK If this is true!  
      */
     function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) public {
-        for (uint256 i; i < loyaltyGiftIds.length; i++) {
+        for (uint256 i; i < loyaltyGiftIds.length; ) {
             if (s_tokenised[loyaltyGiftIds[i]] == 0) {
                 revert LoyaltyGift__NotTokenised(address(this), loyaltyGiftIds[i]);
             }
+        unchecked { ++i; } 
         }
         _mintBatch(msg.sender, loyaltyGiftIds, numberOfTokens, ""); // emits batchtransfer event
     }
@@ -109,14 +111,14 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     }
 
     /**
-     * @notice includes check if token was minted by loyalty program that is redeemed from. This means that Loyalty Tokens can be
+     * @dev includes check if token was minted by loyalty program that is redeemed from. This means that Loyalty Tokens can be
      * freely transferred by customers, but can only be redeemed at the program where they were originally minted (and claimed by a customer).
      *
-     * @notice It does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract.
+     * @dev It does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract.
      *
      *
      */
-    function reclaimLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId) public returns (bool success) {
+    function redeemLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId) public returns (bool success) {
         // check if this loyaltyGift actually has tokens.
         if (s_tokenised[loyaltyGiftId] == 0) {
             revert LoyaltyGift__NotTokenised(address(this), loyaltyGiftId);
@@ -126,27 +128,29 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
         return true; // TEST if this does not come through when _safeTransferFrom reverts.
     }
 
-    // = Implemented.
-    // As it is now, loyaltyTokens minted in one program, CAN BE EXCHANGED in ANOTHER PROGRAM!
-    // I HAVE TO change this. ALL tokens should just stay on card. No transfers allowed.
-    // only transfer allowed is from loyaltyProgram -> loyaltyCard.
-    // (Note that loyaltyCards CAN be transferred, so people can still swap. )
     /* internal */
     /**
-     * @dev When a LoyaltyPrograms transfer tokens (= gift them) they need to pass requirementsLoyaltyGiftMet.
-     * In any other case, tokens ought to be freely transferable.
-     * @dev All other params remain unchanged.
+     * @notice added checks to safeTransfer that tokens can only be transferred between Loyalty Cards and its Loyalty Program. 
+     *  
+     * @dev Vouchers cannot be claimed or redeemed when balance of loyaltypoints on card == 0.  
+     * @dev The check is ignored when vouchers are minted. 
+     * @dev £todo? if the card does not exist at the program; the transfer gets an EVM revert. It's not pretty. Maybe should use try - catch structure. 
      */
     function _update(address from, address to, uint256[] memory ids, uint256[] memory values)
         internal
         virtual
         override
     {
-        // Checks if 1: msg.sender == LoyaltyProgram 2: to == LoyaltyCard at Loyalty Program and 3: if LoyaltyCard has Balance.
-        // DOES NOT QUITE WORK YET...
-        // if (LoyaltyProgram(payable(msg.sender)).balanceOf(to, 0) == 0) {
-        //     revert LoyaltyGift__TransferDenied(address(this));
-        //     }
+        if (address(0) != from) {
+            if (msg.sender == from) {
+                if (LoyaltyProgram(msg.sender).getBalanceLoyaltyCard(to) == 0)
+                {  revert LoyaltyGift__TransferDenied(address(this)); }
+            }
+            if (msg.sender == to) {
+                if (LoyaltyProgram(msg.sender).getBalanceLoyaltyCard(from) == 0) 
+                {  revert LoyaltyGift__TransferDenied(address(this)); }
+            }
+        } 
         super._update(from, to, ids, values);
     }
 

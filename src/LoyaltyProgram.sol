@@ -457,7 +457,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
 
         // Interact.
         // 2) redeem loyalty voucher
-        LoyaltyGift(loyaltyGift).reclaimLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
+        LoyaltyGift(loyaltyGift).redeemLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
     }
 
     /**

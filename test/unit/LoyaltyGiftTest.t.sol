@@ -135,6 +135,7 @@ contract LoyaltyGiftTest is Test {
             1
         );
 
+        // This reverts - as it should! addressOne is not a loyaltyCard! 
         vm.startPrank(addressZero);
         loyaltyGift.mintLoyaltyVouchers(VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
         loyaltyGift.issueLoyaltyVoucher(addressOne, VOUCHERS_TO_MINT[0]);
@@ -151,7 +152,7 @@ contract LoyaltyGiftTest is Test {
             )
         );
         vm.prank(addressZero);
-        loyaltyGift.reclaimLoyaltyVoucher(address(0), NON_TOKENISED_TO_MINT[0]);
+        loyaltyGift.redeemLoyaltyVoucher(address(0), NON_TOKENISED_TO_MINT[0]);
     }
 
     /// Further testing at interaction tests.
