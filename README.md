@@ -45,7 +45,7 @@ For personal use only.
 - [ ] @LoyaltyProgram, mintLoyaltyCards: can I batch calls to registry? -- this would save A LOT of GAS. 
 - [ ] @All: make sure I use automatic optimisations! 
 - [ ] @LoyaltyCard6551Account: upgrade to AccountV3. See https://github.com/tokenbound/contracts/blob/main/src/AccountV3.sol 
-- [ ] 
+- [ ] @All: implement gas optimisation strategies. See https://betterprogramming.pub/solidity-gas-optimizations-and-tricks-2bcee0f9f1f2 
 
 ## Improvements
 - [ ] make ownership of LoyaltyProgram more flexible. 

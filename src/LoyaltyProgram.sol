@@ -193,12 +193,13 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         /**
          * @dev £security note that I log these addresses as TBAs BEFORE they have actually been minted.
          */
-        for (uint256 i; i < numberOfLoyaltyCards; i++) {
-            counter = counter + 1;
+        for (uint256 i; i < numberOfLoyaltyCards; ) {
+            counter = ++counter;
             loyaltyCardIds[i] = counter;
             mintNfts[i] = 1;
             address loyaltyCardAddress = _createTokenBoundAccount(counter);
             s_LoyaltyCards[loyaltyCardAddress] = 1;
+            unchecked { i++; } // gas optimisation. Check not necessary. 
         }
 
         _mintBatch(msg.sender, loyaltyCardIds, mintNfts, "");
@@ -378,7 +379,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         // 1) set executed to true..
         requestExecuted[digest] = 1;
         // 2) add 1 to nonce
-        s_nonceLoyaltyCard[loyaltyCardAddress] = s_nonceLoyaltyCard[loyaltyCardAddress]++;
+        s_nonceLoyaltyCard[loyaltyCardAddress] = ++s_nonceLoyaltyCard[loyaltyCardAddress];
 
         // Interact.
         // 3) retrieve loyalty points from customer
@@ -452,7 +453,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         // Execute.
         // 1) set executed to true..
         requestExecuted[digest] = 1;
-        s_nonceLoyaltyCard[loyaltyCardAddress] = s_nonceLoyaltyCard[loyaltyCardAddress]++;
+        s_nonceLoyaltyCard[loyaltyCardAddress] = ++s_nonceLoyaltyCard[loyaltyCardAddress];
 
         // Interact.
         // 2) redeem loyalty voucher
