@@ -21,7 +21,7 @@ import {LoyaltyGift} from "../test/mocks/LoyaltyGift.sol";
  * @dev THIS CONTRACT HAS NOT BEEN AUDITED. WORSE: TESTING IS INCOMPLETE. DO NOT DEPLOY ON ANYTHING ELSE THAN A TEST CHAIN! 
  * 
  * @title Loyalty Program 
- * @author Seven Cedars
+ * @author Seven Cedars, based on ERC-1155 implementation by OpenZeppelin.  
  * @notice This contract allows for loyalty *points* to be distributed to loyalty *cards* that 
  *  - are locked in for use with the (single) loyalty *program* that minted the points and cards; 
  *  - points can be exchanged for *gifts* or *vouchers* through __external__ contracts following ILoyaltyGift interface; 
@@ -236,11 +236,11 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
      */
 
     function addLoyaltyGift(address loyaltyGiftAddress, uint256 loyaltyGiftId) public onlyOwner {
-        // CAUSES many reverts :D Needs bug fixing...
-        bytes4 interfaceId = type(ILoyaltyGift).interfaceId;
-        if (loyaltyGiftAddress.supportsInterface(interfaceId) == false) {
-            revert LoyaltyProgram__IncorrectInterface(loyaltyGiftAddress, interfaceId);
-        }
+        // £security £todo: I cannot get supportsInterface interface to work for now. Try again later. 
+        // bytes4 interfaceId = type(ILoyaltyGift).interfaceId;
+        // if (!loyaltyGiftAddress.supportsInterface(0x140b2c57) ) {
+        //     revert LoyaltyProgram__IncorrectInterface(loyaltyGiftAddress, interfaceId);
+        // }
         s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = 1;
         s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] = 1;
         emit AddedLoyaltyGift(loyaltyGiftAddress, loyaltyGiftId);
@@ -384,7 +384,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         // 3) retrieve loyalty points from customer
         _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, "");
         // and 4) transfer voucher.
-        LoyaltyGift(loyaltyGiftAddress).issueLoyaltyGift(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints);
+        LoyaltyGift(loyaltyGiftAddress).issueLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
     }
 
 
@@ -392,7 +392,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
      * @notice redeems loyaltyVoucher for loyalty Gift by calling external contract, using a signed message from customer.
      *
      * @param _voucher description of gift voucher. 
-     * @param loyaltyGiftAddress address of loyalty gift to claim
+     * @param loyaltyGift address of loyalty gift to claim
      * @param loyaltyGiftId id of loyalty gift to claim 
      * @param loyaltyCardId id of loyalty card whose points are used to claim gift. 
      * @param customerAddress address of customer that makes the claim. 
@@ -407,7 +407,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
      */
     function redeemLoyaltyVoucher(
         string memory _voucher,
-        address loyaltyGiftAddress,
+        address loyaltyGift,
         uint256 loyaltyGiftId,
         uint256 loyaltyCardId,
         address customerAddress,
@@ -445,7 +445,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         }
 
         // check if loyalty Voucher is valid.
-        if (s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] == 0) {
+        if (s_LoyaltyVouchersRedeemable[loyaltyGift][loyaltyGiftId] == 0) {
             revert LoyaltyProgram__LoyaltyVoucherInvalid();
         }
 
@@ -456,7 +456,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
 
         // Interact.
         // 2) redeem loyalty voucher
-        LoyaltyGift(loyaltyGiftAddress).reclaimLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
+        LoyaltyGift(loyaltyGift).reclaimLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
     }
 
     /**

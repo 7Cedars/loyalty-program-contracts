@@ -4,6 +4,9 @@ pragma solidity ^0.8.19;
 import {LoyaltyGift} from "./LoyaltyGift.sol";
 import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
 import {ERC1155} from "lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+
 
 /**
  * @dev

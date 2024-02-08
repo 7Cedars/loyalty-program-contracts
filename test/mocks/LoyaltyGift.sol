@@ -1,53 +1,55 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-// NB: see ERC1155 contract from openZeppelin for good example of how to use natspecs.
-//
-import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+// import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol"; // ERC165 not implemented for now. 
+// import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol"; // ERC165 not implemented for now. 
 import {ERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
-import {IERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
 
 /**
- * @title LoyaltyGift
- * @author
- * @notice Counter intutively, this ERC1155 contract can be set to NOT mint any tokens. This is because it is easier (and possibly safer) for Loyalty_Program_
+ * @title Loyalty Gift
+ * @author Seven Cedars, based on ERC-1155 implementation by OpenZeppelin.
+ * 
+ * @notice An ERC-1155 based standard contract that provides requirements for providing gifts; and (optionally) mints tokens that enable delayed exchange of gifts through vouchers. 
+ * @dev This contract provides a standard implementation (of the ILoyaltyGift interface) that can be inhereted by actual gift contracts.  
+ *   
+ * @dev Counter intutively, this ERC1155 contract can be set to NOT mint any vouchers. This is because it is easier (and possibly safer) for Loyalty_Program_
  * contracts to interact with one type of contract, instead of two.
  */
 contract LoyaltyGift is ERC1155, ILoyaltyGift {
     // /* errors */
-    error LoyaltyGift__TokenNotOwnedByCard(address loyaltyToken);
     error LoyaltyGift__NoTokensAvailable(address loyaltyToken);
     error LoyaltyGift__NotTokenised(address loyaltyToken, uint256 loyaltyGiftId);
-    error LoyaltyGift__IllegalRedeem(address mintedAt, address redeemedFrom);
     error LoyaltyGift__TransferDenied(address loyaltyToken);
 
     /* State variables */
     uint256[] private s_tokenised; // 0 == false, 1 == true.
 
-    /* Events */
-
     /* FUNCTIONS: */
+    /**
+     * @notice constructor function. 
+     * 
+     * @param loyaltyTokenUri URI of vouchers. Follows ERC 1155 standard.  
+     * @param tokenised array of 0 and 1's to indicate what gifts have vouchers (= token) and which ones do not. 
+     * 
+     * emits a LoyaltyGiftDeployed event.  
+     */
     constructor(string memory loyaltyTokenUri, uint256[] memory tokenised) ERC1155(loyaltyTokenUri) {
         s_tokenised = tokenised;
         emit LoyaltyGiftDeployed(msg.sender, s_tokenised);
     }
 
-    // receive() external virtual payable {}
-
     /**
-     * @dev See {IERC165-supportsInterface}.
-     */
-    // function _registerInterface(type(ILoyaltyGift).interfaceId); 
-    function supportsInterface(bytes4 interfaceId) public view virtual override (ERC1155, IERC165) returns (bool) {
-        return interfaceId == type(ILoyaltyGift).interfaceId || super.supportsInterface(interfaceId);
-    }
-
-    /**
-     * @dev Here NFT specific requirements are inserted through super statements
-     * in implementations of LoyaltyGift contract.
+     * @notice The cdntral function providing the requirement logics for receiving gifts.  Returns true or false. 
+     * 
+     * @dev In this standard implementation this function always returns true. 
+     * @dev specific loyalty gift implementations should override this function.
+     *
+     * optional inputs are
+     * - loyaltyCard: LoyaltyCard address
+     * - loyaltyGiftId: LoyaltyGift Id 
+     * - loyaltyPoints: number of LoyaltyPoints sent. 
      *
      */
     function requirementsLoyaltyGiftMet(address, /*loyaltyCard*/ uint256, /*loyaltyGiftId*/ uint256 /*loyaltyPoints*/ )
@@ -59,31 +61,44 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     }
 
     /**
+     * @notice mints loyalty vouchers by external EOA or smart contract address. 
+     * 
      * @dev Note that anyone can call this function.
-     * When one token is minted, will emit a TransferSINGLE event.
+     * @dev It checks if gift is tokenised. Reverts if not. 
+     * 
+     * emits a TransferSINGLE event when one type of voucher minted; TransferBatch when multiple are minted. 
+     * £todo: CHECK If this is true!  
      */
     function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) public {
-        // check if any of the loyaltyGiftIds is not tokenised.
         for (uint256 i; i < loyaltyGiftIds.length; i++) {
             if (s_tokenised[loyaltyGiftIds[i]] == 0) {
                 revert LoyaltyGift__NotTokenised(address(this), loyaltyGiftIds[i]);
             }
         }
-
         _mintBatch(msg.sender, loyaltyGiftIds, numberOfTokens, ""); // emits batchtransfer event
     }
 
     /**
+     * 
+     * CONTINUE HERE WITH NATSPECCING 
+     * 
+     */
+
+    /**
+     * @notice transfers loyalty voucher and . 
+     * 
+     * @param loyaltyCard text
+     * @param loyaltyGiftId text
+     * 
      * @dev Note that this function does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract.
      * @dev also does not check if address is TBA / loyaltyCard
      *
      */
-    function issueLoyaltyGift(address loyaltyCard, uint256 loyaltyGiftId, uint256 loyaltyPoints)
+    function issueLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId)
         public
-        returns (bool success)
     {
         if (s_tokenised[loyaltyGiftId] == 0) {
-            return requirementsLoyaltyGiftMet(loyaltyCard, loyaltyGiftId, loyaltyPoints);
+            revert LoyaltyGift__NotTokenised(address(this), loyaltyGiftId);
         }
 
         if (balanceOf(msg.sender, loyaltyGiftId) == 0) {
@@ -91,7 +106,6 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
         }
 
         safeTransferFrom(msg.sender, loyaltyCard, loyaltyGiftId, 1, "");
-        return true; // Yep - reverts and then stops. Do I need this return? If not - take out.
     }
 
     /**

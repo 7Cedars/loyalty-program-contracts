@@ -110,17 +110,19 @@ contract LoyaltyGiftTest is Test {
     function testReturnsTrueForSuccess() public {
         vm.startPrank(addressZero);
         loyaltyGift.mintLoyaltyVouchers(VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
-        bool result = loyaltyGift.issueLoyaltyGift(addressOne, VOUCHERS_TO_MINT[0], AMOUNT_VOUCHERS_TO_MINT[0]);
+        
+        bool result = loyaltyGift.requirementsLoyaltyGiftMet(addressOne, VOUCHERS_TO_MINT[0], 0);
+        
         vm.stopPrank();
 
         assertEq(result, true);
     }
 
-    function testClaimRevertsForNonAvailableTokenisedGift() public {
+    function testIssueVoucherRevertsForNonAvailableTokenisedGift() public {
         vm.expectRevert(
             abi.encodeWithSelector(LoyaltyGift.LoyaltyGift__NoTokensAvailable.selector, address(loyaltyGift))
         );
-        loyaltyGift.issueLoyaltyGift(addressOne, 1, 0);
+        loyaltyGift.issueLoyaltyVoucher(addressOne, 1);
     }
 
     function testIssuingTokenisedGiftEmitsTransferSingleEvent() public {
@@ -135,7 +137,7 @@ contract LoyaltyGiftTest is Test {
 
         vm.startPrank(addressZero);
         loyaltyGift.mintLoyaltyVouchers(VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
-        loyaltyGift.issueLoyaltyGift(addressOne, VOUCHERS_TO_MINT[0], 1);
+        loyaltyGift.issueLoyaltyVoucher(addressOne, VOUCHERS_TO_MINT[0]);
         vm.stopPrank();
     }
 

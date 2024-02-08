@@ -37,16 +37,18 @@ For personal use only.
   - [ ] Polygon zvEVM? 
 
 ## known bugs
-- [ ] @LoyaltyContract: does not check contract signature when adding loyaltygift cvontract addresses. 
+- [ ] @LoyaltyContract: does not check contract interface (ERC-165) when adding loyaltygift contract addresses. I tried to fix this, but somehow couldn't get it to work.  
 - [ ] @LoyaltyContract & LoyaltyCard6551Account: TBAs are linked to 1155 minted NFT. Problem is: these tokens are never fully non-fungible: additional tokens CAN BE MINTED. This means their might by MORE THAN ONE PERSON HAVING ACCESS TO LOYALTY CARDS. See also the check that I do in bespoke ERC6551 account. This is one huge security hole. 
 - [ ] 
 
 ## Optimisations
 - [ ] @LoyaltyProgram, mintLoyaltyCards: can I batch calls to registry? -- this would save A LOT of GAS. 
 - [ ] @All: make sure I use automatic optimisations! 
+- [ ] @LoyaltyCard6551Account: upgrade to AccountV3. See https://github.com/tokenbound/contracts/blob/main/src/AccountV3.sol 
+- [ ] 
 
 ## Improvements
-- [ ] make ownership of LoyaltyProgram more flexible.
+- [ ] make ownership of LoyaltyProgram more flexible. 
 - [ ] Implement account abstraction for customers.  
 - [ ] create range of token contracts, to show off possibilities. (in seperate repo).  
 - [ ] 

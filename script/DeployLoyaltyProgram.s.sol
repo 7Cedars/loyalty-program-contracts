@@ -16,7 +16,7 @@ contract DeployLoyaltyProgram is Script {
     function run() external returns (LoyaltyProgram, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
         string memory name = "Loyalty Program"; 
-        string memory version = "1"; 
+        string memory version = "1";
 
         (, string memory uri,,, address erc65511Registry, address erc65511Implementation,) =
             helperConfig.activeNetworkConfig();
