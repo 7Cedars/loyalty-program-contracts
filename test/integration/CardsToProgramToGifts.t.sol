@@ -3,6 +3,8 @@ pragma solidity ^0.8.19;
 
 import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
+import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
+import {LoyaltyGift} from "../mocks/LoyaltyGift.sol";
 import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
@@ -10,6 +12,13 @@ import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {ERC6551Registry} from "../mocks/ERC6551Registry.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+
+/**
+ * @title Intergation Test Loyalty Cards To Loyalty Programs to Loyalty Gifts  
+ * @author Seven Cedars
+ * @notice Integration tests
+ * @dev For now I did not - at all - focus on efficiency and readability of this code. Focused on covering basic functions. 
+ */
 
 contract CardsToProgramToGiftsTest is Test {
     /* events */
@@ -23,8 +32,11 @@ contract CardsToProgramToGiftsTest is Test {
     using MessageHashUtils for bytes32;
 
     LoyaltyProgram loyaltyProgram;
+    LoyaltyProgram alternativeLoyaltyProgram;
+    LoyaltyGift loyaltyGift; 
     MockLoyaltyGifts mockLoyaltyGifts;
     HelperConfig helperConfig;
+    LoyaltyCard6551Account loyaltyCardAccount; 
 
     uint256[] GIFTS_TO_SELECT = [0, 3, 5];
     uint256[] VOUCHERS_TO_MINT = [3, 5];
@@ -127,9 +139,11 @@ contract CardsToProgramToGiftsTest is Test {
 
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
         (loyaltyProgram, helperConfig) = deployer.run();
+        (alternativeLoyaltyProgram, ) = deployer.run();
         DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts();
         mockLoyaltyGifts = giftDeployer.run();
         address owner = loyaltyProgram.getOwner();
+        address alternativeOwner = alternativeLoyaltyProgram.getOwner();
 
         // an extensive interaction context needed in all tests below.
         // (hence no modifier used)
@@ -154,6 +168,28 @@ contract CardsToProgramToGiftsTest is Test {
 
         loyaltyProgram.safeTransferFrom(owner, customerOneAddress, 1, 1, "");
         vm.stopPrank();
+
+        // Repeat these actions for alternative LoyaltyProgram. 
+        vm.startPrank(alternativeOwner);
+        // Loyalty Program selecting Gifts
+        for (uint256 i = 0; i < GIFTS_TO_SELECT.length; i++) {
+            alternativeLoyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), GIFTS_TO_SELECT[i]);
+        }
+
+        // Loyalty Program minting Loyalty Points, Cards and Vouchers
+        alternativeLoyaltyProgram.mintLoyaltyPoints(POINTS_TO_MINT);
+        alternativeLoyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);
+        alternativeLoyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
+
+        // Loyalty Program Transferring Points to Cards
+        for (uint256 i = 0; i < CARD_IDS.length; i++) {
+            alternativeLoyaltyProgram.safeTransferFrom(
+                alternativeOwner, alternativeLoyaltyProgram.getTokenBoundAddress(CARD_IDS[i]), 0, POINTS_TO_TRANSFER[i], ""
+            );
+        }
+
+        alternativeLoyaltyProgram.safeTransferFrom(alternativeOwner, customerOneAddress, 1, 1, "");
+        vm.stopPrank(); 
     }
 
     ///////////////////////////////////////////////
@@ -602,6 +638,109 @@ contract CardsToProgramToGiftsTest is Test {
         );
     }
 
+    //////////////////////////////////////////////////////
+    ///    Transfer Checks Loyalty Gifts and Voucher   ///
+    //////////////////////////////////////////////////////
+    function testLoyaltyCardCannotClaimAtAnotherProgram() public {
+        uint256 giftId = 3;
+        uint256 loyaltyCardId = 1;
+        // = loyalty card from loyaltyProgram
+        address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
+        address alternativeOwner = alternativeLoyaltyProgram.getOwner();
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
+
+        // customer creates request
+        RequestGift memory message = RequestGift({
+            from: loyaltyCardOne, // card from loyaltyProgram
+            to: address(alternativeLoyaltyProgram), // trying to claim at _alternative_LoyaltyProgram. 
+            gift: "This is a test gift",
+            cost: "1500 points",
+            nonce: 0
+        });
+
+        // customer signs request
+        bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message));
+        console.logBytes32(digest);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOneKey, digest);
+        bytes memory signature = abi.encodePacked(r, s, v);
+
+        // owner of loyaltyprogram uses signature when executing claimLoyaltyGift function.
+        vm.expectRevert(LoyaltyProgram.LoyaltyProgram__RequestInvalid.selector); // £todo specify later.
+        vm.prank(alternativeOwner);
+        alternativeLoyaltyProgram.claimLoyaltyGift(
+            "This is a test gift", // string memory _gift,
+            "1500 points", // string memory _cost,
+            address(mockLoyaltyGifts), // address loyaltyGiftsAddress,
+            giftId, // uint256 loyaltyGiftId,
+            loyaltyCardId, // address loyaltyCardAddress,
+            customerOneAddress, // address customerAddress,
+            2500, // uint256 loyaltyPoints,
+            signature // bytes memory signature
+        );
+    }
+
+    function testVoucherCannotBeRedeemedAtAnotherProgram() public giftClaimedAndVoucherReceived {
+        uint256 giftId = 3;
+        uint256 loyaltyCardId = 1;
+        // = loyalty card from loyaltyProgram
+        address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
+        address alternativeOwner = alternativeLoyaltyProgram.getOwner();
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
+
+        // customer creates request to _alternative_LoyaltyProgram
+        // NB: all the same gifts have been activated - so voucher is also valid in alternativeLoyaltyProgram. 
+        RedeemVoucher memory message = RedeemVoucher({
+            from: loyaltyCardOne,
+            to: address(alternativeLoyaltyProgram),
+            voucher: "This is a test redeem",
+            nonce: 1
+        });
+
+        // customer signs request
+        bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRedeemVoucher(message));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOneKey, digest);
+        bytes memory signature = abi.encodePacked(r, s, v);
+
+        vm.expectRevert(LoyaltyProgram.LoyaltyProgram__RequestInvalid.selector); 
+
+        // owner of loyaltyprogram uses signature when executing claimLoyaltyGift function.
+        vm.prank(alternativeOwner);
+        alternativeLoyaltyProgram.redeemLoyaltyVoucher(
+            "This is a test redeem", // string memory _gift,
+            address(mockLoyaltyGifts), // address loyaltyGiftsAddress,
+            giftId, // uint256 loyaltyGiftId,
+            loyaltyCardId, // address loyaltyCardAddress,
+            customerOneAddress, // address customerAddress,
+            signature // bytes memory signature
+        );
+    }
+
+    function testVouchersCannotBeTransferredBetweenLoyaltyCards() public giftClaimedAndVoucherReceived {
+        uint256 giftId = 3;
+        address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
+        address loyaltyCardTwo = loyaltyProgram.getTokenBoundAddress(2);
+        DOMAIN_SEPARATOR = hashDomainSeparator(); 
+
+        vm.expectRevert(
+            abi.encodeWithSelector(LoyaltyGift.LoyaltyGift__TransferDenied.selector, address(mockLoyaltyGifts))
+        ); 
+        vm.prank(customerOneAddress); 
+        LoyaltyCard6551Account(payable(loyaltyCardOne)).executeCall(
+                payable(address(mockLoyaltyGifts)),
+                0,
+                abi.encodeCall(
+                    mockLoyaltyGifts.safeTransferFrom,
+                    (loyaltyCardOne, loyaltyCardTwo, giftId, 1, "")
+                )
+            );
+
+        
+    }
+
+
+
+
     ///////////////////////////////////////////////
     ///      Helper Functions Voucher           ///
     ///////////////////////////////////////////////
@@ -645,8 +784,10 @@ contract CardsToProgramToGiftsTest is Test {
                 block.chainid, // chainId
                 loyaltyProgram //  0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3 // verifyingContract
             )
-    );
+        );
     }
+
+
 }
 
 // NB: docs on console.logging:  https://book.getfoundry.sh/reference/forge-std/console-log?highlight=console.loguint#console-logging
@@ -659,5 +800,3 @@ contract CardsToProgramToGiftsTest is Test {
 //         vm.prank(customerOne);
 //         loyaltyProgramA.mintLoyaltyPoints(amount);
 //     }
-
-// HERE TEST CLAIM GIFT AND REDEEM TOKEN .

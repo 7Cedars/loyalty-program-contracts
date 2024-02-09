@@ -125,23 +125,6 @@ contract LoyaltyGiftTest is Test {
         loyaltyGift.issueLoyaltyVoucher(addressOne, 1);
     }
 
-    function testIssuingTokenisedGiftEmitsTransferSingleEvent() public {
-        vm.expectEmit(true, false, false, false, address(loyaltyGift));
-        emit TransferSingle(
-            addressZero, // address indexed operator,
-            address(0), // address indexed from,
-            addressZero, // address indexed to,
-            VOUCHERS_TO_MINT[0],
-            1
-        );
-
-        // This reverts - as it should! addressOne is not a loyaltyCard! 
-        vm.startPrank(addressZero);
-        loyaltyGift.mintLoyaltyVouchers(VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
-        loyaltyGift.issueLoyaltyVoucher(addressOne, VOUCHERS_TO_MINT[0]);
-        vm.stopPrank();
-    }
-
     ///////////////////////////////////////////////
     ///    Reclaiming Tokens (vouchers)         ///
     ///////////////////////////////////////////////

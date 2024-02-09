@@ -142,13 +142,13 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
         override
     {
         if (address(0) != from) {
-            if (msg.sender == from) {
-                if (LoyaltyProgram(msg.sender).getBalanceLoyaltyCard(to) == 0)
-                {  revert LoyaltyGift__TransferDenied(address(this)); }
+            if (msg.sender != to) {
+                try LoyaltyProgram(msg.sender).getBalanceLoyaltyCard(to) {}
+                catch { revert LoyaltyGift__TransferDenied(address(this)); }
             }
-            if (msg.sender == to) {
-                if (LoyaltyProgram(msg.sender).getBalanceLoyaltyCard(from) == 0) 
-                {  revert LoyaltyGift__TransferDenied(address(this)); }
+            if (msg.sender != from) {
+                try LoyaltyProgram(msg.sender).getBalanceLoyaltyCard(from) {}
+                catch { revert LoyaltyGift__TransferDenied(address(this)); }
             }
         } 
         super._update(from, to, ids, values);
