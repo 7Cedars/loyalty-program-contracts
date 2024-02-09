@@ -484,36 +484,36 @@ pragma solidity ^0.8.19;
 //     ///         Test Minting Loyalty Gifts     ///
 //     ///////////////////////////////////////////////
 
-//     function testAnyoneCanMintLoyaltyGifts(uint256 numberOfTokens) public {
-//         numberOfTokens = bound(numberOfTokens, 10, 99);
+//     function testAnyoneCanMintLoyaltyGifts(uint256 numberOfVouchers) public {
+//         numberOfVouchers = bound(numberOfVouchers, 10, 99);
 //         uint256 numberTokensBefore1;
 //         uint256 numberTokensAfter1;
 //         uint256 numberTokensBefore2;
 //         uint256 numberTokensAfter2;
 
-//         for (uint256 i = 1; i < numberOfTokens; i++) {
+//         for (uint256 i = 1; i < numberOfVouchers; i++) {
 //             numberTokensBefore1 = numberTokensBefore1 + loyaltyToken.balanceOf(loyaltyProgramAddress, i);
 //         }
 
-//         for (uint256 i = 1; i < numberOfTokens; i++) {
+//         for (uint256 i = 1; i < numberOfVouchers; i++) {
 //             numberTokensBefore2 = numberTokensBefore2 + loyaltyToken.balanceOf(loyaltyProgramAddress, i);
 //         }
 
 //         vm.prank(loyaltyProgramAddress);
-//         loyaltyToken.mintLoyaltyGifts(numberOfTokens);
+//         loyaltyToken.mintLoyaltyGifts(numberOfVouchers);
 //         vm.prank(userOne);
-//         loyaltyToken.mintLoyaltyGifts(numberOfTokens);
+//         loyaltyToken.mintLoyaltyGifts(numberOfVouchers);
 
-//         for (uint256 i = 1; i <= numberOfTokens; i++) {
+//         for (uint256 i = 1; i <= numberOfVouchers; i++) {
 //             numberTokensAfter1 = numberTokensAfter1 + loyaltyToken.balanceOf(loyaltyProgramAddress, i);
 //         }
 
-//         for (uint256 i = 1; i <= numberOfTokens; i++) {
+//         for (uint256 i = 1; i <= numberOfVouchers; i++) {
 //             numberTokensAfter2 = numberTokensAfter2 + loyaltyToken.balanceOf(loyaltyProgramAddress, i);
 //         }
 
-//         assertEq(numberTokensBefore1 + numberOfTokens, numberTokensAfter1);
-//         assertEq(numberTokensBefore2 + numberOfTokens, numberTokensAfter2);
+//         assertEq(numberTokensBefore1 + numberOfVouchers, numberTokensAfter1);
+//         assertEq(numberTokensBefore2 + numberOfVouchers, numberTokensAfter2);
 //     }
 
 //     /////////////////////////////////////////////////////////
@@ -533,17 +533,17 @@ pragma solidity ^0.8.19;
 //     }
 
 //     function testUserCanCheckAvailableTokens() public {
-//         uint256[] memory numberOfTokens;
+//         uint256[] memory numberOfVouchers;
 
 //         vm.prank(loyaltyProgramAddress);
 //         loyaltyToken.mintLoyaltyGifts(20);
 //         vm.prank(loyaltyProgramAddress);
 //         loyaltyToken.claimLoyaltyGift(userOne);
 
-//         numberOfTokens = loyaltyToken.getAvailableTokens(userOne);
+//         numberOfVouchers = loyaltyToken.getAvailableTokens(userOne);
 
-//         for (uint256 i = 1; i < numberOfTokens.length; i++) {
-//             console.logUint(numberOfTokens[i]);
+//         for (uint256 i = 1; i < numberOfVouchers.length; i++) {
+//             console.logUint(numberOfVouchers[i]);
 //         }
 
 //     }

@@ -138,5 +138,5 @@ contract LoyaltyGiftTest is Test {
         loyaltyGift.redeemLoyaltyVoucher(address(0), NON_TOKENISED_TO_MINT[0]);
     }
 
-    /// Further testing at interaction tests.
+    // For further testing, see interaction tests.
 }

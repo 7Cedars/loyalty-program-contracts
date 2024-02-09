@@ -64,36 +64,35 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     /**
      * @notice mints loyalty vouchers by external EOA or smart contract address. 
      * 
+     * @param loyaltyGiftIds array: ids of vouchers to mint 
+     * @param numberOfVouchers array: number of vouchers to mint for each id.  
+     * 
+     * @dev loyaltyGiftIds and numberOfVouchers need to be arrays of the same length.  
      * @dev Note that anyone can call this function.
      * @dev It checks if gift is tokenised. Reverts if not. 
      * 
      * emits a TransferSINGLE event when one type of voucher minted; TransferBatch when multiple are minted. 
      * £todo: CHECK If this is true!  
      */
-    function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) public {
+    function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfVouchers) public {
         for (uint256 i; i < loyaltyGiftIds.length; ) {
             if (s_tokenised[loyaltyGiftIds[i]] == 0) {
                 revert LoyaltyGift__NotTokenised(address(this), loyaltyGiftIds[i]);
             }
         unchecked { ++i; } 
         }
-        _mintBatch(msg.sender, loyaltyGiftIds, numberOfTokens, ""); // emits batchtransfer event
+        _mintBatch(msg.sender, loyaltyGiftIds, numberOfVouchers, ""); // emits batchtransfer event
     }
 
     /**
+     * @notice transfers loyalty voucher from loyalty Program to a loyaltyCard. 
      * 
-     * CONTINUE HERE WITH NATSPECCING 
-     * 
-     */
-
-    /**
-     * @notice transfers loyalty voucher and . 
-     * 
-     * @param loyaltyCard text
-     * @param loyaltyGiftId text
+     * @param loyaltyCard the address of the loyalty Card. 
+     * @param loyaltyGiftId the id of the voucher to be transferred. 
      * 
      * @dev Note that this function does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract.
-     * @dev also does not check if address is TBA / loyaltyCard
+     * @dev same goes for payment in loyalty Points - not included here. 
+     * @dev also does not check if address is TBA / loyaltyCard -- done at safeTransferFrom. 
      *
      */
     function issueLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId)
@@ -111,30 +110,35 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     }
 
     /**
-     * @dev includes check if token was minted by loyalty program that is redeemed from. This means that Loyalty Tokens can be
-     * freely transferred by customers, but can only be redeemed at the program where they were originally minted (and claimed by a customer).
-     *
+     * @notice transfers loyalty voucher from a loyaltyCard to a LoyaltyProgram. 
+     * 
+     * @param loyaltyCard the address of the loyalty Card. 
+     * @param loyaltyGiftId the id of the voucher to be transferred. 
+     * 
+     * @dev adds check if gift is actually tokenised.
      * @dev It does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract.
-     *
-     *
+     * @dev also does not check if address is TBA / loyaltyCard -- see safeTransferFrom for this. 
      */
-    function redeemLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId) public returns (bool success) {
-        // check if this loyaltyGift actually has tokens.
+    function redeemLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId) public {
         if (s_tokenised[loyaltyGiftId] == 0) {
             revert LoyaltyGift__NotTokenised(address(this), loyaltyGiftId);
         }
 
         _safeTransferFrom(loyaltyCard, msg.sender, loyaltyGiftId, 1, "");
-        return true; // TEST if this does not come through when _safeTransferFrom reverts.
     }
 
     /* internal */
     /**
-     * @notice added checks to safeTransfer that tokens can only be transferred between Loyalty Cards and its Loyalty Program. 
-     *  
-     * @dev Vouchers cannot be claimed or redeemed when balance of loyaltypoints on card == 0.  
-     * @dev The check is ignored when vouchers are minted. 
-     * @dev £todo? if the card does not exist at the program; the transfer gets an EVM revert. It's not pretty. Maybe should use try - catch structure. 
+     * @notice added checks to safeTransfer that ensure vouchers can only be transferred between Loyalty Cards and their Loyalty Program. 
+     * 
+     * @param from address from which voucher is send. 
+     * @param to address at which voucher is received. 
+     * @param ids array of voucher ids sent. 
+     * @param values array of amiount of vouchers sent per id.
+     * 
+     * @dev ids and values need to be array of same length.  
+     * @dev The check is ignored when vouchers are minted. It means any address can mint vouchers. But if they lack TBAs, addresses cannot do anything with these vouchers. 
+     * 
      */
     function _update(address from, address to, uint256[] memory ids, uint256[] memory values)
         internal

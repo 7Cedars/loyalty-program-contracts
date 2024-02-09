@@ -26,7 +26,7 @@ interface ILoyaltyGift is IERC1155 {
     /**
      * @dev natspecs TBI
      */
-    function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfTokens) external;
+    function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfVouchers) external;
 
     /**
      * @dev natspecs TBI
@@ -36,5 +36,5 @@ interface ILoyaltyGift is IERC1155 {
     /**
      * @dev natspecs TBI
      */
-    function redeemLoyaltyVoucher(address loyaltyCard, uint256 tokenId) external returns (bool success);
+    function redeemLoyaltyVoucher(address loyaltyCard, uint256 tokenId) external;
 }

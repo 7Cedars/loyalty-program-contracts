@@ -106,10 +106,10 @@ contract Interactions is Script {
         LoyaltyProgram lpInstance,
         address payable loyaltyGiftAddress,
         uint256[] memory loyaltyGiftIds,
-        uint256[] memory numberOfTokens
+        uint256[] memory numberOfVouchers
     ) public {
         vm.startBroadcast();
-        LoyaltyProgram(lpInstance).mintLoyaltyVouchers(loyaltyGiftAddress, loyaltyGiftIds, numberOfTokens);
+        LoyaltyProgram(lpInstance).mintLoyaltyVouchers(loyaltyGiftAddress, loyaltyGiftIds, numberOfVouchers);
         vm.stopBroadcast();
     }
 }
