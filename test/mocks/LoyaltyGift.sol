@@ -42,7 +42,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     }
 
     /**
-     * @notice The cdntral function providing the requirement logics for receiving gifts.  Returns true or false. 
+     * @notice provides the requirement logics for receiving gifts.  Returns true or false. 
      * 
      * @dev In this standard implementation this function always returns true. 
      * @dev specific loyalty gift implementations should override this function.
