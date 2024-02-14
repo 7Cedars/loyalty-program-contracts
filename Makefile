@@ -42,10 +42,12 @@ ANVIL_ARGS_4 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KE
 
 SEPOLIA_FORK_ARGS := --fork-url $(SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS}
 SEPOLIA_FORK_TEST_ARGS := --fork-url $(SEPOLIA_RPC_URL) 
+SEPOLIA_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --account dev_2 --sender ${DEV2_ADDRESS} --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 
-ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
-	NETWORK_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --private-key $(PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
-endif
+# The following (from patrick C) I find a bit overkill.. 
+# ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
+# 	NETWORK_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --account dev_2 --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
+# endif
 
 sepoliaForkTest: 
 #	@forge test --match-test testCustomerCanClaimGift $(SEPOLIA_FORK_TEST_ARGS) -vvvv 
@@ -58,6 +60,17 @@ sepoliaForkDeploy:
 # @forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(SEPOLIA_FORK_ARGS)
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(SEPOLIA_FORK_ARGS)
 	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(SEPOLIA_FORK_ARGS)
+
+sepoliaDeploy:
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(SEPOLIA_ARGS)
+	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(SEPOLIA_ARGS)
+
+anvilAll: 
+	@forge script script/DeployRegistry.s.sol:DeployRegistry $(ANVIL_ARGS_0)
+	@forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(ANVIL_ARGS_0)
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ANVIL_ARGS_1)
+	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(ANVIL_ARGS_4)
+	@forge script script/Interactions.s.sol:Interactions $(ANVIL_ARGS_1)
 
 anvilInitiate:
 	@forge script script/DeployRegistry.s.sol:DeployRegistry $(ANVIL_ARGS_0)
@@ -74,5 +87,8 @@ anvilInteractions:
 
 # cast abi-encode "constructor(uint256)" 1000000000000000000000000 -> 0x00000000000000000000000000000000000000000000d3c21bcecceda1000000
 # Update with your contract address, constructor arguments and anything else
+
+
+
 verify:
 	@forge verify-contract --chain-id 11155111 --num-of-optimizations 200 --watch --constructor-args 0x00000000000000000000000000000000000000000000d3c21bcecceda1000000 --etherscan-api-key $(ETHERSCAN_API_KEY) --compiler-version v0.8.19+commit.7dd6d404 0x089dc24123e0a27d44282a1ccc2fd815989e3300 src/OurToken.sol:OurToken

@@ -1,12 +1,14 @@
-// // SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 
-// // define invariants that should always hold:
+// define invariants that should always hold:
 
-// // 1a. Loyalty points and Tokens only act as means of exchange between LoyaltyProgram and the loyalty Cards it minted.
-// // 1b. Supply of tokens, points, cards is limited by amount minted by loyalty program only.
-// // 2a. Token issuers can only mint loyaltyTokens - within set parameters.
-// // 2b. Token issuers supply is unlimited.
-// // 3. getter view functions should never revert.
+// Core assumption that should ALWAYS HOLD: loyalty program as closed system, despite use TBAs and external gift contracts.
+// Concretely: 
+// 1. Amount of minted points should ALWAYS equal sum of points on cards minted + owner loyalty Program.  
+// 2. Amount of minted vouchers should ALWAYS equal sum of vouchers on cards minted + loyalty Program.
+// Also: 
+// 3. getter view functions should never revert.
+//
 
 // pragma solidity ^0.8.19;
 

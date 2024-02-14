@@ -1,5 +1,18 @@
-// // SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 // pragma solidity ^0.8.19;
+
+// needs a setup / constructor that 
+// - set ups 0 - 5 loyalty programs 
+// - set ups 1 - 3 loyalty gift programs. 
+// modifier that has programs select, mint 0 - many points, cards, vouchers. 
+
+// Functions: 
+// - safe transfer any token id to any (card, program) address that emerged from setup.    
+// - claim gifts from loyalty card at any loyalty program 
+// - redeem voucher (if availabe at card) at any loyalty program. 
+
+// if max 5 loyalty programs, should still be about 20% succesful :D  
+
 
 // import {Test} from "forge-std/Test.sol";
 // import {StdInvariant} from "forge-std/StdInvariant.sol";
@@ -19,6 +32,8 @@
 //         loyaltyPrograms = _loyaltyPrograms;
 //         loyaltyTokens = _loyaltyTokens;
 //   }
+
+// needs modifier: if no cards, vouchers or poiints: mint, select gifts, mint vouchers. 
 
 //   function mintPointsCardsAndTokens(uint256 seedPoints, uint256 seedCards, uint256 seedToken) public {
 
