@@ -25,24 +25,30 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
   DeployLoyaltyProgram deployerLP;
   DeployMockLoyaltyGifts deployerLG;
   ContinueOnRevertHandler continueOnRevertHandler;
-
   struct ProgramData {
     LoyaltyProgram loyaltyProgram; 
+    address owner; 
     address[] loyaltyCards; 
     HelperConfig config; 
   }
+  ProgramData[] programDatas;
+  LoyaltyProgram[] loyaltyPrograms; 
   LoyaltyGift[] loyaltyGifts;
-  ProgramData[] loyaltyPrograms;
-  
+  address[] cardAddresses;
+  address[] allCardAddresses;  
   LoyaltyProgram loyaltyProgram; 
   HelperConfig helperConfig; 
-  address[] cardAddresses; 
   
   function setUp() external {
     deployerLP = new DeployLoyaltyProgram();
     deployerLG = new DeployMockLoyaltyGifts();
-    
-    uint256 numberLoyaltyPrograms = 3; // number of LoyaltyPrograms that will be deployed.
+
+    // implement fuzzing later. 
+    // seedPoints = bound(seedPoints, 5000, 50000000);
+    // seedCards = bound(seedCards, 2, 12);
+    // seedToken = bound(seedToken, 1, 25);
+    // NB: just use "seed % 3 == 0, 1, 2," kind of logic" See Patrick C 3:56 //  
+    uint256 numberprogramDatas = 3; // number of programDatas that will be deployed.
     uint256 numberLoyaltyGifts = 4; // number of LoyaltyGifts that will be deployed.
     uint256 numberLoyaltyCards = 5; // number of LoyaltyGifts that will be deployed.
 
@@ -50,78 +56,90 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
     for (uint256 j = 0; j < numberLoyaltyGifts; j++) { loyaltyGifts.push(deployerLG.run()); }
     
     // deploying loyaltyProgram contracts + loyaltyCards
-    for (uint256 i = 0; i < numberLoyaltyPrograms; i++) { 
+    for (uint256 i = 0; i < numberprogramDatas; i++) { 
       (loyaltyProgram, helperConfig) = deployerLP.run(); // NB I am NOT saving config file here. 
+       uint256 initialSupply; 
+      ( , , initialSupply, , , , ) = helperConfig.activeNetworkConfig(); 
+
+      vm.startPrank(loyaltyProgram.getOwner()); 
       loyaltyProgram.mintLoyaltyCards(numberLoyaltyCards); 
+      loyaltyProgram.mintLoyaltyPoints(initialSupply); // I can do this simpler and more dynamically. 
+      vm.stopPrank(); 
+      
       cardAddresses = new address[](0);  
       for (uint256 j = 0; j < numberLoyaltyCards; j++) { 
-        cardAddresses.push(loyaltyProgram.getTokenBoundAddress(i)); 
-        }
-
-      loyaltyPrograms.push(ProgramData(
+        address tempAddress = loyaltyProgram.getTokenBoundAddress(j); 
+        cardAddresses.push(tempAddress);
+        allCardAddresses.push(tempAddress); 
+      }
+      address owner = loyaltyProgram.getOwner(); 
+      loyaltyPrograms.push(loyaltyProgram); 
+      
+      programDatas.push(ProgramData(
         loyaltyProgram, 
-        cardAddresses, 
+        owner, 
+        cardAddresses,  
         helperConfig
       )); 
     }
  
-    continueOnRevertHandler = new ContinueOnRevertHandler(loyaltyPrograms, loyaltyGifts, helperConfig); // (add here the contracts I need)
-//     targetContract(address(continueOnRevertHandler));
+    continueOnRevertHandler = new ContinueOnRevertHandler(loyaltyPrograms, allCardAddresses, loyaltyGifts, helperConfig); // (add here the contracts I need)
+    targetContract(address(continueOnRevertHandler));
   }
 
   // Invariant 1: Points minted at LoyaltyProgram can never end up at LoyaltyCards affiliated with another LoyaltyProgram.
   function invariant_pointsStayWithinLoyaltyProgram() public view {
 
-    for (uint256 i = 0; i < loyaltyPrograms.length; i++) { 
-      ProgramData programData; 
-      address[] addresses; 
-      uint256[] balances; 
-      uint256 sumBalances; 
-      
-      // create array if addresses of loyalty Cards + program owner 
-      programData = loyaltyPrograms[i]; 
-      addresses = programData.loyaltyCards; 
-      addresses.push(loyaltyPrograms[i].getOwner()); 
-      // and array of 0 of length addresses array (0 = id for points). 
-      uint256[addresses.length] pointsIds; 
+    for (uint256 i = 0; i < programDatas.length; i++) { 
+      ProgramData memory programData; 
+      uint256[] memory cardBalances; 
+      uint256 sumCardBalances; 
+      uint256 ownerBalance; 
+      uint256 initialSupply; 
+
+      programData = programDatas[i];
+      uint256[] memory pointsIds = new uint256[](programData.loyaltyCards.length);
+      ( , , initialSupply, , , , ) = programData.config.activeNetworkConfig(); 
 
       // using these two arrays get balances of cards and owners  
-      balances = loyaltyPrograms[i].balanceOfBatch(cardAddresses, pointsIds);
+      cardBalances = programData.loyaltyProgram.balanceOfBatch(programData.loyaltyCards, pointsIds);
+      ownerBalance = programData.loyaltyProgram.balanceOf(programData.loyaltyProgram.getOwner(), 0);
       
       // Sum all balances.. 
-      sumBalances = 0; 
-      for (uint256 i = 0; i < balances.length; i++) { sumBalances + balances[i]; }
+      sumCardBalances = 0; 
+      for (uint256 j = 0; j < cardBalances.length; j++) { sumCardBalances = sumCardBalances + cardBalances[j]; }
       
       // assert: sum of all balances should be same as initial supply. 
       // (I do not mint new points in test at this stage - can implement later). 
-      assert (sumBalances = programData.config.initialSupply); 
+      assert(sumCardBalances + ownerBalance == initialSupply); 
     }
   }
+}
 
   // Invariant 2: Gifts minted by LoyaltyProgram can never be redeemed at another LoyaltyProgram.
-  function invariant_VouchersStayWithinLoyaltyProgram() public view {
+  // function invariant_VouchersStayWithinLoyaltyProgram() public view {
   
   
-  }
+  // }
 
   // Invariant 3: Getter functions cannot revert.
   // This should be taken out of this inariant test, and be part of the "FailOnRevertInvariants"
 
 //     function invariant_gettersCannotRevert() public view {
-//       for (uint256 i = 0; i < loyaltyPrograms.length; i++) {
-//           uint256 numberLCs = loyaltyPrograms[i].getNumberLoyaltyCardsMinted();
+//       for (uint256 i = 0; i < programDatas.length; i++) {
+//           uint256 numberLCs = programDatas[i].getNumberLoyaltyCardsMinted();
 //           console.log("numberLCs: ", numberLCs);
 
-//           loyaltyPrograms[i].getLoyaltyGiftsIsClaimable(address(loyaltyGifts[0]), 0);
-//           loyaltyPrograms[i].getLoyaltyGiftsIsRedeemable(address(loyaltyGifts[0]), 0);
-//           loyaltyPrograms[i].getOwner();
+//           programDatas[i].getLoyaltyGiftsIsClaimable(address(loyaltyGifts[0]), 0);
+//           programDatas[i].getLoyaltyGiftsIsRedeemable(address(loyaltyGifts[0]), 0);
+//           programDatas[i].getOwner();
 
 //           for (uint256 j = 0; j < numberLCs; j++) {
 //             address tbaAddress; 
-//             tbaAddress = loyaltyPrograms[i].getTokenBoundAddress(i);
+//             tbaAddress = programDatas[i].getTokenBoundAddress(i);
 
-//             loyaltyPrograms[i].getNonceLoyaltyCard(tbaAddress);
-//             loyaltyPrograms[i].getBalanceLoyaltyCard(tbaAddress);
+//             programDatas[i].getNonceLoyaltyCard(tbaAddress);
+//             programDatas[i].getBalanceLoyaltyCard(tbaAddress);
 //             }
 //           }
 //         }

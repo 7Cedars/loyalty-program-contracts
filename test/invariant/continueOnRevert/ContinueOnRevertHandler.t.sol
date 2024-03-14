@@ -15,7 +15,8 @@ pragma solidity ^0.8.19;
 // Note: should also test for scenarios where no program or gifts exist 
 
 
-import {Test} from "forge-std/Test.sol";
+// import {Test} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {DeployLoyaltyProgram} from "../../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../../script/DeployLoyaltyGifts.s.sol";
@@ -23,25 +24,134 @@ import {LoyaltyProgram} from "../../../src/LoyaltyProgram.sol" ;
 import {LoyaltyGift} from "../../mocks/LoyaltyGift.sol" ;
 import {HelperConfig} from "../../../script/HelperConfig.s.sol" ;
 
-contract ContinueOnRevertHandler is Test {
+contract ContinueOnRevertHandler is Test  {
   DeployLoyaltyProgram deployerLP;
   DeployMockLoyaltyGifts deployerLT;
-  struct ProgramData {
-    LoyaltyProgram loyaltyProgram; 
-    address[] loyaltyCards; 
-    HelperConfig config; 
-  }
-  ProgramData[] loyaltyPrograms;
-  LoyaltyGift[] loyaltyTokens;
+
+  LoyaltyProgram[] loyaltyPrograms;
+  address[] loyaltyCards;
+  LoyaltyGift[] loyaltyGifts;
+  
   HelperConfig helperConfig; 
   ContinueOnRevertHandler handler;
   uint256 numberLCards; 
+
+  // first programs needs to select gift programs. 
   
-  constructor(ProgramData[] memory _loyaltyPrograms, LoyaltyGift[] memory _loyaltyTokens, HelperConfig _helperConfig) {
-        loyaltyPrograms = _loyaltyPrograms;
-        loyaltyTokens = _loyaltyTokens;
-        helperConfig = _helperConfig;
-  }
+  constructor(
+    LoyaltyProgram[] memory _loyaltyPrograms,  
+    address[] memory _loyaltyCards,  
+    LoyaltyGift[] memory _loyaltyGifts, 
+    HelperConfig _helperConfig
+    ) {
+      loyaltyPrograms = _loyaltyPrograms;
+      loyaltyCards = _loyaltyCards; 
+      loyaltyGifts = _loyaltyGifts;
+      helperConfig = _helperConfig;
+    }
+
+    // some functions need to run more often than others 
+    // NB: this does not change the seed values - meaning it just reruns the exact same call - which is pretyy much useless..  
+    modifier runsMultipliedBy (uint256 multiplier) {
+      for (uint256 i = 0; i < multiplier; i++) { 
+        _; 
+      }
+    } 
+
+    // have Program select and mint vouchers 
+    // -- needs to result in sufficient amount of selections. 
+    function selectLoyaltyGiftAndMintVouchers(
+      uint256 loyaltyProgramSeed, 
+      uint256 giftProgramSeed,
+      uint256 giftIdSeed, 
+      uint256 mintSeed 
+      ) public {
+        LoyaltyProgram loyaltyProgram = _getLoyaltyProgram(loyaltyProgramSeed); 
+        LoyaltyGift giftProgram = _getGiftProgram(giftProgramSeed); 
+        // this is all still a bit convoluted
+        uint256[] memory tokenised = giftProgram.getTokenised();
+        uint256 giftId = giftIdSeed % tokenised.length;
+        uint256[] memory voucherIds = new uint256[](1); 
+        uint256[] memory voucherMints  = new uint256[](1);
+        voucherIds[0] = giftId; 
+        voucherMints[0] = mintSeed % 15; 
+
+        vm.prank(loyaltyProgram.getOwner()); 
+          loyaltyProgram.addLoyaltyGift(address(giftProgram), giftId); 
+
+        if (tokenised[giftId] == 1) {
+          vm.prank(loyaltyProgram.getOwner()); 
+          loyaltyProgram.mintLoyaltyVouchers(
+            address(giftProgram), 
+            voucherIds, 
+            voucherMints
+            ); 
+          }
+    }
+
+    /**
+     * @notice loyaltyPrograms transfer points to ANY known card address
+     * 
+     * @dev the max amount is now set to 5000. Note absent check on amount points program. 
+     * 
+     */
+    function distributePoints(
+      uint256 loyaltyProgramSeed, 
+      uint256 loyaltyCardSeed, 
+      uint256 amountPointsSeed
+      ) public {
+      LoyaltyProgram loyaltyProgram = _getLoyaltyProgram(loyaltyProgramSeed);
+      address loyaltyCard = loyaltyCards[loyaltyCardSeed % loyaltyCards.length]; 
+      uint256 amountPoints = amountPointsSeed % 5000; 
+      address owner = loyaltyProgram.getOwner();
+
+      vm.prank(owner); 
+      loyaltyProgram.safeTransferFrom(
+        owner, 
+        loyaltyCard, 
+        0, 
+        amountPoints, 
+        ""
+      ); 
+    }
+
+    // // have a random card try to transfer to random other known address: card, program or gift contract 
+    // function transferPoints(
+    //   uint256 loyaltyCardSeed, 
+    //   uint256 loyaltyProgramSeed, 
+      
+    //   uint256 amountPointsSeed
+    // ) public {
+
+    // }
+
+    // // have ANY known card try to claim gift at ANY known loyalty Program
+    // function claimGifts() public {
+
+    // }
+
+    // // have ANY known card with voucher try to redeem voucher at ANY known loyalty Program
+    // function redeemVoucher() public {
+
+    // }
+
+
+    // Helper Functions 
+    function _getLoyaltyProgram( uint256 loyaltyProgramSeed ) private view returns (LoyaltyProgram) 
+    {
+      return loyaltyPrograms[loyaltyProgramSeed % loyaltyPrograms.length];
+      }
+
+    function _getGiftProgram( uint256 giftProgramSeed ) private view returns (LoyaltyGift) 
+    {
+      return loyaltyGifts[giftProgramSeed % loyaltyGifts.length];
+      }
+
+    // NB: I DO need a list of ALL loyalty Card Addresses! 
+    function _getLoyaltyCard( uint256 loyaltyCardSeed ) private view returns (address) 
+    {
+      return loyaltyCards[loyaltyCardSeed % loyaltyCards.length];
+      }
 
 } 
 
@@ -58,9 +168,9 @@ contract ContinueOnRevertHandler is Test {
 //       loyaltyPrograms[i].mintLoyaltyPoints(seedPoints);
 //       loyaltyPrograms[i].mintLoyaltyCards(seedCards);
 
-//       for (uint j; j < loyaltyTokens.length; j++) {
-//         loyaltyPrograms[i].addLoyaltyGiftContract(payable(address(loyaltyTokens[j])));
-//         loyaltyPrograms[i].mintLoyaltyGifts(payable(address(loyaltyTokens[j])), seedToken);
+//       for (uint j; j < loyaltyGifts.length; j++) {
+//         loyaltyPrograms[i].addLoyaltyGiftContract(payable(address(loyaltyGifts[j])));
+//         loyaltyPrograms[i].mintLoyaltyGifts(payable(address(loyaltyGifts[j])), seedToken);
 //       }
 //       vm.stopPrank();
 //     }
