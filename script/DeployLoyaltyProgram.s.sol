@@ -22,12 +22,12 @@ contract DeployLoyaltyProgram is Script {
             helperConfig.activeNetworkConfig();
 
         vm.startBroadcast();
-        loyaltyProgram = new LoyaltyProgram(
-        uri, 
-        name,
-        version,
-        erc65511Registry,
-        payable(erc65511Implementation)
+            loyaltyProgram = new LoyaltyProgram(
+            uri, 
+            name,
+            version,
+            erc65511Registry,
+            payable(erc65511Implementation)
         );
         vm.stopBroadcast();
 

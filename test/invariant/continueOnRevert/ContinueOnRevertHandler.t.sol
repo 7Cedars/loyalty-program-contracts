@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.19;
+pragma solidity ^0.8.19;
 
 // needs a setup / constructor that 
-// - set ups 0 - 5 loyalty programs 
-// - set ups 1 - 3 loyalty gift programs. 
+// - set ups 0 - 3 loyalty programs 
+// - set ups 0 - 3 loyalty gift programs. 
 // modifier that has programs select, mint 0 - many points, cards, vouchers. 
 
 // Functions: 
@@ -11,27 +11,39 @@
 // - claim gifts from loyalty card at any loyalty program 
 // - redeem voucher (if availabe at card) at any loyalty program. 
 
-// if max 5 loyalty programs, should still be about 20% succesful :D  
+// if max 3 loyalty programs, should still be about 30% succesful :D  
+// Note: should also test for scenarios where no program or gifts exist 
 
 
-// import {Test} from "forge-std/Test.sol";
-// import {StdInvariant} from "forge-std/StdInvariant.sol";
-// import {DeployLoyaltyProgram} from "../../../script/DeployLoyaltyProgram.s.sol";
-// import { DeployLoyaltyGifts } from "../../../script/DeployLoyaltyGifts.s.sol";
-// import {LoyaltyProgram} from "../../../src/LoyaltyProgram.sol" ;
-// import {LoyaltyGift} from "../../../src/LoyaltyGift.sol" ;
+import {Test} from "forge-std/Test.sol";
+import {StdInvariant} from "forge-std/StdInvariant.sol";
+import {DeployLoyaltyProgram} from "../../../script/DeployLoyaltyProgram.s.sol";
+import {DeployMockLoyaltyGifts} from "../../../script/DeployLoyaltyGifts.s.sol";
+import {LoyaltyProgram} from "../../../src/LoyaltyProgram.sol" ;
+import {LoyaltyGift} from "../../mocks/LoyaltyGift.sol" ;
+import {HelperConfig} from "../../../script/HelperConfig.s.sol" ;
 
-// contract ContinueOnRevertHandler is Test {
-//   DeployLoyaltyProgram deployerLP;
-//   DeployLoyaltyGift deployerLT;
-//   LoyaltyProgram[] loyaltyPrograms;
-//   LoyaltyGift[] loyaltyTokens;
-//   ContinueOnRevertHandler handler;
+contract ContinueOnRevertHandler is Test {
+  DeployLoyaltyProgram deployerLP;
+  DeployMockLoyaltyGifts deployerLT;
+  struct ProgramData {
+    LoyaltyProgram loyaltyProgram; 
+    address[] loyaltyCards; 
+    HelperConfig config; 
+  }
+  ProgramData[] loyaltyPrograms;
+  LoyaltyGift[] loyaltyTokens;
+  HelperConfig helperConfig; 
+  ContinueOnRevertHandler handler;
+  uint256 numberLCards; 
+  
+  constructor(ProgramData[] memory _loyaltyPrograms, LoyaltyGift[] memory _loyaltyTokens, HelperConfig _helperConfig) {
+        loyaltyPrograms = _loyaltyPrograms;
+        loyaltyTokens = _loyaltyTokens;
+        helperConfig = _helperConfig;
+  }
 
-//   constructor(LoyaltyProgram[] memory _loyaltyPrograms, LoyaltyGift[] memory _loyaltyTokens) {
-//         loyaltyPrograms = _loyaltyPrograms;
-//         loyaltyTokens = _loyaltyTokens;
-//   }
+} 
 
 // needs modifier: if no cards, vouchers or poiints: mint, select gifts, mint vouchers. 
 
