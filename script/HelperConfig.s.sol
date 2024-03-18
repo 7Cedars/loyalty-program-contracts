@@ -39,7 +39,10 @@ contract HelperConfig is Script {
         // if (block.chainid == 421614) {
         //     activeNetworkConfig = getArbitrumSepoliaEthConfig(); // Arbitrum testnetwork
         // }
-        // if (block.chainid == 80001) {
+        // if (block.chainid == 80001) { // should be base 
+        //     activeNetworkConfig = getMumbaiMaticConfig(); // Polygon testnetwork / POS. See Blueberry and Cardona networks for ZkEvm.
+        // }
+        // if (block.chainid == 80001) { // should be base 
         //     activeNetworkConfig = getMumbaiMaticConfig(); // Polygon testnetwork / POS. See Blueberry and Cardona networks for ZkEvm.
         // }
         else {
