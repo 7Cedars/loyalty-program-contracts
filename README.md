@@ -86,7 +86,7 @@ Loyalty cards themselves are freely transferable.
 
 See the following schema for more detail:
 
-  <a href="https://github.com/7Cedars/loyalty-program-contracts"> 
+  <a href="https://github.com/7Cedars/loyalty-program-contracts/public/PoC_ Modular Loyalty program.png"> 
     <img src="public/PoC_ Modular Loyalty program.png" alt="Schema Protocol" width="100%" height="100%">
   </a>
 
