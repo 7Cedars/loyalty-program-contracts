@@ -22,7 +22,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/7Cedars/loyalty-program-contracts"> 
-    <img src="public/images/iconLoyaltyProgram.svg" alt="Logo" width="80" height="80">
+    <img src="public/iconLoyaltyProgram.svg" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">Loyal: A Solidity Protocol for Web3 Customer Engagement Programs</h3>
@@ -74,21 +74,31 @@
 ## About The Project
 A fully open source solidity protocol for real-world customer engagment.
 
-- The first protocol sets out a standard for loyalty programs: an ERC-1155 based contract that mints points and non-fungible loyalty cards. The latter are registered as ERC-6551 Token Based Accounts and accumulate loyalty points. See [this repository](https://github.com/7Cedars/loyalty-program-contracts) for an example implementation. 
-- The second protocol sets out a standard for contracts that exchange points for gifts or vouchers. Gift contracts can be used in any loyalty program. See [this repository](https://github.com/7Cedars/loyalty-gifts-contracts) for an example implementation.
+This protocol sets out a standard for loyalty programs: ERC-1155 based contracts that mint (fungible) points and (non-fungible) loyalty cards.
+Loyalty Cards are implemented as ERC-6551 Token Based Accounts that accumulate loyalty points. 
+See [this repository](https://github.com/7Cedars/loyalty-program-contracts) for an example implementation. 
 
-Crucially, interactions between the two protocols are bounded: points and vouchers that are minted by a loyalty program can only be used among its own loyalty cards. Loyalty cards themselves are freely transferable.
+Loyalty programs interact with a second protocol that sets out a standard for contracts - loyalty gift contracts - that exchange points for gifts or vouchers.
+For this protocol, see [this repository](https://github.com/7Cedars/loyalty-gifts-contracts) for example implementations.
 
-A front-end dApp demonstration of a web3 protocol for customer engagement. Try it out [here](https://loyalty-program-psi.vercel.app/). 
+Crucially, interactions between the two protocols are bounded: points and vouchers that are minted by a loyalty program can only be used among its own loyalty cards. 
+Loyalty cards themselves are freely transferable.
+
+See the following schema for more detail:
+
+  <a href="https://github.com/7Cedars/loyalty-program-contracts"> 
+    <img src="public/PoC_ Modular Loyalty program.png" alt="Schema Protocol" width="100%" height="100%">
+  </a>
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
 <!-- See for a list of badges: https://github.com/Envoy-VC/awesome-badges -->
-* [![Next][Next.js]][Next-url]  
-* [![React][React.js]][React-url] 
-* [![Redux][Redux]][Redux-url]  
-* [![Tailwind][Tailwind-css]][Tailwind-url]
+<!-- * [![React][React.js]][React-url]  -->
+* Solidity 0.8.19
+* Foundry 0.2.0
+* OpenZeppelin 5.0
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -100,12 +110,16 @@ To get a local copy up and running do the following.
 
 ### Prerequisites
 
-  Npm and yarn
+  Install Foundry
   ```sh
-  npm install --global npm@latest yarn  
+  $ curl -L https://foundry.paradigm.xyz | bash
   ```
 
-### Installation
+  ```sh
+  $ foundryup
+  ```
+
+### Clone the repository
 <!-- NB: I have to check if I missed anyting £todo -->
 
 1. Get a free alchemy API Key at [alchemy.com](https://docs.alchemy.com/docs/alchemy-quickstart-guide)
@@ -133,7 +147,8 @@ To get a local copy up and running do the following.
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-This dApp is deployed at [loyalty-program-psi.vercel.app](https://loyalty-program-psi.vercel.app/). 
+A front-end dApp demonstration of a web3 protocol for customer engagement. Try it out [here](https://loyalty-program-psi.vercel.app/). 
+
 
 The repository consists of two dApps 
 - A vendor dApp in which loyalty points and loyalty cards can be minted; loyalty gifts can be selected and gift vouchers minted; and a Qrcode scanner to read customer requests. It also provides a transaction overview. 
@@ -198,7 +213,7 @@ GitHub profile [https://github.com/7Cedars](https://github.com/7Cedars)
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* [React course Full stack dev... ]() <!-- React course Full stack dev  -->
+* [Tokenbound](https://docs.tokenbound.org/)
 * [Readme File... ]() <!-- This readme file, page -->
 * [SpeedRunEthereum]() <!-- SpeedRunEthereum -->
 

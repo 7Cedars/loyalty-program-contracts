@@ -248,11 +248,12 @@ contract ContinueOnRevertHandlerCards is Test  {
       uint256 selectedCardId;
       LoyaltyGift selectedLoyaltyGift;
       uint256 cardBalance;
-      // Log[] memory entries = vm.getRecordedLogs(); -- cannot get this to work yet. 
+      // Log[] memory entries = vm.getRecordedLogs(); -- cannot get this to work yet. (hence very convoluted nested loop below)
 
       // // find a card that has a voucher at a specific loyalty program . 
-      for (uint256 loyaltyCardId; loyaltyCardId < loyaltyCards.length; loyaltyCardId++) {
-        for (uint256 i; i < loyaltyGifts.length; i++) {
+      bool breakOuterLoops = false;
+      for (uint256 loyaltyCardId = 0; loyaltyCardId < loyaltyCards.length; loyaltyCardId++) {
+        for (uint256 i = 0; i < loyaltyGifts.length; i++) {
           for (uint256 voucherId = 2; voucherId < 6; voucherId++) {
             // find a voucher that is owned. 
             cardBalance = loyaltyGifts[i].balanceOf(loyaltyCards[loyaltyCardId], voucherId);
@@ -261,8 +262,22 @@ contract ContinueOnRevertHandlerCards is Test  {
               selectedCardId = loyaltyCardId; 
               selectedVoucherId = voucherId; 
               selectedLoyaltyGift = loyaltyGifts[i]; 
+
+              console.log("Going to attempt with following data:");  
+              console.logUint(selectedCardId); 
+              console.logUint(selectedVoucherId); 
+              console.logAddress(address(selectedLoyaltyGift)); 
+              
+              breakOuterLoops = true;
+              break; 
               } 
           }
+          if(breakOuterLoops) {
+                break;
+            }
+        }
+        if(breakOuterLoops) {
+            break;
         }
       }
       
@@ -281,16 +296,19 @@ contract ContinueOnRevertHandlerCards is Test  {
       address selectedUser = userAddresses[selectedCardId];  
       address programOwner = _getLoyaltyProgram(indexSeed).getOwner(); 
       
-      console.log("attemped redeem."); 
+      console.log("attempt redeem."); 
       vm.prank(programOwner);
-      _getLoyaltyProgram(indexSeed).redeemLoyaltyVoucher(
+      try _getLoyaltyProgram(indexSeed).redeemLoyaltyVoucher(
         "This is a test redeem", // string memory _gift,
         address(selectedLoyaltyGift), // address loyaltyGiftsAddress,
         selectedVoucherId, // uint256 loyaltyGiftId,
         selectedCardId,  // indexSeed + 1, // uint256 loyaltyCardId,
         selectedUser, // userAddresses[indexSeed % userAddresses.length], // address customerAddress,
         signature
-        ); // bytes memory signature
+        ) {} 
+        catch {
+          console.log("attempt failed."); 
+        } // bytes memory signature
     }
             
     // Helper Functions 
