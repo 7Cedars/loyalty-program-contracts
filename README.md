@@ -123,26 +123,28 @@ To get a local copy up and running do the following.
 <!-- NB: I have to actually follow these steps and check if I missed anyting £todo -->
 
 1. Get a free alchemy API Key at [alchemy.com](https://docs.alchemy.com/docs/alchemy-quickstart-guide)
-2. Setup a project at walletConnect cloud [WalletConnect](https://cloud.walletconnect.com/app) and create a wallet ID.  
-3. Clone the repo
-   ```sh
+2. Clone the repo
+  ```sh
    git clone https://github.com/7Cedars/loyalty-program-contracts.git
    ```
-4. Install packages
-   ```sh
+3. Install packages
+  ```sh
    yarn add
    ```
 
 ### Run the test and build the contracts
-5. ```sh
+4. Run tests
+  ```sh
   $ forge test
    ```
-6. ```sh
+5. Build contracts
+  ```sh
    $ forge build
    ```
 
-### Deploy (on an EVM compatible Chain)
-7. ```sh
+### Deploy
+6. Run deploy script at an EVM compatible Chain
+  ```sh
    $ forge script --fork-url <RPC_URL> script/DeployLoyaltyProgram.s.sol --broadcast
    ```
 
@@ -152,15 +154,15 @@ To get a local copy up and running do the following.
 <!-- USAGE EXAMPLES -->
 ## Usage
 A front-end dApp demonstration of this web3 protocol has been deployed on vercel.com. 
-Try it out at [[here](https://loyalty-program-psi.vercel.app/)](https://loyalty-program-psi.vercel.app/). 
+Try it out at [https://loyalty-program-psi.vercel.app/](https://loyalty-program-psi.vercel.app/). 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Further develop testing. Basic unit, integration and invariant tests have been implemented, but fuzz tests not yet.
-- [ ] Implement  
+- [ ] Further develop testing. Basic unit, integration and invariant tests have been implemented, but fuzz tests not yet. Test coverage is only around 50 percent.  
+- [ ] Implement deployment to multiple testnets. 
 - [ ] ... 
 
 See the [open issues](https://github.com/7Cedars/loyalty-program-contracts/issues) for a full list of proposed features (and known issues).
@@ -203,10 +205,12 @@ GitHub profile [https://github.com/7Cedars](https://github.com/7Cedars)
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
-* [PatrickCollins]() 
-* [Tokenbound](https://docs.tokenbound.org/)
-* [Readme File... ]() <!-- This readme file, page -->
-* [SpeedRunEthereum]() <!-- SpeedRunEthereum -->
+* This project was build while following [PatrickCollins](https://www.youtube.com/watch?v=wUjYK5gwNZs&t) amazing Learn Solidity, Blockchain Development, & Smart Contracts Youtube course. Comes highly recommended for anyone wanting to get into Foundry & intermediate/advanced solidity coding. 
+* An [introduction to ERC-6551](https://www.youtube.com/watch?v=GLTVd5P5LCw) by Pinata's Kelly Kim was really useful. 
+* As was the documentation from [Tokenbound](https://docs.tokenbound.org/) (an organisation advocating the implementation of Tokan Based Accounts). 
+* I took the template for the readme file from [Drew Othneil](https://github.com/othneildrew/Best-README-Template/blob/master/README.md?plain=1). 
+* And a special thanks should go out to [SpeedRunEthereum](https://speedrunethereum.com/) and [LearnWeb3](https://learnweb3.io/) for providing the first introductions to solidity coding. 
+* And.. the deploy scripts are "Powered by Etherscan.io APIs".. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

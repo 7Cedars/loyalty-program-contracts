@@ -5,6 +5,8 @@ import {Create2} from "../../lib/openzeppelin-contracts/contracts/utils/Create2.
 import {ERC6551BytecodeLib} from "./ERC6551BytecodeLib.sol";
 
 library ERC6551AccountLib {
+    function testA() public {} // to have foundry ignore this file in coverage report. see £ack https://ethereum.stackexchange.com/questions/155700/force-foundry-to-ignore-contracts-during-a-coverage-report
+
     function computeAddress(
         address registry,
         address implementation,

@@ -47,6 +47,8 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
   address[] cardAddresses; 
   address[] allCardAddresses;
   
+  function testA() public {} // to have foundry ignore this file in coverage report. see £ack https://ethereum.stackexchange.com/questions/155700/force-foundry-to-ignore-contracts-during-a-coverage-report
+
   function setUp() external {
     deployerLP = new DeployLoyaltyProgram();
     deployerLG = new DeployMockLoyaltyGifts();

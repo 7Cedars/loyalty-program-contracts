@@ -34,36 +34,19 @@ format :; forge fmt
 
 anvil :; anvil -m 'test test test test test test test test test test test junk' --steps-tracing --block-time 1
 
-ANVIL_ARGS_0 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_0) --broadcast
-ANVIL_ARGS_1 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_1) --broadcast
-ANVIL_ARGS_2 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_2) --broadcast
-ANVIL_ARGS_3 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_3) --broadcast
-ANVIL_ARGS_4 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_4) --broadcast
-
-SEPOLIA_FORK_ARGS := --fork-url $(SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS}
-SEPOLIA_FORK_TEST_ARGS := --fork-url $(SEPOLIA_RPC_URL) 
-SEPOLIA_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --account dev_2 --sender ${DEV2_ADDRESS} --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
-
 # The following (from patrick C) I find a bit overkill.. 
 # ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
 # 	NETWORK_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --account dev_2 --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 # endif
 
-sepoliaForkTest: 
-#	@forge test --match-test testCustomerCanClaimGift $(SEPOLIA_FORK_TEST_ARGS) -vvvv 
-	@forge test $(SEPOLIA_FORK_TEST_ARGS)  
-# @forge test --match-contract CardsToProgramToGifts $(SEPOLIA_FORK_TEST_ARGS) 
-# CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
-	
-sepoliaForkDeploy: 
-# @forge script script/DeployRegistry.s.sol:DeployRegistry $(SEPOLIA_FORK_ARGS)
-# @forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(SEPOLIA_FORK_ARGS)
-	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(SEPOLIA_FORK_ARGS)
-	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(SEPOLIA_FORK_ARGS)
-
-sepoliaDeploy:
-	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(SEPOLIA_ARGS)
-	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(SEPOLIA_ARGS)
+###############################
+# 			 Local testnet				#
+###############################
+ANVIL_ARGS_0 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_0) --broadcast
+ANVIL_ARGS_1 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_1) --broadcast
+ANVIL_ARGS_2 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_2) --broadcast
+ANVIL_ARGS_3 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_3) --broadcast
+ANVIL_ARGS_4 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_4) --broadcast
 
 anvilAll: 
 	@forge script script/DeployRegistry.s.sol:DeployRegistry $(ANVIL_ARGS_0)
@@ -85,10 +68,109 @@ anvilDeployGifts:
 anvilInteractions: 
 	@forge script script/Interactions.s.sol:Interactions $(ANVIL_ARGS_1)
 
+###############################
+# 			Sepolia testnet				#
+###############################
+SEPOLIA_FORK_ARGS := --fork-url $(SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS}
+SEPOLIA_FORK_TEST_ARGS := --fork-url $(SEPOLIA_RPC_URL) 
+SEPOLIA_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --account dev_2 --sender ${DEV2_ADDRESS} --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
+
+sepoliaForkTest: 
+#	@forge test --match-test testCustomerCanClaimGift $(SEPOLIA_FORK_TEST_ARGS) -vvvv 
+	@forge test $(SEPOLIA_FORK_TEST_ARGS)  
+# @forge test --match-contract CardsToProgramToGifts $(SEPOLIA_FORK_TEST_ARGS) 
+# CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
+	
+sepoliaForkDeploy: 
+# @forge script script/DeployRegistry.s.sol:DeployRegistry $(SEPOLIA_FORK_ARGS)
+# @forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(SEPOLIA_FORK_ARGS)
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(SEPOLIA_FORK_ARGS)
+	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(SEPOLIA_FORK_ARGS)
+
+sepoliaDeploy:
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(SEPOLIA_ARGS)
+	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(SEPOLIA_ARGS)
+
+# WIP 
+###############################
+# 		OPSepolia testnet				#
+###############################
+OPT_SEPOLIA_FORK_ARGS := --fork-url $(OPT_SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS}
+OPT_SEPOLIA_FORK_TEST_ARGS := --fork-url $(OPT_SEPOLIA_RPC_URL) 
+OPT_SEPOLIA_ARGS := --rpc-url $(OPT_SEPOLIA_RPC_URL) --account dev_2 --sender ${DEV2_ADDRESS} --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
+
+optSepoliaForkTest: 
+#	@forge test --match-test testCustomerCanClaimGift $(OPT_SEPOLIA_FORK_TEST_ARGS) -vvvv 
+# @forge test $(OPT_SEPOLIA_FORK_TEST_ARGS)  
+	@forge test --no-match-contract ContinueOnRevert $(OPT_SEPOLIA_FORK_TEST_ARGS)
+# ignores invariant tests.
+#	@forge test --match-test testCall $(OPT_SEPOLIA_FORK_TEST_ARGS) -vvvv 
+# CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
+	
+optSepoliaForkDeploy: 
+# @forge script script/DeployRegistry.s.sol:DeployRegistry $(OPT_SEPOLIA_FORK_ARGS)
+# @forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(OPT_SEPOLIA_FORK_ARGS)
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(OPT_SEPOLIA_FORK_ARGS)
+#	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(OPT_SEPOLIA_FORK_ARGS)
+
+optSepoliaDeploy:
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(OPT_SEPOLIA_ARGS)
+# @forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(OPT_SEPOLIA_ARGS)
+
+#################################
+# 	Base Sepolia testnet				#
+################################# 
+BASE_SEPOLIA_FORK_ARGS := --fork-url $(BASE_SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS}
+BASE_SEPOLIA_FORK_TEST_ARGS := --fork-url $(BASE_SEPOLIA_RPC_URL) 
+BASE_SEPOLIA_ARGS := --rpc-url $(BASE_SEPOLIA_RPC_URL) --account dev_2 --sender ${DEV2_ADDRESS} --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
+
+baseSepoliaForkTest: 
+#	@forge test --match-test testCustomerCanClaimGift $(BASE_SEPOLIA_FORK_TEST_ARGS) -vvvv 
+# @forge test $(BASE_SEPOLIA_FORK_TEST_ARGS)  
+#	@forge test --no-match-contract ContinueOnRevert $(BASE_SEPOLIA_FORK_TEST_ARGS)
+# ignores invariant tests.
+	@forge test --match-test testMintingCardsCreatesValidTokenBasedAccounts $(BASE_SEPOLIA_FORK_TEST_ARGS) -vvvv 
+# CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
+	
+baseSepoliaForkDeploy: 
+# @forge script script/DeployRegistry.s.sol:DeployRegistry $(BASE_SEPOLIA_FORK_ARGS)
+# @forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(BASE_SEPOLIA_FORK_ARGS)
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(BASE_SEPOLIA_FORK_ARGS)
+#	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(BASE_SEPOLIA_FORK_ARGS)
+
+baseSepoliaDeploy:
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(BASE_SEPOLIA_ARGS)
+	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(BASE_SEPOLIA_ARGS)
+
+
+############################################## 
+#     Arbitrum Sepolia testnet							 #
+# NB: SEEMS NOT TO HAVE IMPEMENTED ERC-6551  # 
+##############################################
+ARB_SEPOLIA_FORK_ARGS := --fork-url $(ARB_SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS}
+ARB_SEPOLIA_FORK_TEST_ARGS := --fork-url $(ARB_SEPOLIA_RPC_URL) 
+ARB_SEPOLIA_ARGS := --rpc-url $(ARB_SEPOLIA_RPC_URL) --account dev_2 --sender ${DEV2_ADDRESS} --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
+
+arbSepoliaForkTest: 
+#	@forge test --match-test testCustomerCanClaimGift $(ARB_SEPOLIA_FORK_TEST_ARGS) -vvvv 
+# @forge test $(ARB_SEPOLIA_FORK_TEST_ARGS)  
+#	@forge test --no-match-contract ContinueOnRevert $(ARB_SEPOLIA_FORK_TEST_ARGS)  
+# ignores invariant tests. 
+	@forge test --match-test testNameDeployedLoyaltyProgramIsCorrect $(ARB_SEPOLIA_FORK_TEST_ARGS) -vvvv
+# CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
+	
+arbSepoliaForkDeploy: 
+# @forge script script/DeployRegistry.s.sol:DeployRegistry $(ARB_SEPOLIA_FORK_ARGS)
+# @forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(ARB_SEPOLIA_FORK_ARGS)
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ARB_SEPOLIA_FORK_ARGS)
+	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(ARB_SEPOLIA_FORK_ARGS)
+
+arbSepoliaDeploy:
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ARB_SEPOLIA_ARGS)
+	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(ARB_SEPOLIA_ARGS)
+
 # cast abi-encode "constructor(uint256)" 1000000000000000000000000 -> 0x00000000000000000000000000000000000000000000d3c21bcecceda1000000
 # Update with your contract address, constructor arguments and anything else
-
-
 
 verify:
 	@forge verify-contract --chain-id 11155111 --num-of-optimizations 200 --watch --constructor-args 0x00000000000000000000000000000000000000000000d3c21bcecceda1000000 --etherscan-api-key $(ETHERSCAN_API_KEY) --compiler-version v0.8.19+commit.7dd6d404 0x089dc24123e0a27d44282a1ccc2fd815989e3300 src/OurToken.sol:OurToken

@@ -33,15 +33,15 @@ contract HelperConfig is Script {
         if (block.chainid == 11155111) {
             activeNetworkConfig = getSepoliaEthConfig();
         }
-        // if (block.chainid == 11155420) {
-        //     activeNetworkConfig = getOPSepoliaEthConfig(); // Optimism testnetwork
-        // }
-        // if (block.chainid == 421614) {
-        //     activeNetworkConfig = getArbitrumSepoliaEthConfig(); // Arbitrum testnetwork
-        // }
-        // if (block.chainid == 80001) { // should be base 
-        //     activeNetworkConfig = getMumbaiMaticConfig(); // Polygon testnetwork / POS. See Blueberry and Cardona networks for ZkEvm.
-        // }
+        if (block.chainid == 11155420) {
+            activeNetworkConfig = getOPSepoliaEthConfig(); // Optimism testnetwork
+        }
+        if (block.chainid == 421614) {
+            activeNetworkConfig = getArbitrumSepoliaEthConfig(); // Arbitrum testnetwork
+        }
+        if (block.chainid == 84532) { // should be base 
+            activeNetworkConfig = getBaseSepoliaConfig(); // Polygon testnetwork / POS. See Blueberry and Cardona networks for ZkEvm.
+        }
         // if (block.chainid == 80001) { // should be base 
         //     activeNetworkConfig = getMumbaiMaticConfig(); // Polygon testnetwork / POS. See Blueberry and Cardona networks for ZkEvm.
         // }
@@ -71,21 +71,59 @@ contract HelperConfig is Script {
         return sepoliaConfig;
     }
 
-    // function getOPSepoliaEthConfig() public returns (NetworkConfig memory) {
+    function getOPSepoliaEthConfig() public returns (NetworkConfig memory) {
 
-    //     NetworkConfig memory opSepoliaConfig = NetworkConfig({
-    //              FILL OUT LATER - TODO
-    //     });
-    //     return opSepoliaConfig;
-    // }
+        vm.startBroadcast();
+        s_erc6551Implementation = new LoyaltyCard6551Account();
+        vm.stopBroadcast();
 
-    // function getArbitrumSepoliaEthConfig() public returns (NetworkConfig memory) {
+        NetworkConfig memory opSepoliaConfig = NetworkConfig({
+            chainid: 11155420,
+            uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD",
+            initialSupply: 1e25,
+            interval: 30,
+            erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
+            erc6551Implementation: payable(s_erc6551Implementation),
+            callbackGasLimit: 50000
+        });
 
-    //     NetworkConfig memory arbitrumSepoliaConfig = NetworkConfig({
-    //              FILL OUT LATER - TODO
-    //     });
-    //     return arbitrumSepoliaConfig;
-    // }
+        console.logAddress(address(s_erc6551Implementation));
+        return opSepoliaConfig;
+    }
+
+        function getBaseSepoliaConfig() public returns (NetworkConfig memory) {
+
+        vm.startBroadcast();
+        s_erc6551Implementation = new LoyaltyCard6551Account();
+        vm.stopBroadcast();
+
+        NetworkConfig memory baseSepoliaConfig = NetworkConfig({
+            chainid: 11155420,
+            uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD",
+            initialSupply: 1e25,
+            interval: 30,
+            erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
+            erc6551Implementation: payable(s_erc6551Implementation),
+            callbackGasLimit: 50000
+        });
+
+        console.logAddress(address(s_erc6551Implementation));
+        return baseSepoliaConfig;
+    }
+
+    function getArbitrumSepoliaEthConfig() public returns (NetworkConfig memory) {
+
+        NetworkConfig memory arbitrumSepoliaConfig = NetworkConfig({
+            chainid: 421614,
+            uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD",
+            initialSupply: 1e25,
+            interval: 30,
+            erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
+            erc6551Implementation: payable(s_erc6551Implementation),
+            callbackGasLimit: 50000
+        });
+        return arbitrumSepoliaConfig;
+    }
 
     // function getMumbaiMaticConfig() public returns (NetworkConfig memory) {
 
