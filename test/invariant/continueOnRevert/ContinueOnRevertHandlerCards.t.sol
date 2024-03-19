@@ -237,8 +237,8 @@ contract ContinueOnRevertHandlerCards is Test  {
       );
     }
 
-    // // have ANY known card with voucher try to redeem voucher at ANY known loyalty Program
-    // WIP
+    // have a random  card with voucher try to redeem voucher at a random known loyalty Program. 
+    // this function is not perfect yet. But good enough for now. 
     function testRedeemVoucher(
       uint256 indexSeed
     ) public {
@@ -250,44 +250,40 @@ contract ContinueOnRevertHandlerCards is Test  {
       uint256 cardBalance;
       // Log[] memory entries = vm.getRecordedLogs(); -- cannot get this to work yet. (hence very convoluted nested loop below)
 
-      // // find a card that has a voucher at a specific loyalty program . 
-      bool breakOuterLoops = false;
-      for (uint256 loyaltyCardId = 0; loyaltyCardId < loyaltyCards.length; loyaltyCardId++) {
-        for (uint256 i = 0; i < loyaltyGifts.length; i++) {
-          for (uint256 voucherId = 2; voucherId < 6; voucherId++) {
-            // find a voucher that is owned. 
-            cardBalance = loyaltyGifts[i].balanceOf(loyaltyCards[loyaltyCardId], voucherId);
-            if (cardBalance != 0) {
-              console.logUint(cardBalance);  
-              selectedCardId = loyaltyCardId; 
-              selectedVoucherId = voucherId; 
-              selectedLoyaltyGift = loyaltyGifts[i]; 
+      // select a random card and see if it has a voucher. If so: try to redeem at a random loyalty program. 
+      selectedCardId = indexSeed % loyaltyCards.length;  
 
-              console.log("Going to attempt with following data:");  
-              console.logUint(selectedCardId); 
-              console.logUint(selectedVoucherId); 
-              console.logAddress(address(selectedLoyaltyGift)); 
-              
-              breakOuterLoops = true;
-              break; 
-              } 
-          }
-          if(breakOuterLoops) {
-                break;
-            }
+      bool breakOuterLoops = false;
+      for (uint256 i = 0; i < loyaltyGifts.length; i++) {
+        for (uint256 voucherId = 2; voucherId < 6; voucherId++) {
+          // find a voucher that is owned. 
+          cardBalance = loyaltyGifts[i].balanceOf(loyaltyCards[selectedCardId], voucherId);
+          if (cardBalance != 0) {
+            console.logUint(cardBalance);  
+            selectedVoucherId = voucherId; 
+            selectedLoyaltyGift = loyaltyGifts[i]; 
+
+            console.log("Going to attempt with following data:");  
+            console.logUint(selectedCardId); 
+            console.logUint(selectedVoucherId); 
+            console.logAddress(address(selectedLoyaltyGift)); 
+            
+            breakOuterLoops = true;
+            break; 
+            } 
         }
         if(breakOuterLoops) {
-            break;
-        }
+              break;
+          }
       }
       
       // Select a random program and try to redeem voucher. (As there are 3 programs, this ought to succeed in 1/3 of attempts).  
       DOMAIN_SEPARATOR = hashDomainSeparator(address(_getLoyaltyProgram(indexSeed))); 
       RedeemVoucher memory message = RedeemVoucher({
-        from: loyaltyCards[indexSeed % loyaltyCards.length],
+        from: loyaltyCards[selectedCardId],
         to: address(_getLoyaltyProgram(indexSeed)),
         voucher: "This is a test redeem",
-        nonce: 1
+        nonce: _getLoyaltyProgram(indexSeed).getNonceLoyaltyCard(loyaltyCards[selectedCardId])
       });
       bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRedeemVoucher(message));
       (uint8 v, bytes32 r, bytes32 s) = vm.sign(userPrivatekeys[selectedCardId], digest);
@@ -305,7 +301,7 @@ contract ContinueOnRevertHandlerCards is Test  {
         selectedCardId,  // indexSeed + 1, // uint256 loyaltyCardId,
         selectedUser, // userAddresses[indexSeed % userAddresses.length], // address customerAddress,
         signature
-        ) {} 
+        ) { console.log("attempt succeeded!"); } 
         catch {
           console.log("attempt failed."); 
         } // bytes memory signature

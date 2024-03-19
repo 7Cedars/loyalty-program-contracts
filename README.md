@@ -120,7 +120,7 @@ To get a local copy up and running do the following.
   ```
 
 ### Clone the repository
-<!-- NB: I have to check if I missed anyting £todo -->
+<!-- NB: I have to actually follow these steps and check if I missed anyting £todo -->
 
 1. Get a free alchemy API Key at [alchemy.com](https://docs.alchemy.com/docs/alchemy-quickstart-guide)
 2. Setup a project at walletConnect cloud [WalletConnect](https://cloud.walletconnect.com/app) and create a wallet ID.  
@@ -132,14 +132,18 @@ To get a local copy up and running do the following.
    ```sh
    yarn add
    ```
-5. Create a .env file in the root directory and add the following lines: 
-   ```js
-   const NEXT_PUBLIC_ALCHEMY_API_KEY = 'your alchemy API Key';
-   const NEXT_PUBLIC_WALLETCONNECT_ID = 'Your wallet Connect project id';
+
+### Run the test and build the contracts
+5. ```sh
+  $ forge test
    ```
-6. run 
-   ```sh
-   yarn dev
+6. ```sh
+   $ forge build
+   ```
+
+### Deploy (on an EVM compatible Chain)
+7. ```sh
+   $ forge script --fork-url <RPC_URL> script/DeployLoyaltyProgram.s.sol --broadcast
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -147,29 +151,16 @@ To get a local copy up and running do the following.
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-A front-end dApp demonstration of a web3 protocol for customer engagement. Try it out [here](https://loyalty-program-psi.vercel.app/). 
-
-
-The repository consists of two dApps 
-- A vendor dApp in which loyalty points and loyalty cards can be minted; loyalty gifts can be selected and gift vouchers minted; and a Qrcode scanner to read customer requests. It also provides a transaction overview. 
-- A customer dApp that creates Qrcodes to request loyalty points, exchanging points for gifts or vouchers, and redeem vouchers for gifts. It also includes a transaction overview.
-
-Some screenshots:
-| Home screen vendor | Transactions vendor | Card overview customer |
-| :--------: | :-------: | :-------: | 
-| <img src="public/images/vendorHomeScreen.svg" alt="my-Card-view" width="200" />  | <img src="public/images/vendorTransactionScreen.svg" alt="my-Card-view" width="200" />  | <img src="public/images/customerCardScreen.svg" alt="my-Card-view" width="200" />  |
-
-_For more examples, please refer to the [Documentation](https://example.com)_
+A front-end dApp demonstration of this web3 protocol has been deployed on vercel.com. 
+Try it out at [[here](https://loyalty-program-psi.vercel.app/)](https://loyalty-program-psi.vercel.app/). 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Implement Cypress testing throughout app. At the moment it is untested. 
-- [ ] Code clean up and optimisation. 
-- [ ] Add interface at vendor app for selecting external gift contracts. 
-- [ ] Implement account abstraction. 
+- [ ] Further develop testing. Basic unit, integration and invariant tests have been implemented, but fuzz tests not yet.
+- [ ] Implement  
 - [ ] ... 
 
 See the [open issues](https://github.com/7Cedars/loyalty-program-contracts/issues) for a full list of proposed features (and known issues).
@@ -212,7 +203,7 @@ GitHub profile [https://github.com/7Cedars](https://github.com/7Cedars)
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
-
+* [PatrickCollins]() 
 * [Tokenbound](https://docs.tokenbound.org/)
 * [Readme File... ]() <!-- This readme file, page -->
 * [SpeedRunEthereum]() <!-- SpeedRunEthereum -->
