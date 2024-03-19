@@ -54,7 +54,7 @@ contract ContinueOnRevertHandlerPrograms is Test  {
 
     // have Program select and mint vouchers 
     // -- needs to result in sufficient amount of selections. 
-    function selectLoyaltyGiftAndMintVouchers(
+    function testSelectLoyaltyGiftAndMintVouchers(
       uint256 loyaltyProgramSeed, 
       uint256 giftProgram1Seed,
       uint256 giftProgram2Seed
@@ -115,7 +115,7 @@ contract ContinueOnRevertHandlerPrograms is Test  {
      * @dev This points distributor will try upto 5 cards to see if one is valid. 
      * 
      */
-    function distributePoints(
+    function testDistributePoints(
       uint256 loyaltyProgramSeed, 
       uint256 loyaltyCardSeed1,
       uint256 loyaltyCardSeed2,

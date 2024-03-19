@@ -29,7 +29,7 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
   ContinueOnRevertHandlerCards continueOnRevertHandlerCards;
   LoyaltyProgram loyaltyProgram; 
   HelperConfig helperConfig; 
-  uint256 INITIAL_SUPPLY_POINTS = 5_000_000_000; 
+  uint256 INITIAL_SUPPLY_POINTS = 5000000000; 
   uint256 INITIAL_SUPPLY_VOUCHERS = 15; 
 
   struct ProgramData {
@@ -103,7 +103,7 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
   }
 
   // Invariant 1: Points minted at LoyaltyProgram can never end up at LoyaltyCards affiliated with another LoyaltyProgram.
-  function invariant_pointsStayWithinLoyaltyProgram() public view {
+  function invariant_TestPointsStayWithinLoyaltyProgram() public view {
 
     for (uint256 i = 0; i < programsData.length; i++) { 
       ProgramData memory programData; 
@@ -129,7 +129,7 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
   }
 
   // Invariant 2: Gifts minted by LoyaltyProgram can never be redeemed at another LoyaltyProgram.
-  function invariant_VouchersStayWithinLoyaltyProgram() public view {
+  function invariant_TestVouchersStayWithinLoyaltyProgram() public view {
     uint256[] memory cardsBalance; 
     uint256 sumCardBalances; 
     uint256 programBalance; 
@@ -184,7 +184,8 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
             tbaAddress = programsData[i].loyaltyProgram.getTokenBoundAddress(i);
 
             programsData[i].loyaltyProgram.getNonceLoyaltyCard(tbaAddress);
-            programsData[i].loyaltyProgram.getBalanceLoyaltyCard(tbaAddress);
+            programsData[i].loyaltyProgram.getBalanceLoyaltyCard(tbaAddress);             
+
             }
           }
         }

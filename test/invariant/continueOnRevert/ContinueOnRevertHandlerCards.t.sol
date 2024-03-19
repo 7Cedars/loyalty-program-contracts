@@ -50,6 +50,15 @@ contract ContinueOnRevertHandlerCards is Test  {
   ContinueOnRevertHandlerCards handler;
   uint256 numberLCards; 
 
+  struct Log {
+        // The topics of the log, including the signature, if any.
+        bytes32[] topics;
+        // The raw data of the log.
+        bytes data;
+        // The address of the log's emitter.
+        address emitter;
+    }
+
   struct CardData {
     address cardAddress; 
     string owner; 
@@ -92,6 +101,11 @@ contract ContinueOnRevertHandlerCards is Test  {
 
   // domain seperator.
   bytes32 internal DOMAIN_SEPARATOR; 
+  bytes32 internal DOMAIN_SEPARATOR_0; 
+  bytes32 internal DOMAIN_SEPARATOR_1; 
+  bytes32 internal DOMAIN_SEPARATOR_2; 
+
+  event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
   
   constructor( 
     LoyaltyProgram[] memory _loyaltyPrograms,  
@@ -131,6 +145,7 @@ contract ContinueOnRevertHandlerCards is Test  {
           ); 
         }
       }
+
     }
 
     // NB: DO NOT DELETE THE FOLLOWING. Do want to test again in the future. 
@@ -138,7 +153,7 @@ contract ContinueOnRevertHandlerCards is Test  {
     // // have a random card try to transfer to random other known address: card, program or gift contract 
     // function transferPoints(
     //   uint256 loyaltyProgramSeed, 
-    //   uint256 loyaltyCardSeed, 
+    //   uint256 indexSeed, 
     //   uint256 receiverSeed, 
     //   uint256 amountPointsSeed
     // ) public {
@@ -147,7 +162,7 @@ contract ContinueOnRevertHandlerCards is Test  {
     //   LoyaltyProgram loyaltyProgram = _getLoyaltyProgram(loyaltyProgramSeed);
     //   address receiver = _getAddress(receiverSeed); 
     //   uint256 numberCards = loyaltyProgram.getNumberLoyaltyCardsMinted(); 
-    //   selectedCard = loyaltyCardSeed % numberCards; 
+    //   selectedCard = indexSeed % numberCards; 
     //   address selectedCardAddress = loyaltyProgram.getTokenBoundAddress(selectedCard); 
     //   address owner = userAddresses[selectedCard]; 
     //   uint256 amountPoints = amountPointsSeed % 50; // low amount so not bounced less often on account of not having sufficient balance. 
@@ -169,21 +184,17 @@ contract ContinueOnRevertHandlerCards is Test  {
     // }
 
     // // have ANY known card (with the correct owner) try to claim gift at ANY known loyalty Program
-    function claimGifts(
+    function testClaimGifts(
       uint256 loyaltyProgramSeed, 
       uint256 giftProgramSeed, 
       uint256 giftIdSeed, 
-      uint256 loyaltyCardSeed
+      uint256 indexSeed
     ) public {
       // selecting random program & random card of this program 
       LoyaltyProgram loyaltyProgram = _getLoyaltyProgram(loyaltyProgramSeed);
-      uint256 numberCards = loyaltyProgram.getNumberLoyaltyCardsMinted(); 
-      selectedCard = loyaltyCardSeed % numberCards;
-
+      selectedCard = indexSeed %  loyaltyProgram.getNumberLoyaltyCardsMinted();
       address selectedCardAddress = loyaltyProgram.getTokenBoundAddress(selectedCard); 
       address ownerProgram = loyaltyProgram.getOwner(); 
-      address ownerCard = userAddresses[selectedCard]; // The way the test is setup, user 0 always has card 0.  
-      uint256 privateKeyownerCard = userPrivatekeys[selectedCard]; 
 
       // selecting random gift program & random gift of this program. 
       LoyaltyGift giftProgram = _getGiftProgram(giftProgramSeed); 
@@ -200,10 +211,19 @@ contract ContinueOnRevertHandlerCards is Test  {
           nonce: 0
       });
       bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message));
-      (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKeyownerCard, digest);
+      (uint8 v, bytes32 r, bytes32 s) = vm.sign(userPrivatekeys[selectedCard], digest);
       bytes memory signature = abi.encodePacked(r, s, v);
 
-      // owner of loyaltyprogram uses signature when executing claimLoyaltyGift function.
+      // // owner of loyaltyprogram uses signature when executing claimLoyaltyGift function.
+      // vm.recordLogs();      
+      // emit TransferSingle(
+      //     address(giftProgram), // address indexed operator,
+      //     address(giftProgram), // address indexed from,
+      //     selectedCardAddress, // address indexed to,
+      //     giftId, // uint256 id,
+      //     1 // uint256 value
+      // );
+
       vm.prank(ownerProgram);
       loyaltyProgram.claimLoyaltyGift(
         "This is a test gift", // string memory _gift,
@@ -211,7 +231,7 @@ contract ContinueOnRevertHandlerCards is Test  {
         address(giftProgram), // address loyaltyGiftsAddress,
         giftId, // uint256 loyaltyGiftId,
         selectedCard, // uint256 loyaltyCardId,
-        ownerCard, // address customerAddress,
+        userAddresses[selectedCard], // address customerAddress,
         5000, // uint256 loyaltyPoints, 5000 = max cost gift + min transaction. 
         signature // bytes memory signature
       );
@@ -219,69 +239,60 @@ contract ContinueOnRevertHandlerCards is Test  {
 
     // // have ANY known card with voucher try to redeem voucher at ANY known loyalty Program
     // WIP
-    function redeemVoucher(
-      uint256 loyaltyCardSeed
+    function testRedeemVoucher(
+      uint256 indexSeed
     ) public {
-      // randomly select loyalty  card; 
-      LoyaltyGift selectedGiftProgram; 
-      LoyaltyProgram selectedLoyaltyProgram; 
-      address selectedCardAddress; 
-      address selectedUser; 
-      uint256 selectedUserPrivateKey;  
-      uint256 cardBalance;
-
       console.log("redeem voucher called."); 
+      // randomly select loyalty  card; 
+      uint256 selectedVoucherId;
+      uint256 selectedCardId;
+      LoyaltyGift selectedLoyaltyGift;
+      uint256 cardBalance;
+      // Log[] memory entries = vm.getRecordedLogs(); -- cannot get this to work yet. 
 
-      selectedCardAddress = loyaltyCards[loyaltyCardSeed % loyaltyCards.length]; 
-      selectedUser = userAddresses[loyaltyCardSeed % loyaltyCards.length]; // NB: this only works because index of cards = index of user. 
-      selectedUserPrivateKey = userPrivatekeys[loyaltyCardSeed % loyaltyCards.length]; 
-
-      for (uint256 i; i < loyaltyGifts.length; i++) {
-        for (uint256 voucherId = 2; voucherId < 6; voucherId++) {
-          // find a voucher that is owned. 
-          selectedGiftProgram = loyaltyGifts[i]; 
-          cardBalance = selectedGiftProgram.balanceOf(selectedCardAddress, voucherId);
-          console.logUint(cardBalance); 
-
-          // then try to redeem at any Loyalty Program. 
-          if (cardBalance != 0) {
-            console.log("redeem voucher triggered!"); 
-
-            LoyaltyProgram loyaltyProgram; 
-            loyaltyProgram = programsData[0].loyaltyProgram; 
-            address ownerProgram; 
-            ownerProgram = loyaltyProgram.getOwner(); 
-
-            DOMAIN_SEPARATOR = hashDomainSeparator(address(loyaltyProgram)); 
-            RedeemVoucher memory message = RedeemVoucher({
-              from: selectedCardAddress,
-              to: address(loyaltyProgram),
-              voucher: "This is a test redeem",
-              nonce: 1
-            });
-            bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRedeemVoucher(message));
-            (uint8 v, bytes32 r, bytes32 s) = vm.sign(selectedUserPrivateKey, digest);
-            bytes memory signature = abi.encodePacked(r, s, v);
-            
-            vm.prank(ownerProgram);
-            try 
-              loyaltyProgram.redeemLoyaltyVoucher(
-                "This is a test redeem", // string memory _gift,
-                address(selectedGiftProgram), // address loyaltyGiftsAddress,
-                voucherId, // uint256 loyaltyGiftId,
-                selectedCard, // uint256 loyaltyCardId,
-                selectedUser, // address customerAddress,
-                signature) // bytes memory signature
-              { } catch {
-                console.log("redeem failed"); 
-              }
-            
+      // // find a card that has a voucher at a specific loyalty program . 
+      for (uint256 loyaltyCardId; loyaltyCardId < loyaltyCards.length; loyaltyCardId++) {
+        for (uint256 i; i < loyaltyGifts.length; i++) {
+          for (uint256 voucherId = 2; voucherId < 6; voucherId++) {
+            // find a voucher that is owned. 
+            cardBalance = loyaltyGifts[i].balanceOf(loyaltyCards[loyaltyCardId], voucherId);
+            if (cardBalance != 0) {
+              console.logUint(cardBalance);  
+              selectedCardId = loyaltyCardId; 
+              selectedVoucherId = voucherId; 
+              selectedLoyaltyGift = loyaltyGifts[i]; 
+              } 
           }
         }
       }
-    }
-              
+      
+      // Select a random program and try to redeem voucher. (As there are 3 programs, this ought to succeed in 1/3 of attempts).  
+      DOMAIN_SEPARATOR = hashDomainSeparator(address(_getLoyaltyProgram(indexSeed))); 
+      RedeemVoucher memory message = RedeemVoucher({
+        from: loyaltyCards[indexSeed % loyaltyCards.length],
+        to: address(_getLoyaltyProgram(indexSeed)),
+        voucher: "This is a test redeem",
+        nonce: 1
+      });
+      bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRedeemVoucher(message));
+      (uint8 v, bytes32 r, bytes32 s) = vm.sign(userPrivatekeys[selectedCardId], digest);
+      bytes memory signature = abi.encodePacked(r, s, v);
 
+      address selectedUser = userAddresses[selectedCardId];  
+      address programOwner = _getLoyaltyProgram(indexSeed).getOwner(); 
+      
+      console.log("attemped redeem."); 
+      vm.prank(programOwner);
+      _getLoyaltyProgram(indexSeed).redeemLoyaltyVoucher(
+        "This is a test redeem", // string memory _gift,
+        address(selectedLoyaltyGift), // address loyaltyGiftsAddress,
+        selectedVoucherId, // uint256 loyaltyGiftId,
+        selectedCardId,  // indexSeed + 1, // uint256 loyaltyCardId,
+        selectedUser, // userAddresses[indexSeed % userAddresses.length], // address customerAddress,
+        signature
+        ); // bytes memory signature
+    }
+            
     // Helper Functions 
      function _getLoyaltyProgram( uint256 loyaltyProgramSeed ) private view returns (LoyaltyProgram) 
     {
@@ -293,62 +304,6 @@ contract ContinueOnRevertHandlerCards is Test  {
       return loyaltyGifts[giftProgramSeed % loyaltyGifts.length];
       }
 
-    // NB: I DO need a list of ALL loyalty Card Addresses! 
-    function _getLoyaltyCard( uint256 loyaltyCardSeed ) private view returns (address) 
-    {
-      return loyaltyCards[loyaltyCardSeed % loyaltyCards.length];
-      }
-    
-    function _getAddress( uint256 addressSeed ) private view returns (address) 
-    {
-      return allAddresses[addressSeed % allAddresses.length];
-      }
-    
-    function _getPrivateKey( address userAddress ) private view returns (uint256) 
-    {
-      for (uint256 i = 0; i < userAddresses.length; i++) {
-        if (userAddresses[i] == userAddress) {
-          return userPrivatekeys[i];
-          }
-        }
-        revert("no private key found"); 
-      }
-    
-    function _redeemVoucher( 
-      LoyaltyProgram loyaltyProgram, 
-      LoyaltyGift giftProgram, 
-      uint256 giftId, 
-      address userAddress, 
-      uint256 userPrivateKey, 
-      address selectedCardAddress  
-      ) private {
-        address ownerProgram; 
-        ownerProgram = loyaltyProgram.getOwner(); 
-        
-        // creating & signing request message - results in signature. 
-        DOMAIN_SEPARATOR = hashDomainSeparator(address(loyaltyProgram)); 
-        RedeemVoucher memory message = RedeemVoucher({
-            from: selectedCardAddress,
-            to: address(loyaltyProgram),
-            voucher: "This is a test redeem",
-            nonce: 1
-        });
-        bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRedeemVoucher(message));
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(userPrivateKey, digest);
-        bytes memory signature = abi.encodePacked(r, s, v);
-
-        // owner of loyaltyprogram uses signature when executing claimLoyaltyGift function.
-        vm.prank(ownerProgram);
-        loyaltyProgram.redeemLoyaltyVoucher(
-          "This is a test redeem", // string memory _gift,
-          address(giftProgram), // address loyaltyGiftsAddress,
-          giftId, // uint256 loyaltyGiftId,
-          selectedCard, // uint256 loyaltyCardId,
-          userAddress, // address customerAddress,
-          signature // bytes memory signature
-        );
-      }
-    
       // helper function separator
     function hashDomainSeparator (address loyaltyProgram) private view returns (bytes32) {
         
@@ -390,3 +345,24 @@ contract ContinueOnRevertHandlerCards is Test  {
         );
     }
 }
+
+// Structure contract // -- from Patrick Collins. 
+/* version */
+/* imports */
+/* errors */
+/* interfaces, libraries, contracts */
+/* Type declarations */
+/* State variables */
+/* Events */
+/* Modifiers */
+
+/* FUNCTIONS: */
+/* constructor */
+/* receive function (if exists) */
+/* fallback function (if exists) */
+/* external */
+/* public */
+/* internal */
+/* private */
+/* internal & private view & pure functions */
+/* external & public view & pure functions */
