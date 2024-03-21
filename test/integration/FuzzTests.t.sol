@@ -157,7 +157,7 @@ pragma solidity ^0.8.19;
 //         balanceBeforeReceiver = loyaltyProgramA.getBalanceLoyaltyCard(2);
 
 //         vm.prank(customerOne);
-//         ERC6551Account(tokenOneProgramA).executeCall(
+//         ERC6551Account(tokenOneProgramA).execute(
 //             payable(loyaltyProgramA),
 //             0,
 //             abi.encodeCall(
@@ -210,7 +210,7 @@ pragma solidity ^0.8.19;
 //         // customer calls loyalty token contract from loyaltycard to
 //         // redeem points for loyalty token.
 //         vm.prank(customerOne);
-//         ERC6551Account(tokenOneProgramA).executeCall(
+//         ERC6551Account(tokenOneProgramA).execute(
 //             payable(loyaltyProgramA),
 //             0,
 //             abi.encodeCall(LoyaltyProgram.redeemLoyaltyPoints, (payable(address(loyaltyToken2500)), numberOfLoyaltyPoints, 1))
@@ -264,7 +264,7 @@ pragma solidity ^0.8.19;
 //         console.log("ownsLoyaltyCard", ownsLoyaltyCard);
 
 //         vm.prank(customerOne);
-//         ERC6551Account(tokenOneProgramA).executeCall(
+//         ERC6551Account(tokenOneProgramA).execute(
 //             payable(loyaltyProgramA),
 //             0,
 //             abi.encodeCall(
@@ -280,7 +280,7 @@ pragma solidity ^0.8.19;
 
 //         // // now try and redeem this token...
 //         // vm.prank(customerOne);
-//         // ERC6551Account(tokenOneProgramA).executeCall(
+//         // ERC6551Account(tokenOneProgramA).execute(
 //         //     payable(loyaltyProgramA),
 //         //     0,
 //         //     abi.encodeCall(
@@ -358,7 +358,7 @@ pragma solidity ^0.8.19;
 
 //         // customer One claims token
 //         vm.prank(customerOne);
-//         ERC6551Account(tokenOneProgramA).executeCall(
+//         ERC6551Account(tokenOneProgramA).execute(
 //             payable(loyaltyProgramA),
 //             0,
 //             abi.encodeCall(

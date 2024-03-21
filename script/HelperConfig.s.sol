@@ -7,7 +7,6 @@ import {Script, console} from "forge-std/Script.sol";
 import {LoyaltyGift} from "../test/mocks/LoyaltyGift.sol";
 import {ERC6551Registry} from "../test/mocks/ERC6551Registry.sol";
 import {LoyaltyCard6551Account} from "../src/LoyaltyCard6551Account.sol";
-import {IERC6551Account} from "../src/interfaces/IERC6551Account.sol";
 
 contract HelperConfig is Script {
     // these are all the same for networks with deployed ERC6551 - local anvil chain obv does not have one.

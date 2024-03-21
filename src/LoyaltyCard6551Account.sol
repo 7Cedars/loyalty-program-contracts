@@ -1,16 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
-
-/**
- * @dev THIS CONTRACT HAS NOT BEEN AUDITED. WORSE: TESTING IS INCOMPLETE + THERE ARE KNOWN BUGS. DO NOT DEPLOY ON ANYTHING ELSE THAN A TEST NET! 
- * 
- * @title Loyalty Card 6551 Account
- * @author TokenBound, adapted by Seven Cedars for use with ERC1155 contracts.  
- * @notice A bespoke version of ERC6551 AccountV2 (? I think V2 - £todo: check!) from TokenBound. Optimised for ERC-1155. 
- * 
- * @dev Upgrading this account contract to AccountV3 is on the todo list. 
- * 
- */ 
-
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
@@ -19,31 +7,46 @@ import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {IERC1271} from "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
-import {IERC6551Account} from "./interfaces/IERC6551Account.sol";
-import {ERC6551AccountLib} from "./lib/ERC6551AccountLib.sol";
 
-/**
- * @notice In this contract everything is same as original, unless stated otherwise. 
- */
+interface IERC6551Account {
+    receive() external payable;
 
-contract LoyaltyCard6551Account is IERC165, IERC1271, IERC6551Account, IERC1155Receiver {
-    uint256 public nonce;
+    function token()
+        external
+        view
+        returns (uint256 chainId, address tokenContract, uint256 tokenId);
+
+    function state() external view returns (uint256);
+
+    function isValidSigner(address signer, bytes calldata context)
+        external
+        view
+        returns (bytes4 magicValue);
+}
+
+interface IERC6551Executable {
+    function execute(address to, uint256 value, bytes calldata data, uint8 operation)
+        external
+        payable
+        returns (bytes memory);
+}
+
+contract LoyaltyCard6551Account is IERC165, IERC1271, IERC6551Account, IERC6551Executable {
+    uint256 public state;
 
     receive() external payable {}
 
-    /**
-     * @dev the require has been changed to call the internal owner1155 function. 
-     */
-    function executeCall(
-        address to, // this becomes the msg.sender? should that not be 'from??'
-        uint256 value,
-        bytes calldata data
-    ) external payable returns (bytes memory result) {
-        require(owner1155() == true, "Not tba owner");
+    // NB! not executeCall! as in v.0.2.0. ALSO a uint8 operation value included. 
+    function execute(
+      address to, 
+      uint256 value, 
+      bytes calldata data, 
+      uint8 operation
+      ) external payable virtual returns (bytes memory result) {
+        require(_isValidSigner(msg.sender), "Invalid signer");
+        require(operation == 0, "Only call operations are supported");
 
-        ++nonce;
-
-        emit TransactionExecuted(to, value, data);
+        ++state;
 
         bool success;
         (success, result) = to.call{value: value}(data);
@@ -55,31 +58,54 @@ contract LoyaltyCard6551Account is IERC165, IERC1271, IERC6551Account, IERC1155R
         }
     }
 
-    function token() external view returns (uint256, address, uint256) {
-        return ERC6551AccountLib.token();
+    function isValidSigner(address signer, bytes calldata) external view virtual returns (bytes4) {
+        if (_isValidSigner(signer)) {
+            return IERC6551Account.isValidSigner.selector;
+        }
+
+        return bytes4(0);
     }
 
-    /**
-     * @dev Note that this function does not work for ERC-1155 based contracts, as it does not have an ownerOf function. 
-     * This is because in ERC 1155 the non-fungible state of tokens is not absolute (as with ERC-721). 
-     * It means that each coin can potentially be minted multiple times, making an absolute ownership of a single token by one address impossible.   
-     */
-    function owner() public view returns (address) {
-        (uint256 chainId, address tokenContract, uint256 tokenId) = this.token();
+    function isValidSignature(bytes32 hash, bytes memory signature)
+        external
+        view
+        virtual
+        returns (bytes4 magicValue)
+    {
+        bool isValid = SignatureChecker.isValidSignatureNow(owner(), hash, signature);
+
+        if (isValid) {
+            return IERC1271.isValidSignature.selector;
+        }
+
+        return bytes4(0);
+    }
+
+    function supportsInterface(bytes4 interfaceId) external pure virtual returns (bool) {
+        return interfaceId == type(IERC165).interfaceId
+            || interfaceId == type(IERC6551Account).interfaceId
+            || interfaceId == type(IERC6551Executable).interfaceId;
+    }
+
+    function token() public view virtual returns (uint256, address, uint256) {
+        bytes memory footer = new bytes(0x60);
+
+        assembly {
+            extcodecopy(address(), add(footer, 0x20), 0x4d, 0x60)
+        }
+
+        return abi.decode(footer, (uint256, address, uint256));
+    }
+
+    function owner() public view virtual returns (address) {
+        (uint256 chainId, address tokenContract, uint256 tokenId) = token();
         if (chainId != block.chainid) return address(0);
 
         return IERC721(tokenContract).ownerOf(tokenId);
     }
 
-    /**
-     * @notice checks if msg.sender owns the ERC 1155 token.
-     * 
-     * @dev IMPORTANT £security: ERC-1155 tokens can be minted more than once. It means that __multiple__ addresses can be owner of the same token! 
-     * This function DOES NOT check for this. The external contract  minting tokens has to ensure that each token can only be minted once!
-     * 
-     * @dev this is likely the reason that standard TBAs only work with ERC-721 standard.
-     * 
-     */
+    // Added function for ERC-1155. 
+    // It's quite a big security issue... to integrate ERC-1155 with ERC-6551. hmm.    
     function owner1155() public view returns (bool) {
         (uint256 chainId, address tokenContract, uint256 tokenId) = this.token();
         if (chainId != block.chainid) return false;
@@ -87,18 +113,8 @@ contract LoyaltyCard6551Account is IERC165, IERC1271, IERC6551Account, IERC1155R
         return true;
     }
 
-    function supportsInterface(bytes4 interfaceId) public pure returns (bool) {
-        return (interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC6551Account).interfaceId);
-    }
-
-    function isValidSignature(bytes32 hash, bytes memory signature) external view returns (bytes4 magicValue) {
-        bool isValid = SignatureChecker.isValidSignatureNow(owner(), hash, signature);
-
-        if (isValid) {
-            return IERC1271.isValidSignature.selector;
-        }
-
-        return "";
+    function _isValidSigner(address signer) internal view virtual returns (bool) {
+        return signer == owner();
     }
 
     /**
@@ -118,4 +134,5 @@ contract LoyaltyCard6551Account is IERC165, IERC1271, IERC6551Account, IERC1155R
     {
         return this.onERC1155BatchReceived.selector;
     }
+
 }

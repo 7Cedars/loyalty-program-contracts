@@ -726,7 +726,7 @@ contract CardsToProgramToGiftsTest is Test {
             abi.encodeWithSelector(LoyaltyGift.LoyaltyGift__TransferDenied.selector, address(mockLoyaltyGifts))
         ); 
         vm.prank(customerOneAddress); 
-        LoyaltyCard6551Account(payable(loyaltyCardOne)).executeCall(
+        LoyaltyCard6551Account(payable(loyaltyCardOne)).execute(
                 payable(address(mockLoyaltyGifts)),
                 0,
                 abi.encodeCall(

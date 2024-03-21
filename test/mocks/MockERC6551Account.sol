@@ -1,17 +1,17 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.19;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import {IERC6551Account} from "../../src/interfaces/IERC6551Account.sol";
-import {ERC6551AccountLib} from "../../src/lib/ERC6551AccountLib.sol";
-import {IERC165} from "../../lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-contract MockERC6551Account is IERC165, IERC6551Account {
-    uint256 public nonce;
+import "../../src/interfaces/IERC6551Account.sol";
+import "../../src/interfaces/IERC6551Executable.sol";
+import "../../src/lib/ERC6551AccountLib.sol";
+
+contract MockERC6551Account is IERC165, IERC6551Account, IERC6551Executable {
+    uint256 public state;
     bool private _initialized;
 
     receive() external payable {}
-
-    function testA() public {} // to have foundry ignore this file in coverage report. see £ack https://ethereum.stackexchange.com/questions/155700/force-foundry-to-ignore-contracts-during-a-coverage-report
 
     function initialize(bool val) external {
         if (!val) {
@@ -20,7 +20,11 @@ contract MockERC6551Account is IERC165, IERC6551Account {
         _initialized = val;
     }
 
-    function executeCall(address, uint256, bytes calldata) external payable returns (bytes memory) {
+    function execute(address, uint256, bytes calldata, uint8)
+        external
+        payable
+        returns (bytes memory)
+    {
         revert("disabled");
     }
 
@@ -28,11 +32,15 @@ contract MockERC6551Account is IERC165, IERC6551Account {
         return ERC6551AccountLib.token();
     }
 
-    function salt() external view returns (uint256) {
+    function salt() external view returns (bytes32) {
         return ERC6551AccountLib.salt();
     }
 
     function owner() public pure returns (address) {
+        revert("disabled");
+    }
+
+    function isValidSigner(address, bytes calldata) public pure returns (bytes4) {
         revert("disabled");
     }
 

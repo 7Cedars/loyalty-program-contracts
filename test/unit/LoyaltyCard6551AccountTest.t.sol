@@ -8,49 +8,63 @@ import {Test} from "forge-std/Test.sol";
 import {ERC6551Registry} from "../mocks/ERC6551Registry.sol";
 import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
 import {MockERC1155} from "../mocks/MockERC1155.sol";
-import {IERC6551Account} from "../../src/interfaces/IERC6551Account.sol";
+import {IERC6551Account, IERC6551Executable} from "../../src/LoyaltyCard6551Account.sol";
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "forge-std/Test.sol";
+
+import {ERC6551Account} from "../../../src/examples/simple/ERC6551Account.sol";
+import "../../../src/interfaces/IERC6551Account.sol";
+import "../../../src/interfaces/IERC6551Executable.sol";
+import "../../../src/ERC6551Registry.sol";
+import "../mocks/MockERC721.sol";
+import "../mocks/MockERC6551Account.sol";
 
 contract AccountTest is Test {
     ERC6551Registry public registry;
-    LoyaltyCard6551Account public implementation;
-    MockERC1155 nft = new MockERC1155();
+    ERC6551Account public implementation;
+    MockERC721 nft = new MockERC721();
 
     function setUp() public {
         registry = new ERC6551Registry();
-        implementation = new LoyaltyCard6551Account();
+        implementation = new ERC6551Account();
     }
 
     function testDeploy() public {
         address deployedAccount =
-            registry.createAccount(address(implementation), block.chainid, address(0), 0, 3947539732098357, "");
+            registry.createAccount(address(implementation), 0, block.chainid, address(0), 0);
 
         assertTrue(deployedAccount != address(0));
 
         address predictedAccount =
-            registry.account(address(implementation), block.chainid, address(0), 0, 3947539732098357);
+            registry.account(address(implementation), 0, block.chainid, address(0), 0);
 
         assertEq(predictedAccount, deployedAccount);
     }
 
     function testCall() public {
-        nft.mint(vm.addr(3), 1, 1);
+        nft.mint(vm.addr(1), 1);
 
         address account =
-            registry.createAccount(address(implementation), block.chainid, address(nft), 1, 3947539732098357, "");
+            registry.createAccount(address(implementation), 0, block.chainid, address(nft), 1);
 
         assertTrue(account != address(0));
 
         IERC6551Account accountInstance = IERC6551Account(payable(account));
-        (,, uint256 tokenId) = accountInstance.token();
+        IERC6551Executable executableAccountInstance = IERC6551Executable(account);
 
-        assertEq(tokenId, 1); // previous Owner function does not work on ERC1155 - ERC 1155 does not have OwnerOf function.
+        assertEq(
+            accountInstance.isValidSigner(vm.addr(1), ""), IERC6551Account.isValidSigner.selector
+        );
 
         vm.deal(account, 1 ether);
-        vm.prank(vm.addr(3));
-        accountInstance.executeCall(payable(vm.addr(4)), 0.5 ether, "");
+
+        vm.prank(vm.addr(1));
+        executableAccountInstance.execute(payable(vm.addr(2)), 0.5 ether, "", 0);
 
         assertEq(account.balance, 0.5 ether);
-        assertEq(vm.addr(4).balance, 0.5 ether);
-        assertEq(accountInstance.nonce(), 1);
+        assertEq(vm.addr(2).balance, 0.5 ether);
+        assertEq(accountInstance.state(), 1);
     }
 }

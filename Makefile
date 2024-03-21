@@ -186,8 +186,6 @@ arbSepoliaForkTest:
 # CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
 	
 arbSepoliaForkDeploy: 
-# @forge script script/DeployRegistry.s.sol:DeployRegistry $(ARB_SEPOLIA_FORK_ARGS)
-# @forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(ARB_SEPOLIA_FORK_ARGS)
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ARB_SEPOLIA_FORK_ARGS)
 	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(ARB_SEPOLIA_FORK_ARGS)
 

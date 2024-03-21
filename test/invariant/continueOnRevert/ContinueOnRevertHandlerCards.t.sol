@@ -168,7 +168,7 @@ contract ContinueOnRevertHandlerCards is Test  {
     //   uint256 amountPoints = amountPointsSeed % 50; // low amount so not bounced less often on account of not having sufficient balance. 
       
     //   vm.prank(owner); 
-    //   LoyaltyCard6551Account(payable(selectedCardAddress)).executeCall(
+    //   LoyaltyCard6551Account(payable(selectedCardAddress)).execute(
     //           payable(address(loyaltyProgram)),
     //           0,
     //           abi.encodeCall(
