@@ -172,7 +172,6 @@ mumbaiSepoliaDeploy:
 
 ############################################## 
 #     Arbitrum Sepolia testnet							 #
-# NB: SEEMS NOT TO HAVE IMPEMENTED ERC-6551  # 
 ##############################################
 ARB_SEPOLIA_FORK_ARGS := --fork-url $(ARB_SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS}
 ARB_SEPOLIA_FORK_TEST_ARGS := --fork-url $(ARB_SEPOLIA_RPC_URL) 
@@ -181,9 +180,9 @@ ARB_SEPOLIA_ARGS := --rpc-url $(ARB_SEPOLIA_RPC_URL) --account dev_2 --sender ${
 arbSepoliaForkTest: 
 #	@forge test --match-test testCustomerCanClaimGift $(ARB_SEPOLIA_FORK_TEST_ARGS) -vvvv 
 # @forge test $(ARB_SEPOLIA_FORK_TEST_ARGS)  
-#	@forge test --no-match-contract ContinueOnRevert $(ARB_SEPOLIA_FORK_TEST_ARGS)  
+	@forge test --match-test testLoyaltyProgramMintsCards $(ARB_SEPOLIA_FORK_TEST_ARGS) -vvvv
 # ignores invariant tests. 
-	@forge test --match-test testNameDeployedLoyaltyProgramIsCorrect $(ARB_SEPOLIA_FORK_TEST_ARGS) -vvvv
+#	@forge test --match-test testNameDeployedLoyaltyProgramIsCorrect $(ARB_SEPOLIA_FORK_TEST_ARGS) -vvvv
 # CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
 	
 arbSepoliaForkDeploy: 

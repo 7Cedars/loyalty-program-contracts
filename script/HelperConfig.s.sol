@@ -113,12 +113,16 @@ contract HelperConfig is Script {
 
     function getArbitrumSepoliaEthConfig() public returns (NetworkConfig memory) {
 
+        vm.startBroadcast();
+        s_erc6551Implementation = new LoyaltyCard6551Account();
+        vm.stopBroadcast();
+
         NetworkConfig memory arbitrumSepoliaConfig = NetworkConfig({
             chainid: 421614,
             uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD",
             initialSupply: 1e25,
             interval: 30,
-            erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
+            erc6551Registry: 0x000000006551c19487814612e58FE06813775758, // = v0.3.1 
             erc6551Implementation: payable(s_erc6551Implementation),
             callbackGasLimit: 50000
         });
