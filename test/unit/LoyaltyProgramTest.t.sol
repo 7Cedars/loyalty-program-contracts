@@ -34,7 +34,7 @@ contract LoyaltyProgramTest is Test {
     uint256[] AMOUNT_TOKENS_TO_MINT = [24, 34];
     uint256[] GIFTS_TO_DESELECT = [2];
     address MOCK_LOYALTY_GIFT_ADDRESS = 0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6;
-    uint256 SALT = 3947539732098357;
+    bytes32 SALT = 0x05416460deb86d57af601be17e777b93592d9d4d4a4096c57876a91c84f4a712;
 
     uint256 vendorKey = vm.envUint("DEFAULT_ANVIL_KEY_0");
     address vendorAddress = vm.addr(vendorKey);
@@ -128,7 +128,7 @@ contract LoyaltyProgramTest is Test {
             deployedTBAAccount = loyaltyProgram.getTokenBoundAddress(CARDS_MINTED[i]);
 
             address registryComputedAddress = ERC6551Registry(erc65511Registry).account(
-                address(erc65511Implementation), chainid, address(loyaltyProgram), CARDS_MINTED[i], SALT
+                address(erc65511Implementation), SALT, chainid, address(loyaltyProgram), CARDS_MINTED[i] 
             );
 
             assertEq(deployedTBAAccount, registryComputedAddress);

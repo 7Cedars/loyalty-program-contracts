@@ -83,7 +83,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
 
     /* State variables */
     uint256 public constant LOYALTY_POINTS_ID = 0;
-    uint256 private constant SALT_TOKEN_BASED_ACCOUNT = 3947539732098357;
+    bytes32 private constant SALT_TOKEN_BASED_ACCOUNT = 0x05416460deb86d57af601be17e777b93592d9d4d4a4096c57876a91c84f4a712;
 
     // EIP712 domain separator
     struct EIP712Domain {
@@ -514,7 +514,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
 
     function _createTokenBoundAccount(uint256 _loyaltyCardId) internal returns (address tokenBoundAccount) {
         tokenBoundAccount = s_erc6551Registry.createAccount(
-            address(s_erc6551Implementation), block.chainid, address(this), _loyaltyCardId, SALT_TOKEN_BASED_ACCOUNT, ""
+            address(s_erc6551Implementation), SALT_TOKEN_BASED_ACCOUNT, block.chainid, address(this), _loyaltyCardId
         );
 
         return tokenBoundAccount;
@@ -575,7 +575,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
 
     function getTokenBoundAddress(uint256 _loyaltyCardId) public view returns (address tokenBoundAccount) {
         tokenBoundAccount = s_erc6551Registry.account(
-            address(s_erc6551Implementation), block.chainid, address(this), _loyaltyCardId, SALT_TOKEN_BASED_ACCOUNT
+            address(s_erc6551Implementation), SALT_TOKEN_BASED_ACCOUNT, block.chainid, address(this), _loyaltyCardId 
         );
         return tokenBoundAccount;
     }

@@ -1,45 +1,103 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Create2} from "../../lib/openzeppelin-contracts/contracts/utils/Create2.sol";
-import {ERC6551BytecodeLib} from "./ERC6551BytecodeLib.sol";
+import "@openzeppelin/contracts/utils/Create2.sol";
+import "./ERC6551BytecodeLib.sol";
 
 library ERC6551AccountLib {
-    function testA() public {} // to have foundry ignore this file in coverage report. see £ack https://ethereum.stackexchange.com/questions/155700/force-foundry-to-ignore-contracts-during-a-coverage-report
-
     function computeAddress(
         address registry,
-        address implementation,
+        address _implementation,
+        bytes32 _salt,
         uint256 chainId,
         address tokenContract,
-        uint256 tokenId,
-        uint256 _salt
+        uint256 tokenId
     ) internal pure returns (address) {
-        bytes32 bytecodeHash =
-            keccak256(ERC6551BytecodeLib.getCreationCode(implementation, chainId, tokenContract, tokenId, _salt));
+        bytes32 bytecodeHash = keccak256(
+            ERC6551BytecodeLib.getCreationCode(
+                _implementation, _salt, chainId, tokenContract, tokenId
+            )
+        );
 
-        return Create2.computeAddress(bytes32(_salt), bytecodeHash, registry);
+        return Create2.computeAddress(_salt, bytecodeHash, registry);
+    }
+
+    function isERC6551Account(address account, address expectedImplementation, address registry)
+        internal
+        view
+        returns (bool)
+    {
+        // invalid bytecode size
+        if (account.code.length != 0xAD) return false;
+
+        address _implementation = implementation(account);
+
+        // implementation does not exist
+        if (_implementation.code.length == 0) return false;
+
+        // invalid implementation
+        if (_implementation != expectedImplementation) return false;
+
+        (bytes32 _salt, uint256 chainId, address tokenContract, uint256 tokenId) = context(account);
+
+        return account
+            == computeAddress(registry, _implementation, _salt, chainId, tokenContract, tokenId);
+    }
+
+    function implementation(address account) internal view returns (address _implementation) {
+        assembly {
+            // copy proxy implementation (0x14 bytes)
+            extcodecopy(account, 0xC, 0xA, 0x14)
+            _implementation := mload(0x00)
+        }
+    }
+
+    function implementation() internal view returns (address _implementation) {
+        return implementation(address(this));
+    }
+
+    function token(address account) internal view returns (uint256, address, uint256) {
+        bytes memory encodedData = new bytes(0x60);
+
+        assembly {
+            // copy 0x60 bytes from end of context
+            extcodecopy(account, add(encodedData, 0x20), 0x4d, 0x60)
+        }
+
+        return abi.decode(encodedData, (uint256, address, uint256));
     }
 
     function token() internal view returns (uint256, address, uint256) {
-        bytes memory footer = new bytes(0x60);
-
-        assembly {
-            // copy 0x60 bytes from end of footer
-            extcodecopy(address(), add(footer, 0x20), 0x4d, 0xad)
-        }
-
-        return abi.decode(footer, (uint256, address, uint256));
+        return token(address(this));
     }
 
-    function salt() internal view returns (uint256) {
-        bytes memory footer = new bytes(0x20);
+    function salt(address account) internal view returns (bytes32) {
+        bytes memory encodedData = new bytes(0x20);
 
         assembly {
-            // copy 0x20 bytes from beginning of footer
-            extcodecopy(address(), add(footer, 0x20), 0x2d, 0x4d)
+            // copy 0x20 bytes from beginning of context
+            extcodecopy(account, add(encodedData, 0x20), 0x2d, 0x20)
         }
 
-        return abi.decode(footer, (uint256));
+        return abi.decode(encodedData, (bytes32));
+    }
+
+    function salt() internal view returns (bytes32) {
+        return salt(address(this));
+    }
+
+    function context(address account) internal view returns (bytes32, uint256, address, uint256) {
+        bytes memory encodedData = new bytes(0x80);
+
+        assembly {
+            // copy full context (0x80 bytes)
+            extcodecopy(account, add(encodedData, 0x20), 0x2D, 0x80)
+        }
+
+        return abi.decode(encodedData, (bytes32, uint256, address, uint256));
+    }
+
+    function context() internal view returns (bytes32, uint256, address, uint256) {
+        return context(address(this));
     }
 }
