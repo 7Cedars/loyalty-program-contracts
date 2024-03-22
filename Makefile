@@ -1,5 +1,4 @@
-# this is copy past from https://github.com/Cyfrin/foundry-erc20-f23/blob/main/Makefile
-# Need to adapt this later on. 
+# £ack this file was originally copied from https://github.com/Cyfrin/foundry-erc20-f23/blob/main/Makefile
 
 -include .env
 
@@ -102,9 +101,9 @@ OPT_SEPOLIA_ARGS := --rpc-url $(OPT_SEPOLIA_RPC_URL) --account dev_2 --sender ${
 optSepoliaForkTest: 
 #	@forge test --match-test testCustomerCanClaimGift $(OPT_SEPOLIA_FORK_TEST_ARGS) -vvvv 
 # @forge test $(OPT_SEPOLIA_FORK_TEST_ARGS)  
-	@forge test --no-match-contract ContinueOnRevert $(OPT_SEPOLIA_FORK_TEST_ARGS)
+#	@forge test $(OPT_SEPOLIA_FORK_TEST_ARGS) 
 # ignores invariant tests.
-#	@forge test --match-test testCall $(OPT_SEPOLIA_FORK_TEST_ARGS) -vvvv 
+	@forge test --match-test testNameDeployedLoyaltyProgramIsCorrect $(OPT_SEPOLIA_FORK_TEST_ARGS) -vvvv 
 # CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
 	
 optSepoliaForkDeploy: 
@@ -173,14 +172,14 @@ mumbaiSepoliaDeploy:
 ############################################## 
 #     Arbitrum Sepolia testnet							 #
 ##############################################
-ARB_SEPOLIA_FORK_ARGS := --fork-url $(ARB_SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS}
 ARB_SEPOLIA_FORK_TEST_ARGS := --fork-url $(ARB_SEPOLIA_RPC_URL) 
+ARB_SEPOLIA_FORK_ARGS := --fork-url $(ARB_SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS} --verify --etherscan-api-key $(ETHERSCAN_API_KEY)
 ARB_SEPOLIA_ARGS := --rpc-url $(ARB_SEPOLIA_RPC_URL) --account dev_2 --sender ${DEV2_ADDRESS} --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 
 arbSepoliaForkTest: 
 #	@forge test --match-test testCustomerCanClaimGift $(ARB_SEPOLIA_FORK_TEST_ARGS) -vvvv 
-# @forge test $(ARB_SEPOLIA_FORK_TEST_ARGS)  
-	@forge test --match-test testLoyaltyProgramMintsCards $(ARB_SEPOLIA_FORK_TEST_ARGS) -vvvv
+	@forge test $(ARB_SEPOLIA_FORK_TEST_ARGS)  
+# @forge test --no-match-contract ContinueOnRevert $(ARB_SEPOLIA_FORK_TEST_ARGS) -vvvv
 # ignores invariant tests. 
 #	@forge test --match-test testNameDeployedLoyaltyProgramIsCorrect $(ARB_SEPOLIA_FORK_TEST_ARGS) -vvvv
 # CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
@@ -197,4 +196,4 @@ arbSepoliaDeploy:
 # Update with your contract address, constructor arguments and anything else
 
 verify:
-	@forge verify-contract --chain-id 11155111 --num-of-optimizations 200 --watch --constructor-args 0x00000000000000000000000000000000000000000000d3c21bcecceda1000000 --etherscan-api-key $(ETHERSCAN_API_KEY) --compiler-version v0.8.19+commit.7dd6d404 0x089dc24123e0a27d44282a1ccc2fd815989e3300 src/OurToken.sol:OurToken
+	@forge verify-contract --chain-id 11155111 --num-of-optimizations 200 --watch --constructor-args 0x00000000000000000000000000000000000000000000d3c21bcecceda1000000 --etherscan-api-key $(OPT_ETHERSCAN_API_KEY) --compiler-version v0.8.19+commit.7dd6d404 0x089dc24123e0a27d44282a1ccc2fd815989e3300 src/OurToken.sol:OurToken
