@@ -145,29 +145,19 @@ baseSepoliaDeploy:
 #################################
 # 			Mumbai testnet			  	#
 ################################# 
-# Still fails on two tests - sort out tomorrow. 
-MUMBAI_SEPOLIA_FORK_ARGS := --fork-url $(MUMBAI_SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS}
-MUMBAI_SEPOLIA_FORK_TEST_ARGS := --fork-url $(MUMBAI_SEPOLIA_RPC_URL) 
-MUMBAI_SEPOLIA_ARGS := --rpc-url $(MUMBAI_SEPOLIA_RPC_URL) --account dev_2 --sender ${DEV2_ADDRESS} --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
+# Still fails on two tests 
+MUMBAI_POLYGON_FORKED_TEST_ARGS := --fork-url $(MUMBAI_POLYGON_RPC_URL) 
+MUMBAI_POLYGON_FORKED_DEPLOY_ARGS := --fork-url $(MUMBAI_POLYGON_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS} --verify --etherscan-api-key $(POLYGONSCAN_API_KEY)
 
-mumbaiSepoliaForkTest: 
-#	@forge test --match-test testCustomerCanClaimGift $(MUMBAI_SEPOLIA_FORK_TEST_ARGS) -vvvv 
-# @forge test $(MUMBAI_SEPOLIA_FORK_TEST_ARGS)  
-#	@forge test --no-match-contract ContinueOnRevert $(MUMBAI_SEPOLIA_FORK_TEST_ARGS)
-# ignores invariant tests.
-	@forge test --match-test testMintingCardsCreatesValidTokenBasedAccounts $(MUMBAI_SEPOLIA_FORK_TEST_ARGS) -vvvv 
-# CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
-	
-mumbaiSepoliaForkDeploy: 
-# @forge script script/DeployRegistry.s.sol:DeployRegistry $(MUMBAI_SEPOLIA_FORK_ARGS)
-# @forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(MUMBAI_SEPOLIA_FORK_ARGS)
-	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(MUMBAI_SEPOLIA_FORK_ARGS)
-#	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(MUMBAI_SEPOLIA_FORK_ARGS)
+mumbaiForkTest: 
+# notice that invariant tests are excluded (takes too long). 
+	@forge test --no-match-contract ContinueOn $(MUMBAI_POLYGON_FORKED_TEST_ARGS) 
 
-mumbaiSepoliaDeploy:
-	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(MUMBAI_SEPOLIA_ARGS)
-	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(MUMBAI_SEPOLIA_ARGS)
+mumbaiForkedDeployTest: 
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(MUMBAI_POLYGON_FORKED_TEST_ARGS)
 
+mumbaiForkedDeploy:
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(MUMBAI_POLYGON_FORKED_DEPLOY_ARGS)
 
 ############################################## 
 #     Arbitrum Sepolia testnet							 #
@@ -183,10 +173,13 @@ arbSepoliaForkTest:
 # ignores invariant tests. 
 #	@forge test --match-test testNameDeployedLoyaltyProgramIsCorrect $(ARB_SEPOLIA_FORK_TEST_ARGS) -vvvv
 # CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
-	
+
+arbSepoliaTestDeploy: 
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ARB_SEPOLIA_FORK_TEST_ARGS)
+
 arbSepoliaForkDeploy: 
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ARB_SEPOLIA_FORK_ARGS)
-	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(ARB_SEPOLIA_FORK_ARGS)
+# @forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(ARB_SEPOLIA_FORK_ARGS)
 
 arbSepoliaDeploy:
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ARB_SEPOLIA_ARGS)
