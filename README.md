@@ -210,7 +210,6 @@ GitHub profile [https://github.com/7Cedars](https://github.com/7Cedars)
 * As was the documentation from [Tokenbound](https://docs.tokenbound.org/) (an organisation advocating the implementation of Tokan Based Accounts). 
 * I took the template for the readme file from [Drew Othneil](https://github.com/othneildrew/Best-README-Template/blob/master/README.md?plain=1). 
 * And a special thanks should go out to [SpeedRunEthereum](https://speedrunethereum.com/) and [LearnWeb3](https://learnweb3.io/) for providing the first introductions to solidity coding. 
-* And the deploy scripts use Etherscan.io APIs.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
