@@ -9,11 +9,19 @@ interface ILoyaltyGift is IERC1155 {
     error LoyaltyGift__LoyaltyProgramNotRecognised(address loyaltyToken);
     error LoyaltyGift__NftNotOwnedByloyaltyCard(address loyaltyToken);
     error LoyaltyGift__RequirementsNotMet(address loyaltyToken, uint256 loyaltyGiftId);
+    
+    /* Type declaration */ 
+    struct Gift {
+        bool claimable; // if it can be claimed by customer. There are many vouchers that can only be received - not claimed - or won.  
+        uint256 cost;  // cost in points. 
+        bool additionalRequirements;  // if there are additional requirements. 
+        bool voucher; // if it is a voucher or not (now tokenised)
+    }
 
     /**
      * @dev natspecs TBI
      */
-    event LoyaltyGiftDeployed(address indexed issuer, uint256[] tokenised);
+    event LoyaltyGiftDeployed(address indexed issuer, Gift[] gifts);
 
     /**
      * @notice provides the requirement logics for receiving gifts.  Returns true or false. 

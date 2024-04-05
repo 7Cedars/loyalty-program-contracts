@@ -374,6 +374,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
             revert LoyaltyProgram__LoyaltyGiftInvalid();
         }
 
+        // £todo: should I not check here if requirements are met?! 
+
         // Effect.
         // 1) set executed to true..
         requestExecuted[digest] = 1;
