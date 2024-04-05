@@ -6,6 +6,7 @@ import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
 import {LoyaltyGift} from "../mocks/LoyaltyGift.sol";
 import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";
+
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";

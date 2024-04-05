@@ -18,27 +18,39 @@ import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
  * 
  */
 
-contract PointsForLoyaltyVouchers is LoyaltyGift {
+contract MockLoyaltyGifts is LoyaltyGift {
     Gift gift0 = Gift({
         claimable: true, 
         cost: 2500, 
         additionalRequirements: false, 
-        voucher: true 
+        voucher: false 
         }); 
     Gift gift1 = Gift({
         claimable: true, 
         cost: 4500, 
         additionalRequirements: false, 
-        voucher: true 
+        voucher: false 
         }); 
     Gift gift2 = Gift({
+        claimable: true, 
+        cost: 2500, 
+        additionalRequirements: false, 
+        voucher: true 
+        }); 
+    Gift gift3 = Gift({
+        claimable: true, 
+        cost: 4500, 
+        additionalRequirements: false, 
+        voucher: true 
+        }); 
+    Gift gift4 = Gift({
         claimable: true, 
         cost: 50000, 
         additionalRequirements: false, 
         voucher: true 
         }); 
 
-    Gift[] public gifts = [gift0, gift1, gift2];  
+    Gift[] public gifts = [gift0, gift1, gift2, gift3, gift4];  
 
     /**
      * @notice constructor function: initiating loyalty gift contract. 
@@ -70,22 +82,36 @@ contract PointsForLoyaltyVouchers is LoyaltyGift {
         override
         returns (bool success)
     {
-        // loyalty gift 3: exchange 2500 points for voucher. 
+        // loyalty gift 0: exchange 2500 points for gift. 
         if (loyaltyGiftId == 0) {
+            if (loyaltyPoints < gifts[0].cost) {
+                revert ("Not enough points.");
+            }
+        }
+
+        // loyalty gift 1: exchange 4500 points for gift. 
+        if (loyaltyGiftId == 1) {
+            if (loyaltyPoints <  gifts[1].cost) {
+                revert ("Not enough points.");
+            }
+        }
+            
+        // loyalty gift 2: exchange 2500 points for voucher. 
+        if (loyaltyGiftId == 2) {
             if (loyaltyPoints < gifts[0].costs) {
                 revert ("Not enough points.");
             }
         }
 
         // loyalty gift 3: exchange 4500 points for voucher. 
-        if (loyaltyGiftId == 1) {
+        if (loyaltyGiftId == 3) {
             if (loyaltyPoints < gifts[1].costs) {
                 revert ("Not enough points.");
             }
         }
 
-        // loyalty gift 3: exchange 50000 points for voucher. 
-        if (loyaltyGiftId == 2) {
+        // loyalty gift 4: exchange 50000 points for voucher. 
+        if (loyaltyGiftId == 4) {
             if (loyaltyPoints < gifts[2].costs) {
                 revert ("Not enough points.");
             }
