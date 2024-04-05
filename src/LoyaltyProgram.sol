@@ -386,7 +386,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         // 3) retrieve loyalty points from customer
         _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, "");
         // and 4), if gift is tokenised, transfer voucher.
-        if (LoyaltyGift(loyaltyGiftAddress).getTokenised()[loyaltyGiftId] == 1) {
+        if (LoyaltyGift(loyaltyGiftAddress).getInfoGift(loyaltyGiftId).voucher == true) {
             LoyaltyGift(loyaltyGiftAddress).issueLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
         }
     }

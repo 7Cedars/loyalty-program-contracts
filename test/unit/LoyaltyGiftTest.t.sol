@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {LoyaltyGift} from "../mocks/LoyaltyGift.sol";
-import {DeployLoyaltyGift} from "../../script/DeployLoyaltyGifts.s.sol";
+import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 
 /**
@@ -22,16 +22,24 @@ contract LoyaltyGiftTest is Test {
     event TransferBatch(
         address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values
     );
-    event LoyaltyGiftDeployed(address indexed issuer, uint256[] tokenised);
+    event LoyaltyGiftDeployed(address indexed issuer);
 
     uint256 keyZero = vm.envUint("DEFAULT_ANVIL_KEY_0");
     address addressZero = vm.addr(keyZero);
     uint256 keyOne = vm.envUint("DEFAULT_ANVIL_KEY_1");
     address addressOne = vm.addr(keyOne);
-
     string GIFT_URI =
         "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmSshfobzx5jtA14xd7zJ1PtmG8xFaPkAq2DZQagiAkSET/{id}";
-    uint256[] TOKENISED = [0, 1];
+    
+    struct Gift {
+        bool claimable; // if it can be claimed by customer. There are many vouchers that can only be received - not claimed - or won.  
+        uint256 cost;  // cost in points. 
+        bool additionalRequirements;  // if there are additional requirements. 
+        bool voucher; // if it is a voucher or not (now tokenised)
+    }
+
+
+    uint256[] GIFT = [0, 1];
     uint256[] VOUCHERS_TO_MINT = [1];
     uint256[] AMOUNT_VOUCHERS_TO_MINT = [24];
     uint256[] NON_TOKENISED_TO_MINT = [0];
@@ -44,29 +52,18 @@ contract LoyaltyGiftTest is Test {
     LoyaltyGift loyaltyGift;
 
     function setUp() external {
-        DeployLoyaltyGift deployer = new DeployLoyaltyGift();
+        DeployMockLoyaltyGifts deployer = new DeployMockLoyaltyGifts();
         loyaltyGift = deployer.run();
     }
 
-    function testLoyaltyGiftHasTokenised() public {
-        uint256[] memory tokenised = loyaltyGift.getTokenised();
-        assertNotEq(tokenised.length, 0);
+    function testLoyaltyGiftHasGifts() public {
+        uint256 amountGifts = loyaltyGift.getAmountGifts();
+        assertNotEq(amountGifts, 0);
     }
 
     function testRequirementsReturnsTrue() public {
         bool result = loyaltyGift.requirementsLoyaltyGiftMet(address(0), 0, 0);
         assertEq(result, true);
-    }
-
-    function testDeployEmitsevent() public {
-        vm.expectEmit(true, false, false, false);
-        emit LoyaltyGiftDeployed(addressZero, TOKENISED);
-
-        vm.prank(addressZero);
-        loyaltyGift = new LoyaltyGift(
-        GIFT_URI,  
-        TOKENISED
-        );
     }
 
     ///////////////////////////////////////////////

@@ -63,23 +63,23 @@ contract ContinueOnRevertHandlerPrograms is Test  {
         LoyaltyGift giftProgram1 = _getGiftProgram(giftProgram1Seed);
         LoyaltyGift giftProgram2 = _getGiftProgram(giftProgram2Seed); 
         // this is all still a bit convoluted
-        uint256[] memory tokenised1 = giftProgram1.getTokenised();
-        uint256[] memory tokenised2 = giftProgram2.getTokenised();
+        uint256 amountTokens1 = giftProgram1.getAmountGifts();
+        uint256 amountTokens2 = giftProgram2.getAmountGifts();
         uint256[] memory voucherIds = new uint256[](1);
 
         // select ALL avavialble gifts. 
         vm.startPrank(loyaltyProgram.getOwner()); 
-        for (uint256 i; i < tokenised1.length; i++) {
+        for (uint256 i; i < amountTokens1; i++) {
            loyaltyProgram.addLoyaltyGift(address(giftProgram1), i); 
         }
-        for (uint256 i; i < tokenised2.length; i++) {
+        for (uint256 i; i < amountTokens2; i++) {
            loyaltyProgram.addLoyaltyGift(address(giftProgram2), i); 
         }
         vm.stopPrank(); 
 
         // mint vouchers for ALL available vouchers. 
-        for (uint256 i = 0; i < tokenised1.length;) {
-          if (tokenised1[i] == 1) {
+        for (uint256 i = 0; i < amountTokens1;) {
+          if (amountTokens1 == 1) {
             voucherIds[0] = i; 
 
             vm.prank(loyaltyProgram.getOwner()); 
@@ -92,8 +92,8 @@ contract ContinueOnRevertHandlerPrograms is Test  {
             unchecked { ++i; } 
         }
 
-        for (uint256 i; i < tokenised2.length;) {
-          if (tokenised2[i] == 1) {
+        for (uint256 i; i < amountTokens2;) {
+          if (amountTokens2 == 1) {
             voucherIds[0] = i; 
 
             vm.prank(loyaltyProgram.getOwner()); 

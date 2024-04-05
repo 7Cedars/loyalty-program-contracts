@@ -98,21 +98,21 @@ contract MockLoyaltyGifts is LoyaltyGift {
             
         // loyalty gift 2: exchange 2500 points for voucher. 
         if (loyaltyGiftId == 2) {
-            if (loyaltyPoints < gifts[0].costs) {
+            if (loyaltyPoints < gifts[0].cost) {
                 revert ("Not enough points.");
             }
         }
 
         // loyalty gift 3: exchange 4500 points for voucher. 
         if (loyaltyGiftId == 3) {
-            if (loyaltyPoints < gifts[1].costs) {
+            if (loyaltyPoints < gifts[1].cost) {
                 revert ("Not enough points.");
             }
         }
 
         // loyalty gift 4: exchange 50000 points for voucher. 
         if (loyaltyGiftId == 4) {
-            if (loyaltyPoints < gifts[2].costs) {
+            if (loyaltyPoints < gifts[2].cost) {
                 revert ("Not enough points.");
             }
         }

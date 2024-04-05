@@ -37,7 +37,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
      */
     constructor(string memory loyaltyTokenUri, Gift[] memory gifts) ERC1155(loyaltyTokenUri) {
         s_gifts = gifts;
-        emit LoyaltyGiftDeployed(msg.sender, s_gifts);
+        emit LoyaltyGiftDeployed(msg.sender);
     }
 
     /**
