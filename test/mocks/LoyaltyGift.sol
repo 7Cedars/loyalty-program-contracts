@@ -23,21 +23,37 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     error LoyaltyGift__IsNotVoucher(address loyaltyToken, uint256 loyaltyGiftId);
     error LoyaltyGift__TransferDenied(address loyaltyToken);
 
-    /* types */
-    Gift[] s_gifts; 
+    /* State variables */
+    uint256[] s_isClaimable; 
+    uint256[] s_isVoucher; 
+    uint256[] s_cost;
+    uint256[] s_hasAdditionalRequirements;   
 
     /* FUNCTIONS: */
     /**
      * @notice constructor function. 
      * 
      * @param loyaltyTokenUri URI of vouchers. Follows ERC 1155 standard.  
-     * @param gifts array of 0 and 1's to indicate what gifts have vouchers (= token) and which ones do not. 
+     * @param isClaimable => can gift directly be claimed by customer?
+     * @param isVoucher => is the gift a voucher (to be redeemed later) or has to be immediatly redeemed at the till? 
+     * @param cost =>  What is cost (in points) of voucher? 
+     * @param hasAdditionalRequirements =>  Are their additional requirements? 
      * 
      * emits a LoyaltyGiftDeployed event.  
      */
-    constructor(string memory loyaltyTokenUri, Gift[] memory gifts) ERC1155(loyaltyTokenUri) {
-        s_gifts = gifts;
-        emit LoyaltyGiftDeployed(msg.sender);
+    constructor(
+        string memory loyaltyTokenUri, 
+        uint256[] memory isClaimable,
+        uint256[] memory isVoucher,
+        uint256[] memory cost,
+        uint256[] memory hasAdditionalRequirements   
+        ) ERC1155(loyaltyTokenUri) {
+            s_isClaimable = isClaimable; 
+            s_isVoucher = isVoucher;
+            s_cost = cost;
+            s_hasAdditionalRequirements = hasAdditionalRequirements;  
+            
+            emit LoyaltyGiftDeployed(msg.sender);
     }
 
     /**
@@ -57,7 +73,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
         virtual
         returns (bool success)
     {
-        if (s_gifts[loyaltyGiftId].claimable == false) revert ("Token is not claimable."); 
+        if (s_isClaimable[loyaltyGiftId] == 0) revert ("Token is not claimable."); 
 
         return true;
     }
@@ -77,7 +93,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
      */
     function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfVouchers) public {
         for (uint256 i; i < loyaltyGiftIds.length; ) {
-            if (s_gifts[loyaltyGiftIds[i]].voucher == false) {
+            if (s_isVoucher[loyaltyGiftIds[i]] == 0) {
                 revert LoyaltyGift__IsNotVoucher(address(this), loyaltyGiftIds[i]);
             }
         unchecked { ++i; } 
@@ -99,7 +115,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     function issueLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId)
         public virtual
     {
-        if (s_gifts[loyaltyGiftId].voucher == false) {
+        if (s_isVoucher[loyaltyGiftId] == 0) {
             revert LoyaltyGift__IsNotVoucher(address(this), loyaltyGiftId);
         }
 
@@ -121,7 +137,7 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
      * @dev also does not check if address is TBA / loyaltyCard -- see safeTransferFrom for this. 
      */
     function redeemLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId) public {
-        if (s_gifts[loyaltyGiftId].voucher == false) {
+        if (s_isVoucher[loyaltyGiftId] == 0) {
             revert LoyaltyGift__IsNotVoucher(address(this), loyaltyGiftId);
         }
 
@@ -160,11 +176,23 @@ contract LoyaltyGift is ERC1155, ILoyaltyGift {
     }
 
     /* getter functions */
-    function getAmountGifts() external view returns (uint256) {
-        return s_gifts.length;
+    function getNumberOfGifts() external view returns (uint256) {
+        return s_isClaimable.length;
     }
 
-    function getInfoGift(uint256 index) external view returns (Gift memory) {
-        return s_gifts[index];
+    function getIsClaimable(uint256 index) external view returns (uint256) {
+        return s_isClaimable[index];
+    } 
+
+    function getIsVoucher(uint256 index) external view returns (uint256) {
+        return s_isVoucher[index]; 
+    }
+
+    function getCost(uint256 index) external view returns (uint256) {
+        return s_cost[index];
+    }
+
+    function getHasAdditionalRequirements(uint256 index) external view returns (uint256) {
+        return s_hasAdditionalRequirements[index]; 
     }
 }

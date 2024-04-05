@@ -93,7 +93,7 @@ contract LoyaltyGiftTest is Test {
     function testMintingVouchersRevertsIfGiftNotTokenised() public {
         vm.expectRevert(
             abi.encodeWithSelector(
-                LoyaltyGift.LoyaltyGift__NotTokenised.selector, address(loyaltyGift), NON_TOKENISED_TO_MINT[0]
+                LoyaltyGift.LoyaltyGift__IsNotVoucher.selector, address(loyaltyGift), NON_TOKENISED_TO_MINT[0]
             )
         );
 
@@ -117,7 +117,7 @@ contract LoyaltyGiftTest is Test {
 
     function testIssueVoucherRevertsForNonAvailableTokenisedGift() public {
         vm.expectRevert(
-            abi.encodeWithSelector(LoyaltyGift.LoyaltyGift__NoTokensAvailable.selector, address(loyaltyGift))
+            abi.encodeWithSelector(LoyaltyGift.LoyaltyGift__NoVouchersAvailable.selector, address(loyaltyGift))
         );
         loyaltyGift.issueLoyaltyVoucher(addressOne, 1);
     }
@@ -128,7 +128,7 @@ contract LoyaltyGiftTest is Test {
     function testRedeemRevertsForNonAvailableTokenisedGift() public {
         vm.expectRevert(
             abi.encodeWithSelector(
-                LoyaltyGift.LoyaltyGift__NotTokenised.selector, address(loyaltyGift), NON_TOKENISED_TO_MINT[0]
+                LoyaltyGift.LoyaltyGift__IsNotVoucher.selector, address(loyaltyGift), NON_TOKENISED_TO_MINT[0]
             )
         );
         vm.prank(addressZero);
