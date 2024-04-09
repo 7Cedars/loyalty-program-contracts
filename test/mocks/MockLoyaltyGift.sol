@@ -94,11 +94,12 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
      * £todo: CHECK If this is true!  
      */
     function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfVouchers) public {
-        for (uint256 i; i < loyaltyGiftIds.length; ) {
+        
+        for (uint256 i; i <= 1; ) { // uint256 i; i < loyaltyGiftIds.length; 
             if (s_isVoucher[loyaltyGiftIds[i]] == 0) {
                 revert LoyaltyGift__IsNotVoucher(address(this), loyaltyGiftIds[i]);
             }
-        unchecked { ++i; } 
+        unchecked { i++; } 
         }
         _mintBatch(msg.sender, loyaltyGiftIds, numberOfVouchers, ""); // emits batchtransfer event
     }
