@@ -5,6 +5,9 @@ import "@openzeppelin/contracts/utils/Create2.sol";
 import "./ERC6551BytecodeLib.sol";
 
 library ERC6551AccountLib {
+
+    function test() public {} // skip in foundry coverage
+    
     function computeAddress(
         address registry,
         address _implementation,

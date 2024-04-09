@@ -2,6 +2,9 @@
 pragma solidity ^0.8.4;
 
 library ERC6551BytecodeLib {
+
+    function test() public {} // skip in foundry coverage
+    
     /**
      * @dev Returns the creation code of the token bound account for a non-fungible token.
      *

@@ -13,6 +13,8 @@ contract MockERC6551Account is IERC165, IERC6551Account, IERC6551Executable {
 
     receive() external payable {}
 
+    function test() public {} // skip in foundry coverage
+
     function initialize(bool val) external {
         if (!val) {
             revert("disabled");

@@ -39,17 +39,6 @@ contract CardsToProgramToGiftsTest is Test {
     HelperConfig helperConfig;
     LoyaltyCard6551Account loyaltyCardAccount; 
 
-    uint256[] GIFTS_TO_SELECT = [0, 3, 5];
-    uint256[] VOUCHERS_TO_MINT = [3, 5];
-    uint256[] AMOUNT_VOUCHERS_TO_MINT = [24, 45];
-    uint256[] GIFTS_TO_DESELECT = [3];
-    uint256 CARDS_TO_MINT = 3;
-    uint256[] CARD_IDS = [1, 2, 3];
-    uint256[] CARDS_SINGLES = [1, 1, 1];
-    uint256 POINTS_TO_MINT = 500000000;
-    uint256[] POINTS_TO_TRANSFER = [10000, 12000, 14000];
-    uint256 SALT_TOKEN_BASED_ACCOUNT = 3947539732098357;
-
     uint256 customerOneKey = 0xa11ce;
     uint256 customerTwoKey = 0x7ceda5;
     address customerOneAddress = vm.addr(customerOneKey);
@@ -137,6 +126,19 @@ contract CardsToProgramToGiftsTest is Test {
     ///////////////////////////////////////////////
     function setUp() external {
         // Deploy Loyalty and Gifts Program
+        uint256[] memory giftIds = new uint256[](3); 
+        giftIds[0] = 0; giftIds[1] = 3; giftIds[2] = 5; 
+        uint256[] memory vouchersToMint = new uint256[](2); 
+        vouchersToMint[0] = 3; vouchersToMint[1] = 5; 
+        uint256[] memory amountVouchersToMint = new uint256[](2);  
+        amountVouchersToMint[0] = 24; amountVouchersToMint[1] = 45; 
+        uint256[] memory cardIds = new uint256[](3); 
+        cardIds[0] = 1; cardIds[1] = 2; cardIds[1] = 3; 
+        uint256[] memory pointsToTransfer = new uint256[](3); 
+        pointsToTransfer[0] = 10000; pointsToTransfer[1] = 12000; pointsToTransfer[1] = 14000; 
+
+        uint256 pointsToMint = 500000000;
+        uint256 cardsToMint = 3;
 
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
         (loyaltyProgram, helperConfig) = deployer.run();
@@ -151,19 +153,19 @@ contract CardsToProgramToGiftsTest is Test {
         vm.startPrank(owner);
 
         // Loyalty Program selecting Gifts
-        for (uint256 i = 0; i < GIFTS_TO_SELECT.length; i++) {
-            loyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), GIFTS_TO_SELECT[i]);
+        for (uint256 i = 0; i < giftIds.length; i++) {
+            loyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), giftIds[i]);
         }
 
         // Loyalty Program minting Loyalty Points, Cards and Vouchers
-        loyaltyProgram.mintLoyaltyPoints(POINTS_TO_MINT);
-        loyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);
-        loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
+        loyaltyProgram.mintLoyaltyPoints(pointsToMint);
+        loyaltyProgram.mintLoyaltyCards(cardsToMint);
+        loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), vouchersToMint, amountVouchersToMint);
 
         // Loyalty Program Transferring Points to Cards
-        for (uint256 i = 0; i < CARD_IDS.length; i++) {
+        for (uint256 i = 0; i < cardIds.length; i++) {
             loyaltyProgram.safeTransferFrom(
-                owner, loyaltyProgram.getTokenBoundAddress(CARD_IDS[i]), 0, POINTS_TO_TRANSFER[i], ""
+                owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
             );
         }
 
@@ -173,19 +175,19 @@ contract CardsToProgramToGiftsTest is Test {
         // Repeat these actions for alternative LoyaltyProgram. 
         vm.startPrank(alternativeOwner);
         // Loyalty Program selecting Gifts
-        for (uint256 i = 0; i < GIFTS_TO_SELECT.length; i++) {
-            alternativeLoyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), GIFTS_TO_SELECT[i]);
+        for (uint256 i = 0; i < giftIds.length; i++) {
+            alternativeLoyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), giftIds[i]);
         }
 
         // Loyalty Program minting Loyalty Points, Cards and Vouchers
-        alternativeLoyaltyProgram.mintLoyaltyPoints(POINTS_TO_MINT);
-        alternativeLoyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);
-        alternativeLoyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
+        alternativeLoyaltyProgram.mintLoyaltyPoints(pointsToMint);
+        alternativeLoyaltyProgram.mintLoyaltyCards(cardsToMint);
+        alternativeLoyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), vouchersToMint, amountVouchersToMint);
 
         // Loyalty Program Transferring Points to Cards
-        for (uint256 i = 0; i < CARD_IDS.length; i++) {
+        for (uint256 i = 0; i < cardIds.length; i++) {
             alternativeLoyaltyProgram.safeTransferFrom(
-                alternativeOwner, alternativeLoyaltyProgram.getTokenBoundAddress(CARD_IDS[i]), 0, POINTS_TO_TRANSFER[i], ""
+                alternativeOwner, alternativeLoyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
             );
         }
 
