@@ -21,7 +21,7 @@ import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {DeployLoyaltyProgram} from "../../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../../script/DeployLoyaltyGifts.s.sol";
 import {LoyaltyProgram} from "../../../src/LoyaltyProgram.sol" ;
-import {LoyaltyGift} from "../../mocks/LoyaltyGift.sol" ;
+ import {MockLoyaltyGift} from "../../mocks/MockLoyaltyGift.sol" ;
 import {HelperConfig} from "../../../script/HelperConfig.s.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
@@ -40,7 +40,7 @@ contract ContinueOnRevertHandlerCards is Test  {
   uint256[] userPrivatekeys; 
   LoyaltyProgram[] loyaltyPrograms;
   address[] loyaltyCards;
-  LoyaltyGift[] loyaltyGifts;
+  MockLoyaltyGift[] loyaltyGifts;
   address[] allAddresses;
   string[] names; 
   uint256 selectedCard; 
@@ -110,7 +110,7 @@ contract ContinueOnRevertHandlerCards is Test  {
   constructor( 
     LoyaltyProgram[] memory _loyaltyPrograms,  
     address[] memory _loyaltyCards,  
-    LoyaltyGift[] memory _loyaltyGifts, 
+    MockLoyaltyGift[] memory _loyaltyGifts, 
     HelperConfig _helperConfig
     ) {
       loyaltyPrograms = _loyaltyPrograms;
@@ -197,7 +197,7 @@ contract ContinueOnRevertHandlerCards is Test  {
       address ownerProgram = loyaltyProgram.getOwner(); 
 
       // selecting random gift program & random gift of this program. 
-      LoyaltyGift giftProgram = _getGiftProgram(giftProgramSeed); 
+      MockLoyaltyGift giftProgram = _getGiftProgram(giftProgramSeed); 
       // uint256[] memory tokenised = giftProgram.getTokenised();
       uint256 giftId = giftIdSeed % 2 + 3; // for now, ALWAYS tokenised gifts are at positions 3, 4, 5. 
 
@@ -246,7 +246,7 @@ contract ContinueOnRevertHandlerCards is Test  {
       // randomly select loyalty  card; 
       uint256 selectedVoucherId;
       uint256 selectedCardId;
-      LoyaltyGift selectedLoyaltyGift;
+      MockLoyaltyGift selectedLoyaltyGift;
       uint256 cardBalance;
       // Log[] memory entries = vm.getRecordedLogs(); -- cannot get this to work yet. (hence very convoluted nested loop below)
 
@@ -313,7 +313,7 @@ contract ContinueOnRevertHandlerCards is Test  {
       return loyaltyPrograms[loyaltyProgramSeed % loyaltyPrograms.length];
       }
 
-    function _getGiftProgram( uint256 giftProgramSeed ) private view returns (LoyaltyGift) 
+    function _getGiftProgram( uint256 giftProgramSeed ) private view returns (MockLoyaltyGift) 
     {
       return loyaltyGifts[giftProgramSeed % loyaltyGifts.length];
       }

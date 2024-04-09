@@ -21,7 +21,7 @@ import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {DeployLoyaltyProgram} from "../../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../../script/DeployLoyaltyGifts.s.sol";
 import {LoyaltyProgram} from "../../../src/LoyaltyProgram.sol" ;
-import {LoyaltyGift} from "../../mocks/LoyaltyGift.sol" ;
+ import {MockLoyaltyGift} from "../../mocks/MockLoyaltyGift.sol" ;
 import {HelperConfig} from "../../../script/HelperConfig.s.sol" ;
 
 contract ContinueOnRevertHandlerPrograms is Test  {
@@ -31,7 +31,7 @@ contract ContinueOnRevertHandlerPrograms is Test  {
 
   LoyaltyProgram[] loyaltyPrograms;
   address[] loyaltyCards;
-  LoyaltyGift[] loyaltyGifts;
+  MockLoyaltyGift[] loyaltyGifts;
   
   HelperConfig helperConfig; 
   ContinueOnRevertHandlerPrograms handler;
@@ -41,7 +41,7 @@ contract ContinueOnRevertHandlerPrograms is Test  {
   constructor(
     LoyaltyProgram[] memory _loyaltyPrograms,  
     address[] memory _loyaltyCards,  
-    LoyaltyGift[] memory _loyaltyGifts, 
+    MockLoyaltyGift[] memory _loyaltyGifts, 
     HelperConfig _helperConfig,
     uint256 _supplyVouchers
     ) {
@@ -60,11 +60,11 @@ contract ContinueOnRevertHandlerPrograms is Test  {
       uint256 giftProgram2Seed
       ) public {
         LoyaltyProgram loyaltyProgram = _getLoyaltyProgram(loyaltyProgramSeed); 
-        LoyaltyGift giftProgram1 = _getGiftProgram(giftProgram1Seed);
-        LoyaltyGift giftProgram2 = _getGiftProgram(giftProgram2Seed); 
+        MockLoyaltyGift giftProgram1 = _getGiftProgram(giftProgram1Seed);
+        MockLoyaltyGift giftProgram2 = _getGiftProgram(giftProgram2Seed); 
         // this is all still a bit convoluted
-        uint256 amountTokens1 = giftProgram1.getAmountGifts();
-        uint256 amountTokens2 = giftProgram2.getAmountGifts();
+        uint256 amountTokens1 = giftProgram1.getNumberOfGifts();
+        uint256 amountTokens2 = giftProgram2.getNumberOfGifts();
         uint256[] memory voucherIds = new uint256[](1);
 
         // select ALL avavialble gifts. 
@@ -156,7 +156,7 @@ contract ContinueOnRevertHandlerPrograms is Test  {
       return loyaltyPrograms[loyaltyProgramSeed % loyaltyPrograms.length];
       }
 
-    function _getGiftProgram( uint256 giftProgramSeed ) private view returns (LoyaltyGift) 
+    function _getGiftProgram( uint256 giftProgramSeed ) private view returns (MockLoyaltyGift) 
     {
       return loyaltyGifts[giftProgramSeed % loyaltyGifts.length];
       }

@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 // based on: Patrick Collins: helperConfig.s.sol + learning/foundry-fund-me-f23
 
 import {Script, console} from "forge-std/Script.sol";
-import {LoyaltyGift} from "../test/mocks/LoyaltyGift.sol";
+ import {MockLoyaltyGift} from "../test/mocks/MockLoyaltyGift.sol";
 import {ERC6551Registry} from "../test/mocks/ERC6551Registry.sol";
 import {LoyaltyCard6551Account} from "../src/LoyaltyCard6551Account.sol";
 

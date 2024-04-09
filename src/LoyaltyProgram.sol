@@ -14,7 +14,7 @@ import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165C
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {ERC6551Registry} from "../test/mocks/ERC6551Registry.sol";
 import {LoyaltyCard6551Account} from "./LoyaltyCard6551Account.sol";
-import {LoyaltyGift} from "../test/mocks/LoyaltyGift.sol";
+import {MockLoyaltyGift} from "../test/mocks/MockLoyaltyGift.sol";
 
 /**
  * @dev THIS CONTRACT HAS NOT BEEN AUDITED. WORSE: TESTING IS INCOMPLETE. DO NOT DEPLOY ON ANYTHING ELSE THAN A TEST CHAIN! 
@@ -305,7 +305,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         uint256[] memory loyaltyGiftIds,
         uint256[] memory numberOfVouchers
     ) public onlyOwner {
-        LoyaltyGift(loyaltyGiftAddress).mintLoyaltyVouchers(loyaltyGiftIds, numberOfVouchers);
+        MockLoyaltyGift(loyaltyGiftAddress).mintLoyaltyVouchers(loyaltyGiftIds, numberOfVouchers);
     }
 
     /**
@@ -386,8 +386,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         // 3) retrieve loyalty points from customer
         _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, "");
         // and 4), if gift is tokenised, transfer voucher.
-        if (LoyaltyGift(loyaltyGiftAddress).getInfoGift(loyaltyGiftId).voucher == true) {
-            LoyaltyGift(loyaltyGiftAddress).issueLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
+        if (MockLoyaltyGift(loyaltyGiftAddress).getIsVoucher(loyaltyGiftId) == 1) {
+            MockLoyaltyGift(loyaltyGiftAddress).issueLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
         }
     }
 
@@ -460,7 +460,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
 
         // Interact.
         // 2) redeem loyalty voucher
-        LoyaltyGift(loyaltyGift).redeemLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
+        MockLoyaltyGift(loyaltyGift).redeemLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
     }
 
     /**

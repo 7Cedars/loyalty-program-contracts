@@ -17,7 +17,7 @@ import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
  * @dev Counter intutively, this ERC1155 contract can be set to NOT mint any vouchers. This is because it is easier (and possibly safer) for Loyalty_Program_
  * contracts to interact with one type of contract, instead of two.
  */
-contract LoyaltyGift is ERC1155, ILoyaltyGift {
+contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
     /* errors */
     error LoyaltyGift__NoVouchersAvailable(address loyaltyToken);
     error LoyaltyGift__IsNotVoucher(address loyaltyToken, uint256 loyaltyGiftId);

@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
-import {LoyaltyGift} from "../mocks/LoyaltyGift.sol";
+ import {MockLoyaltyGift} from "../mocks/MockLoyaltyGift.sol";
 import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";
 
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
@@ -34,7 +34,7 @@ contract CardsToProgramToGiftsTest is Test {
 
     LoyaltyProgram loyaltyProgram;
     LoyaltyProgram alternativeLoyaltyProgram;
-    LoyaltyGift loyaltyGift; 
+    MockLoyaltyGift loyaltyGift; 
     MockLoyaltyGifts mockLoyaltyGifts;
     HelperConfig helperConfig;
     LoyaltyCard6551Account loyaltyCardAccount; 

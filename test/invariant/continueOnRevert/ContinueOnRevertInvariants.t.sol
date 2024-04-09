@@ -17,7 +17,7 @@ import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {DeployLoyaltyProgram} from "../../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../../script/DeployLoyaltyGifts.s.sol";
 import {LoyaltyProgram} from "../../../src/LoyaltyProgram.sol" ;
-import {LoyaltyGift} from "../../mocks/LoyaltyGift.sol" ;
+ import {MockLoyaltyGift} from "../../mocks/MockLoyaltyGift.sol" ;
 import {ContinueOnRevertHandlerPrograms} from "./ContinueOnRevertHandlerPrograms.t.sol";
 import {ContinueOnRevertHandlerCards} from "./ContinueOnRevertHandlerCards.t.sol";
 import {HelperConfig} from "../../../script/HelperConfig.s.sol" ;
@@ -43,7 +43,7 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
   address[] userAddresses; 
   uint256[] userPrivatekeys; 
   LoyaltyProgram[] loyaltyPrograms;
-  LoyaltyGift[] loyaltyGifts;
+  MockLoyaltyGift[] loyaltyGifts;
   address[] cardAddresses; 
   address[] allCardAddresses;
   
@@ -136,7 +136,7 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
     uint256 sumCardBalances; 
     uint256 programBalance; 
     ProgramData memory programData;
-    LoyaltyGift loyaltyGift; 
+    MockLoyaltyGift loyaltyGift; 
     address programOwner;
 
     /**

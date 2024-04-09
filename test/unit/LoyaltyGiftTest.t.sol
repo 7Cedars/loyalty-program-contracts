@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
-import {LoyaltyGift} from "../mocks/LoyaltyGift.sol";
+ import {MockLoyaltyGift} from "../mocks/MockLoyaltyGift.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 
@@ -49,7 +49,7 @@ contract LoyaltyGiftTest is Test {
     ///                   Setup                 ///
     ///////////////////////////////////////////////
 
-    LoyaltyGift loyaltyGift;
+    MockLoyaltyGift loyaltyGift;
 
     function setUp() external {
         DeployMockLoyaltyGifts deployer = new DeployMockLoyaltyGifts();
@@ -57,7 +57,7 @@ contract LoyaltyGiftTest is Test {
     }
 
     function testLoyaltyGiftHasGifts() public {
-        uint256 amountGifts = loyaltyGift.getAmountGifts();
+        uint256 amountGifts = loyaltyGift.getNumberOfGifts();
         assertNotEq(amountGifts, 0);
     }
 
@@ -93,7 +93,7 @@ contract LoyaltyGiftTest is Test {
     function testMintingVouchersRevertsIfGiftNotTokenised() public {
         vm.expectRevert(
             abi.encodeWithSelector(
-                LoyaltyGift.LoyaltyGift__IsNotVoucher.selector, address(loyaltyGift), NON_TOKENISED_TO_MINT[0]
+                MockLoyaltyGift.LoyaltyGift__IsNotVoucher.selector, address(loyaltyGift), NON_TOKENISED_TO_MINT[0]
             )
         );
 
@@ -117,7 +117,7 @@ contract LoyaltyGiftTest is Test {
 
     function testIssueVoucherRevertsForNonAvailableTokenisedGift() public {
         vm.expectRevert(
-            abi.encodeWithSelector(LoyaltyGift.LoyaltyGift__NoVouchersAvailable.selector, address(loyaltyGift))
+            abi.encodeWithSelector(MockLoyaltyGift.LoyaltyGift__NoVouchersAvailable.selector, address(loyaltyGift))
         );
         loyaltyGift.issueLoyaltyVoucher(addressOne, 1);
     }
@@ -128,7 +128,7 @@ contract LoyaltyGiftTest is Test {
     function testRedeemRevertsForNonAvailableTokenisedGift() public {
         vm.expectRevert(
             abi.encodeWithSelector(
-                LoyaltyGift.LoyaltyGift__IsNotVoucher.selector, address(loyaltyGift), NON_TOKENISED_TO_MINT[0]
+                MockLoyaltyGift.LoyaltyGift__IsNotVoucher.selector, address(loyaltyGift), NON_TOKENISED_TO_MINT[0]
             )
         );
         vm.prank(addressZero);

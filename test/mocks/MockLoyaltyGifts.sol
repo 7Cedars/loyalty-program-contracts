@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {LoyaltyGift} from "./LoyaltyGift.sol";
+import {MockLoyaltyGift} from "./MockLoyaltyGift.sol";
 import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
 import {ERC1155} from "lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
@@ -18,7 +18,7 @@ import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
  * 
  */
 
-contract MockLoyaltyGifts is LoyaltyGift {
+contract MockLoyaltyGifts is MockLoyaltyGift {
 
     /* Each gift contract is setup with four equal sized arrays providing info on cost per index: 
     @param isClaimable => can gift directly be claimed by customer?
@@ -37,7 +37,7 @@ contract MockLoyaltyGifts is LoyaltyGift {
      * @dev the LoyaltyGift constructor takes to params: uri and tokenised (array denoting which cost are - tokenised - vouchers.
      */
     constructor()
-        LoyaltyGift(
+        MockLoyaltyGift(
             "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmXS9s48RkDDDSqsyjBHN9HRSXpUud3FsBDVa1uZjXYMAH/{id}",
             isClaimable,
             isVoucher,
