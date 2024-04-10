@@ -40,7 +40,7 @@ contract CardsToProgramToGiftsTest is Test {
     LoyaltyCard6551Account loyaltyCardAccount; 
 
     uint256 customerOneKey = 0xa11ce;
-    uint256 customerTwoKey = 0x7ceda5;
+    uint256 customerTwoKey = 0x7ceda52;
     address customerOneAddress = vm.addr(customerOneKey);
     address customerTwoAddress = vm.addr(customerTwoKey);
 
@@ -133,7 +133,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256[] memory amountVouchersToMint = new uint256[](2);  
         amountVouchersToMint[0] = 24; amountVouchersToMint[1] = 45; 
         uint256[] memory cardIds = new uint256[](3); 
-        cardIds[0] = 1; cardIds[1] = 2; cardIds[1] = 3; 
+        cardIds[0] = 1; cardIds[1] = 2; cardIds[2] = 3; 
         uint256[] memory pointsToTransfer = new uint256[](3); 
         pointsToTransfer[0] = 10000; pointsToTransfer[1] = 12000; pointsToTransfer[1] = 14000; 
 
@@ -739,16 +739,11 @@ contract CardsToProgramToGiftsTest is Test {
                 ), 
                 0
             );
-
-        
     }
 
-
-
-
-    ///////////////////////////////////////////////
-    ///      Helper Functions Voucher           ///
-    ///////////////////////////////////////////////
+    // ///////////////////////////////////////////////
+    // ///      Helper Functions Voucher           ///
+    // ///////////////////////////////////////////////
 
     // helper function hashRequestGift
     function hashRequestGift(RequestGift memory message) private pure returns (bytes32) {

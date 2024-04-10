@@ -20,7 +20,7 @@ contract DeployMockLoyaltyGiftsTest is Test {
         MockLoyaltyGifts mockLoyaltyGifts = deployer.run();
 
         string memory expectedUri =
-            "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmSshfobzx5jtA14xd7zJ1PtmG8xFaPkAq2DZQagiAkSET/{id}";
+            "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmXS9s48RkDDDSqsyjBHN9HRSXpUud3FsBDVa1uZjXYMAH/{id}";
         vm.prank(vendorOne);
         mockLoyaltyGifts.mintLoyaltyVouchers(VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
         string memory actualUri = mockLoyaltyGifts.uri(1);
