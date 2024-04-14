@@ -12,7 +12,7 @@ import {ILoyaltyGift} from "./interfaces/ILoyaltyGift.sol";
 
 import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {ERC6551Registry} from "../test/mocks/ERC6551Registry.sol";
+import {ERC6551Registry} from "../test/mocks/ERC6551Registry.t.sol";
 import {LoyaltyCard6551Account} from "./LoyaltyCard6551Account.sol";
 import {MockLoyaltyGift} from "../test/mocks/MockLoyaltyGift.sol";
 
@@ -387,6 +387,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         _safeTransferFrom(loyaltyCardAddress, s_owner, 0, loyaltyPoints, "");
         // and 4), if gift is tokenised, transfer voucher.
         if (MockLoyaltyGift(loyaltyGiftAddress).getIsVoucher(loyaltyGiftId) == 1) {
+            // refactor into MockLoyaltyGift(loyaltyGift)._safeTransferFrom ? 
             MockLoyaltyGift(loyaltyGiftAddress).issueLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
         }
     }
@@ -460,6 +461,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
 
         // Interact.
         // 2) redeem loyalty voucher
+        // refactor into MockLoyaltyGift(loyaltyGift).safeTransferFrom ? 
         MockLoyaltyGift(loyaltyGift).redeemLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
     }
 
@@ -582,7 +584,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         return tokenBoundAccount;
     }
 
-    function getLoyaltyGiftsIsClaimable(address loyaltyGiftAddress, uint256 loyaltyGiftId)
+    function getLoyaltyGiftIsClaimable(address loyaltyGiftAddress, uint256 loyaltyGiftId)
         external
         view
         returns (uint256)
@@ -590,7 +592,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         return s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId];
     }
 
-    function getLoyaltyGiftsIsRedeemable(address loyaltyGiftAddress, uint256 loyaltyGiftId)
+    function getLoyaltyGiftIsRedeemable(address loyaltyGiftAddress, uint256 loyaltyGiftId)
         external
         view
         returns (uint256)

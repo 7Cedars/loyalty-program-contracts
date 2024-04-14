@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
-import {ERC6551Registry} from "../mocks/ERC6551Registry.sol";
+import {ERC6551Registry} from "../mocks/ERC6551Registry.t.sol";
 
 contract LoyaltyProgramTest is Test {
     /* events */
@@ -143,8 +143,8 @@ contract LoyaltyProgramTest is Test {
         vm.prank(loyaltyProgram.getOwner());
         loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
         // Act / Assert
-        assertEq(loyaltyProgram.getLoyaltyGiftsIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
-        assertEq(loyaltyProgram.getLoyaltyGiftsIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
     }
 
     function testEmitsEventOnAddingLoyaltyGiftContract() public {
@@ -163,8 +163,8 @@ contract LoyaltyProgramTest is Test {
         vm.stopPrank();
 
         // Act / Assert
-        assertEq(loyaltyProgram.getLoyaltyGiftsIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
-        assertEq(loyaltyProgram.getLoyaltyGiftsIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
     }
 
     function testLoyaltyGiftRedeemCanBeRemoved() public {
@@ -174,8 +174,8 @@ contract LoyaltyProgramTest is Test {
         vm.stopPrank();
 
         // Act / Assert
-        assertEq(loyaltyProgram.getLoyaltyGiftsIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
-        assertEq(loyaltyProgram.getLoyaltyGiftsIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
     }
 
     function testEmitsEventOnRemovingLoyaltyGiftClaim() public {

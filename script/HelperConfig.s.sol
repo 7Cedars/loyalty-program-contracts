@@ -5,7 +5,7 @@ pragma solidity ^0.8.19;
 
 import {Script, console} from "forge-std/Script.sol";
  import {MockLoyaltyGift} from "../test/mocks/MockLoyaltyGift.sol";
-import {ERC6551Registry} from "../test/mocks/ERC6551Registry.sol";
+import {ERC6551Registry} from "../test/mocks/ERC6551Registry.t.sol";
 import {LoyaltyCard6551Account} from "../src/LoyaltyCard6551Account.sol";
 
 contract HelperConfig is Script {

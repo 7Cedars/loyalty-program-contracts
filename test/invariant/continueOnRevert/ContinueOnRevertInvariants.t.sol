@@ -177,8 +177,8 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
           uint256 numberLCs = programsData[i].loyaltyProgram.getNumberLoyaltyCardsMinted();
           // console.log("numberLCs: ", numberLCs);
 
-          programsData[i].loyaltyProgram.getLoyaltyGiftsIsClaimable(address(loyaltyGifts[0]), 0);
-          programsData[i].loyaltyProgram.getLoyaltyGiftsIsRedeemable(address(loyaltyGifts[0]), 0);
+          programsData[i].loyaltyProgram.getLoyaltyGiftIsClaimable(address(loyaltyGifts[0]), 0);
+          programsData[i].loyaltyProgram.getLoyaltyGiftIsRedeemable(address(loyaltyGifts[0]), 0);
           programsData[i].loyaltyProgram.getOwner();
 
           for (uint256 j = 0; j < numberLCs; j++) {
