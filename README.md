@@ -119,6 +119,9 @@ To get a local copy up and running do the following.
   $ foundryup
   ```
 
+  Check if the chain has an ERC-6551 registry at address 0x000000006551c19487814612e58FE06813775758.
+  If not (and if the contract is deployed on a local chain), set up a registry following the steps at [tokenbound.org](https://docs.tokenbound.org/guides/deploy-registry). 
+
 ### Clone the repository
 <!-- NB: I have to actually follow these steps and check if I missed anyting £todo -->
 

@@ -52,8 +52,8 @@ interface IERC6551Registry {
 
 contract ERC6551Registry is IERC6551Registry {
 
-    function test() public {} // skip in foundry coverage
-    
+    function test() public {} // tells foundry to ignore contract from test report.  
+
     function createAccount(
         address implementation,
         bytes32 salt,

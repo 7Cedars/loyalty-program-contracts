@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
-import {ERC6551Registry} from "../mocks/ERC6551Registry.t.sol";
+import {ERC6551Registry} from "../mocks/MockERC6551Registry.t.sol";
 
 contract LoyaltyProgramTest is Test {
     /* events */

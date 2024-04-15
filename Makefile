@@ -153,7 +153,8 @@ arbSepoliaDeploy:
 ANVIL_ARGS_0 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_0) --broadcast
 ANVIL_ARGS_1 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY_1) --broadcast
 
-anvilDeploy: # also initiates registry. 
+#NB: DO NOT FORGET TO INITIATE REGISTRY, USING the script at cloning/reference. 
+anvilDeploy:
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ANVIL_ARGS_1)
 
 

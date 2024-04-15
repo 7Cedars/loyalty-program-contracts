@@ -4,8 +4,8 @@ pragma solidity ^0.8.19;
 // based on: Patrick Collins: helperConfig.s.sol + learning/foundry-fund-me-f23
 
 import {Script, console} from "forge-std/Script.sol";
- import {MockLoyaltyGift} from "../test/mocks/MockLoyaltyGift.sol";
-import {ERC6551Registry} from "../test/mocks/ERC6551Registry.t.sol";
+import {MockLoyaltyGift} from "../test/mocks/MockLoyaltyGift.sol";
+import {ERC6551Registry} from "../../test/mocks/MockERC6551Registry.t.sol";
 import {LoyaltyCard6551Account} from "../src/LoyaltyCard6551Account.sol";
 
 contract HelperConfig is Script {
@@ -24,6 +24,7 @@ contract HelperConfig is Script {
     NetworkConfig public activeNetworkConfig;
     ERC6551Registry public s_erc6551Registry;
     LoyaltyCard6551Account public s_erc6551Implementation;
+    bytes32 public SALT = 0x0000000000000000000000000000000000000000000000000000000007ceda52; 
 
     /**
      * @notice for now only includes test networks.
@@ -60,7 +61,7 @@ contract HelperConfig is Script {
             uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD",
             initialSupply: 1e25,
             interval: 30,
-            erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
+            erc6551Registry: 0x000000006551c19487814612e58FE06813775758, // £ these are all old addresses. Not used? (if so, take out)
             erc6551Implementation: payable(s_erc6551Implementation),
             callbackGasLimit: 50000
         });
@@ -81,7 +82,7 @@ contract HelperConfig is Script {
             uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD",
             initialSupply: 1e25,
             interval: 30,
-            erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
+            erc6551Registry: 0x000000006551c19487814612e58FE06813775758,
             erc6551Implementation: payable(s_erc6551Implementation),
             callbackGasLimit: 50000
         });
@@ -101,7 +102,7 @@ contract HelperConfig is Script {
             uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD",
             initialSupply: 1e25,
             interval: 30,
-            erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
+            erc6551Registry: 0x000000006551c19487814612e58FE06813775758,
             erc6551Implementation: payable(s_erc6551Implementation),
             callbackGasLimit: 50000
         });
@@ -150,15 +151,14 @@ contract HelperConfig is Script {
     }
 
     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
+
         // NB: code for when i need to deploy mock addresses!
         if (activeNetworkConfig.initialSupply != 0x0) {
-            // was address(0)
             return activeNetworkConfig;
         }
 
         vm.startBroadcast();
-        s_erc6551Registry = new ERC6551Registry();
-        s_erc6551Implementation = new LoyaltyCard6551Account();
+        s_erc6551Implementation = new LoyaltyCard6551Account{salt: SALT}(); // note: determinsitic deployment. 
         vm.stopBroadcast();
 
         NetworkConfig memory anvilConfig = NetworkConfig({
@@ -166,12 +166,12 @@ contract HelperConfig is Script {
             uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD",
             initialSupply: 1e25,
             interval: 30,
-            erc6551Registry: address(s_erc6551Registry),
-            erc6551Implementation: payable(s_erc6551Implementation),
+            erc6551Registry: 0x000000006551c19487814612e58FE06813775758,
+            erc6551Implementation: payable(0xD24087e42e80D8CA9BcCC21E0849160aEf1F7210),
             callbackGasLimit: 50000
         });
 
-        console.logAddress(address(s_erc6551Implementation));
+        console.log("ERC-6551 Account implementation (should be 0xD240...F7210):", address(s_erc6551Implementation));
 
         return anvilConfig;
     }

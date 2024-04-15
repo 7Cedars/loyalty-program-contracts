@@ -31,7 +31,6 @@ interface ILoyaltyGift is IERC1155 {
         external
         returns (bool success);
 
-
     /**
      * @notice mints loyalty vouchers by external EOA or smart contract address. 
      * 
@@ -47,30 +46,6 @@ interface ILoyaltyGift is IERC1155 {
      */
     function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfVouchers) external;
 
-    /**
-     * @notice transfers loyalty voucher from loyalty Program to a loyaltyCard. 
-     * 
-     * @param loyaltyCard the address of the loyalty Card. 
-     * @param loyaltyGiftId the id of the voucher to be transferred. 
-     * 
-     * @dev Note that this function does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract.
-     * @dev same goes for payment in loyalty Points - not included here. 
-     * @dev also does not check if address is TBA / loyaltyCard -- done at safeTransferFrom. 
-     *
-     */
-    function issueLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId) external; 
-
-    /**
-     * @notice transfers loyalty voucher from a loyaltyCard to a LoyaltyProgram. 
-     * 
-     * @param loyaltyCard the address of the loyalty Card. 
-     * @param loyaltyGiftId the id of the voucher to be transferred. 
-     * 
-     * @dev adds check if gift is actually tokenised.
-     * @dev It does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract.
-     * @dev also does not check if address is TBA / loyaltyCard -- see safeTransferFrom for this. 
-     */
-    function redeemLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId) external;
 }
 
 // Structure contract // -- from Patrick Collins. 

@@ -12,7 +12,7 @@ import {ILoyaltyGift} from "./interfaces/ILoyaltyGift.sol";
 
 import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {ERC6551Registry} from "../test/mocks/ERC6551Registry.t.sol";
+import {ERC6551Registry} from "../test/mocks/MockERC6551Registry.t.sol";
 import {LoyaltyCard6551Account} from "./LoyaltyCard6551Account.sol";
 import {MockLoyaltyGift} from "../test/mocks/MockLoyaltyGift.sol";
 
@@ -74,6 +74,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     error LoyaltyProgram__RequestInvalid();
     error LoyaltyProgram__LoyaltyGiftInvalid();
     error LoyaltyProgram__LoyaltyVoucherInvalid();
+    error LoyaltyProgram__RequirementsGiftNotMet(); 
     error LoyaltyProgram__IncorrectInterface(address loyaltyGift, bytes4 interfaceId);
 
     /* Type declarations */
@@ -374,7 +375,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
             revert LoyaltyProgram__LoyaltyGiftInvalid();
         }
 
-        // £todo: should I not check here if requirements are met?! 
+        // check if requirements are met.
+        if (ILoyaltyGift(loyaltyGiftAddress).requirementsLoyaltyGiftMet(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints)) {
+            revert LoyaltyProgram__RequirementsGiftNotMet();
+        }
 
         // Effect.
         // 1) set executed to true..
@@ -388,7 +392,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         // and 4), if gift is tokenised, transfer voucher.
         if (MockLoyaltyGift(loyaltyGiftAddress).getIsVoucher(loyaltyGiftId) == 1) {
             // refactor into MockLoyaltyGift(loyaltyGift)._safeTransferFrom ? 
-            MockLoyaltyGift(loyaltyGiftAddress).issueLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
+            safeTransferFrom(s_owner, loyaltyCardAddress, loyaltyGiftId, 1, "");
         }
     }
 
@@ -460,9 +464,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         s_nonceLoyaltyCard[loyaltyCardAddress] = ++s_nonceLoyaltyCard[loyaltyCardAddress];
 
         // Interact.
-        // 2) redeem loyalty voucher
-        // refactor into MockLoyaltyGift(loyaltyGift).safeTransferFrom ? 
-        MockLoyaltyGift(loyaltyGift).redeemLoyaltyVoucher(loyaltyCardAddress, loyaltyGiftId);
+        // 2) retrieve loyalty voucher
+        _safeTransferFrom(loyaltyCardAddress, s_owner, loyaltyGiftId, 1, "");
     }
 
     /**

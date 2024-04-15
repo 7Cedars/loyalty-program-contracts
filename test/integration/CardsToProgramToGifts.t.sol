@@ -10,7 +10,7 @@ import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
-import {ERC6551Registry} from "../mocks/ERC6551Registry.t.sol";
+import {ERC6551Registry} from "../../../test/mocks/MockERC6551Registry.t.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
