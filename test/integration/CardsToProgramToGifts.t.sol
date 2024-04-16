@@ -71,17 +71,8 @@ contract CardsToProgramToGiftsTest is Test {
 
     // domain seperator.
     bytes32 internal DOMAIN_SEPARATOR; 
-    //  = keccak256(
-    //     abi.encode(
-    //         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-    //         keccak256(bytes("Loyalty Program")), // name
-    //         keccak256(bytes("1")), // version
-    //         block.chainid, // chainId
-    //         address(loyaltyProgram) //  0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3 // verifyingContract
-    //     )
-    // );
 
-    // this modifier gives one voucher to CustomerCard1 owned by customerOne.
+    // this modifier gives one voucher to CustomerCard1 that is owned by customerOne.
     modifier giftClaimedAndVoucherReceived() {
         uint256 giftId = 3;
         uint256 loyaltyCardId = 1;
@@ -142,11 +133,11 @@ contract CardsToProgramToGiftsTest is Test {
 
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
         (loyaltyProgram, helperConfig) = deployer.run();
-        (alternativeLoyaltyProgram, ) = deployer.run();
+        // (alternativeLoyaltyProgram, ) = deployer.run();
         DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts();
         mockLoyaltyGifts = giftDeployer.run();
         address owner = loyaltyProgram.getOwner();
-        address alternativeOwner = alternativeLoyaltyProgram.getOwner();
+        // address alternativeOwner = alternativeLoyaltyProgram.getOwner();
 
         // an extensive interaction context needed in all tests below.
         // (hence no modifier used)
@@ -172,28 +163,48 @@ contract CardsToProgramToGiftsTest is Test {
         loyaltyProgram.safeTransferFrom(owner, customerOneAddress, 1, 1, "");
         vm.stopPrank();
 
-        // Repeat these actions for alternative LoyaltyProgram. 
-        vm.startPrank(alternativeOwner);
-        // Loyalty Program selecting Gifts
-        for (uint256 i = 0; i < giftIds.length; i++) {
-            alternativeLoyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), giftIds[i]);
-        }
+        // // Repeat these actions for alternative LoyaltyProgram. 
+        // vm.startPrank(alternativeOwner);
+        // // Loyalty Program selecting Gifts
+        // for (uint256 i = 0; i < giftIds.length; i++) {
+        //     alternativeLoyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), giftIds[i]);
+        // }
 
-        // Loyalty Program minting Loyalty Points, Cards and Vouchers
-        alternativeLoyaltyProgram.mintLoyaltyPoints(pointsToMint);
-        alternativeLoyaltyProgram.mintLoyaltyCards(cardsToMint);
-        alternativeLoyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), vouchersToMint, amountVouchersToMint);
+        // // Loyalty Program minting Loyalty Points, Cards and Vouchers
+        // alternativeLoyaltyProgram.mintLoyaltyPoints(pointsToMint);
+        // alternativeLoyaltyProgram.mintLoyaltyCards(cardsToMint);
+        // alternativeLoyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), vouchersToMint, amountVouchersToMint);
 
-        // Loyalty Program Transferring Points to Cards
-        for (uint256 i = 0; i < cardIds.length; i++) {
-            alternativeLoyaltyProgram.safeTransferFrom(
-                alternativeOwner, alternativeLoyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
-            );
-        }
+        // // Loyalty Program Transferring Points to Cards
+        // for (uint256 i = 0; i < cardIds.length; i++) {
+        //     alternativeLoyaltyProgram.safeTransferFrom(
+        //         alternativeOwner, alternativeLoyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
+        //     );
+        // }
 
-        alternativeLoyaltyProgram.safeTransferFrom(alternativeOwner, customerOneAddress, 1, 1, "");
+        // alternativeLoyaltyProgram.safeTransferFrom(alternativeOwner, customerOneAddress, 1, 1, "");
+        // vm.stopPrank(); 
+    }
+
+    ///////////////////////////////////////////////
+    ///           Transferring Voucher          ///
+    ///////////////////////////////////////////////
+    function testOwnerProgramCanTransferVoucher() public {
+        uint256 giftId = 3;
+        uint256 loyaltyCardId = 1;
+        address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(loyaltyCardId);
+        address owner = loyaltyProgram.getOwner();
+
+        vm.startPrank(owner); 
+        loyaltyProgram.transferLoyaltyVoucher(
+            loyaltyCardOne, 
+            giftId,
+            address(mockLoyaltyGifts)
+        ); 
         vm.stopPrank(); 
     }
+
+
 
     ///////////////////////////////////////////////
     ///       Claiming Gifts and Voucher        ///

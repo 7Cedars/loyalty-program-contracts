@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 // import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol"; // ERC165 not implemented for now. 
 // import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol"; // ERC165 not implemented for now. 
 import {ERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
+import {IERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
 
@@ -22,6 +23,7 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
     error LoyaltyGift__NoVouchersAvailable(address loyaltyToken);
     error LoyaltyGift__IsNotVoucher(address loyaltyToken, uint256 loyaltyGiftId);
     error LoyaltyGift__TransferDenied(address loyaltyToken);
+    error LoyaltyGift__MissingAddressLoyaltyProgram(address loyaltyToken); 
 
     /* State variables */
     uint256[] s_isClaimable; 
@@ -101,81 +103,45 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
             }
         unchecked { i++; } 
         }
-        _mintBatch(msg.sender, loyaltyGiftIds, numberOfVouchers, ""); // emits batchtransfer event
+        _mintBatch(LoyaltyProgram(msg.sender).getOwner(), loyaltyGiftIds, numberOfVouchers, ""); // emits batchtransfer event
     }
 
-    /**
-     * @notice transfers loyalty voucher from loyalty Program to a loyaltyCard. 
-     * 
-     * @param loyaltyCard the address of the loyalty Card. 
-     * @param loyaltyGiftId the id of the voucher to be transferred. 
-     * 
-     * @dev Note that this function does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract.
-     * @dev same goes for payment in loyalty Points - not included here. 
-     * @dev also does not check if address is TBA / loyaltyCard -- done at safeTransferFrom. 
-     *
-     */
-    function issueLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId)
-        public virtual
-    {
-        if (s_isVoucher[loyaltyGiftId] == 0) {
-            revert LoyaltyGift__IsNotVoucher(address(this), loyaltyGiftId);
-        }
 
-        if (balanceOf(msg.sender, loyaltyGiftId) == 0) {
-            revert LoyaltyGift__NoVouchersAvailable(address(this));
-        }
-
-        safeTransferFrom(msg.sender, loyaltyCard, loyaltyGiftId, 1, "");
-    }
-
-    /**
-     * @notice transfers loyalty voucher from a loyaltyCard to a LoyaltyProgram. 
-     * 
-     * @param loyaltyCard the address of the loyalty Card. 
-     * @param loyaltyGiftId the id of the voucher to be transferred. 
-     * 
-     * @dev adds check if gift is actually tokenised.
-     * @dev It does NOT include a check on requirements - this HAS TO BE implemented on the side of the loyalty program contract.
-     * @dev also does not check if address is TBA / loyaltyCard -- see safeTransferFrom for this. 
-     */
-    function redeemLoyaltyVoucher(address loyaltyCard, uint256 loyaltyGiftId) public {
-        if (s_isVoucher[loyaltyGiftId] == 0) {
-            revert LoyaltyGift__IsNotVoucher(address(this), loyaltyGiftId);
-        }
-
-        _safeTransferFrom(loyaltyCard, msg.sender, loyaltyGiftId, 1, "");
-    }
-
-    /* internal */
     /**
      * @notice added checks to safeTransfer that ensure vouchers can only be transferred between Loyalty Cards and their Loyalty Program. 
      * 
      * @param from address from which voucher is send. 
      * @param to address at which voucher is received. 
-     * @param ids array of voucher ids sent. 
-     * @param values array of amiount of vouchers sent per id.
+     * @param id array of voucher ids sent. 
+     * @param amount array of amount of vouchers sent per id.
      * 
      * @dev ids and values need to be array of same length.  
      * @dev The check is ignored when vouchers are minted. It means any address can mint vouchers. But if they lack TBAs, addresses cannot do anything with these vouchers. 
+     * @dev I here update safeTransferFrom (and not the inetrnal _update function) because _update does not take a data field.  
      * 
      */
-    function _update(address from, address to, uint256[] memory ids, uint256[] memory values)
-        internal
-        virtual
-        override
+    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data)
+        public
+        override(ERC1155, IERC1155)
     {
+        
+        // check if transfer is going or coming from Loyalty Card registered with Loyalty Program.   
         if (address(0) != from) {
-            if (msg.sender != to) {
+            // @dev these two if statements combine to check: 
+            // to or from == program owner? if not, addresses HAVE to be from loyalty card. 
+            // it excludes any addresses not affiliated with loyalty program. 
+            // hence we can bypass additional check of safeTransferFrom. 
+
+            if (LoyaltyProgram(msg.sender).getOwner() != to) {
                 try LoyaltyProgram(msg.sender).getBalanceLoyaltyCard(to) {}
                 catch { revert LoyaltyGift__TransferDenied(address(this)); }
             }
-            if (msg.sender != from) {
+            if (LoyaltyProgram(msg.sender).getOwner() != from) {
                 try LoyaltyProgram(msg.sender).getBalanceLoyaltyCard(from) {}
                 catch { revert LoyaltyGift__TransferDenied(address(this)); }
             }
         } 
-        super._update(from, to, ids, values);
+        super._safeTransferFrom(from, to, id, amount, data);
     }
 
     /* getter functions */
