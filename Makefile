@@ -158,5 +158,8 @@ ANVIL_TEST_ARGS := --rpc-url http://localhost:8545
 anvilDeploy:
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ANVIL_ARGS_1)
 
+# All tests need to be run through local anvil chain, with a registry deployed locally. 
+# all contracts here run on solc 0.8.24; while erc-6551 registry runs on solc 0.8.19. 
+# Due to changes in OpenZeppelin contracts, these cannot be deployed from the same folder / environment.
 anvilTest:
-	@forge test --match-test testOwnerProgramCanTransferVoucher $(ANVIL_TEST_ARGS) -vvvv
+	@forge test --match-test testVouchersCannotBeTransferredCiaGiftContract $(ANVIL_TEST_ARGS) -vvvv
