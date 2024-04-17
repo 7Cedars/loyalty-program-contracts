@@ -93,11 +93,11 @@ contract CardsToProgramToGiftsTest is Test {
 
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
         (loyaltyProgram, helperConfig) = deployer.run();
-        // (alternativeLoyaltyProgram, ) = deployer.run();
+        (alternativeLoyaltyProgram, ) = deployer.run();
         DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts();
         mockLoyaltyGifts = giftDeployer.run();
         address owner = loyaltyProgram.getOwner();
-        // address alternativeOwner = alternativeLoyaltyProgram.getOwner();
+        address alternativeOwner = alternativeLoyaltyProgram.getOwner();
 
         // an extensive interaction context needed in all tests below.
         // (hence no modifier used)
@@ -126,27 +126,27 @@ contract CardsToProgramToGiftsTest is Test {
         loyaltyProgram.safeTransferFrom(owner, customerOneAddress, 1, 1, "");
         vm.stopPrank();
 
-        // // Repeat these actions for alternative LoyaltyProgram. 
-        // vm.startPrank(alternativeOwner);
-        // // Loyalty Program selecting Gifts
-        // for (uint256 i = 0; i < giftIds.length; i++) {
-        //     alternativeLoyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), giftIds[i]);
-        // }
+        // Repeat these actions for alternative LoyaltyProgram. 
+        vm.startPrank(alternativeOwner);
+        // Loyalty Program selecting Gifts
+        for (uint256 i = 0; i < giftIds.length; i++) {
+            alternativeLoyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), giftIds[i]);
+        }
 
-        // // Loyalty Program minting Loyalty Points, Cards and Vouchers
-        // alternativeLoyaltyProgram.mintLoyaltyPoints(pointsToMint);
-        // alternativeLoyaltyProgram.mintLoyaltyCards(cardsToMint);
-        // alternativeLoyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), voucherIds, amountVoucherIds);
+        // Loyalty Program minting Loyalty Points, Cards and Vouchers
+        alternativeLoyaltyProgram.mintLoyaltyPoints(pointsToMint);
+        alternativeLoyaltyProgram.mintLoyaltyCards(cardsToMint);
+        alternativeLoyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), voucherIds, amountVoucherIds);
 
-        // // Loyalty Program Transferring Points to Cards
-        // for (uint256 i = 0; i < cardIds.length; i++) {
-        //     alternativeLoyaltyProgram.safeTransferFrom(
-        //         alternativeOwner, alternativeLoyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
-        //     );
-        // }
+        // Loyalty Program Transferring Points to Cards
+        for (uint256 i = 0; i < cardIds.length; i++) {
+            alternativeLoyaltyProgram.safeTransferFrom(
+                alternativeOwner, alternativeLoyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
+            );
+        }
 
-        // alternativeLoyaltyProgram.safeTransferFrom(alternativeOwner, customerOneAddress, 1, 1, "");
-        // vm.stopPrank(); 
+        alternativeLoyaltyProgram.safeTransferFrom(alternativeOwner, customerOneAddress, 1, 1, "");
+        vm.stopPrank(); 
     }
 
     ///////////////////////////////////////////////
@@ -250,11 +250,11 @@ contract CardsToProgramToGiftsTest is Test {
             giftId, // uint256 loyaltyGiftId,
             loyaltyCardId, // address loyaltyCardAddress,
             customerOneAddress, // address customerAddress,
-            2500, // uint256 loyaltyPoints,
+            4500, // uint256 loyaltyPoints,
             signature // bytes memory signature
         );
 
-        assertEq(mockLoyaltyGifts.balanceOf(loyaltyCardOne, giftId), 1);
+        assertEq(mockLoyaltyGifts.balanceOf(loyaltyCardOne, giftId), 2);
     }
 
     function testClaimGiftRevertsWithInvalidKey() public {
@@ -289,7 +289,7 @@ contract CardsToProgramToGiftsTest is Test {
             giftId, // uint256 loyaltyGiftId,
             loyaltyCardId, // address loyaltyCardAddress,
             customerOneAddress, // address customerAddress,
-            2500, // uint256 loyaltyPoints,
+            4500, // uint256 loyaltyPoints,
             signature // bytes memory signature
         );
     }
@@ -323,7 +323,7 @@ contract CardsToProgramToGiftsTest is Test {
             giftId, // uint256 loyaltyGiftId,
             loyaltyCardId, // address loyaltyCardAddress,
             customerOneAddress, // address customerAddress,
-            2500, // uint256 loyaltyPoints,
+            4500, // uint256 loyaltyPoints,
             signature // bytes memory signature
         );
 
@@ -386,7 +386,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
-        uint256 loyaltyPoints = 2500;
+        uint256 loyaltyPoints = 4500;
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request..
@@ -432,7 +432,7 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address owner = loyaltyProgram.getOwner();
-        uint256 loyaltyPoints = 2500;
+        uint256 loyaltyPoints = 4500;
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request..
@@ -488,7 +488,7 @@ contract CardsToProgramToGiftsTest is Test {
             from: loyaltyCardOne,
             to: address(loyaltyProgram),
             voucher: "This is a test redeem",
-            nonce: 1
+            nonce: 0
         });
 
         // customer signs request
@@ -556,7 +556,7 @@ contract CardsToProgramToGiftsTest is Test {
             from: loyaltyCardOne,
             to: address(loyaltyProgram),
             voucher: "This is a test redeem",
-            nonce: 1
+            nonce: 0
         });
 
         // customer signs request
@@ -593,7 +593,7 @@ contract CardsToProgramToGiftsTest is Test {
             from: loyaltyCardOne,
             to: address(loyaltyProgram),
             voucher: "This is a test redeem",
-            nonce: 1
+            nonce: 0
         });
 
         // customer signs request
@@ -628,7 +628,7 @@ contract CardsToProgramToGiftsTest is Test {
             from: loyaltyCardOne,
             to: address(loyaltyProgram),
             voucher: "This is a test redeem",
-            nonce: 1
+            nonce: 0
         });
 
         // customer signs request
@@ -694,7 +694,7 @@ contract CardsToProgramToGiftsTest is Test {
             giftId, // uint256 loyaltyGiftId,
             loyaltyCardId, // address loyaltyCardAddress,
             customerOneAddress, // address customerAddress,
-            2500, // uint256 loyaltyPoints,
+            4500, // uint256 loyaltyPoints,
             signature // bytes memory signature
         );
     }

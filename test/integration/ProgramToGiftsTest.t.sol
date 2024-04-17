@@ -7,7 +7,7 @@ import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
-import {ERC6551Registry} from "../../../test/mocks/ERC6551Registry.t.sol";
+import {ERC6551Registry} from "../../test/mocks/ERC6551Registry.t.sol";
 
 contract ProgramToGiftsTest is Test {
     /* events */
@@ -43,7 +43,8 @@ contract ProgramToGiftsTest is Test {
     // NB! HERE ALSO WANT TO INSERT RANDOMISATION / FUZZINESS.
 
     function testLoyaltyProgramCanMintsVouchers() public {
-        vm.startPrank(loyaltyProgram.getOwner());
+        address ownerProgram = loyaltyProgram.getOwner(); 
+        vm.startPrank(ownerProgram);
         // 1st select gifts..
         for (uint256 i = 0; i < GIFTS_TO_SELECT.length; i++) {
             loyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), GIFTS_TO_SELECT[i]);
@@ -53,7 +54,7 @@ contract ProgramToGiftsTest is Test {
         loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
         vm.stopPrank();
 
-        assertEq(mockLoyaltyGifts.balanceOf(address(loyaltyProgram), VOUCHERS_TO_MINT[0]), AMOUNT_VOUCHERS_TO_MINT[0]);
+        assertEq(mockLoyaltyGifts.balanceOf(ownerProgram, VOUCHERS_TO_MINT[0]), AMOUNT_VOUCHERS_TO_MINT[0]);
     }
 
     // This one does not pass yet for some reason..

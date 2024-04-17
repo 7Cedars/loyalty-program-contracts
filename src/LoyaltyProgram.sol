@@ -394,7 +394,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         }
 
         // check if requirements are met.
-        if (ILoyaltyGift(loyaltyGiftAddress).requirementsLoyaltyGiftMet(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints)) {
+        if (ILoyaltyGift(loyaltyGiftAddress).requirementsLoyaltyGiftMet(loyaltyCardAddress, loyaltyGiftId, loyaltyPoints) != true) {
             revert LoyaltyProgram__RequirementsGiftNotMet();
         }
 

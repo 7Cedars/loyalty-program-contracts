@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
 // based on: Patrick Collins: helperConfig.s.sol + learning/foundry-fund-me-f23
 
 import {Script, console} from "forge-std/Script.sol";
 import {MockLoyaltyGift} from "../test/mocks/MockLoyaltyGift.sol";
-import {ERC6551Registry} from "../../test/mocks/ERC6551Registry.t.sol";
+import {ERC6551Registry} from "../test/mocks/ERC6551Registry.t.sol";
 import {LoyaltyCard6551Account} from "../src/LoyaltyCard6551Account.sol";
 
 contract HelperConfig is Script {
@@ -91,7 +91,7 @@ contract HelperConfig is Script {
         return opSepoliaConfig;
     }
 
-        function getBaseSepoliaConfig() public returns (NetworkConfig memory) {
+    function getBaseSepoliaConfig() public returns (NetworkConfig memory) {
 
         vm.startBroadcast();
         s_erc6551Implementation = new LoyaltyCard6551Account();
@@ -151,15 +151,18 @@ contract HelperConfig is Script {
     }
 
     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
-
-        // NB: code for when i need to deploy mock addresses!
-        if (activeNetworkConfig.initialSupply != 0x0) {
-            return activeNetworkConfig;
+        
+        try vm.envString("ERC6551_ACCOUNT_IMPLEMENTED") {} 
+        catch {
+            vm.startBroadcast();
+            s_erc6551Implementation = new LoyaltyCard6551Account{salt: SALT}(); // note: determinsitic deployment. 
+            vm.stopBroadcast();
+            
+            vm.setEnv("ERC6551_ACCOUNT_IMPLEMENTED", "TRUE");
         }
 
-        vm.startBroadcast();
-        s_erc6551Implementation = new LoyaltyCard6551Account{salt: SALT}(); // note: determinsitic deployment. 
-        vm.stopBroadcast();
+        // try new LoyaltyCard6551Account{salt: SALT}() {
+        console.log("SETTING UP NEW ERC6551 IMPLEMENTATION"); 
 
         NetworkConfig memory anvilConfig = NetworkConfig({
             chainid: 31337,
