@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
+// £ack: NB: invariant (stateful fuzz) testing from foundry course by Patrick Collins see part III (https://www.youtube.com/watch?v=wUjYK5gwNZs) at 3:23  
 
-// define invariants that should always hold:
-
-// INVARIANT that should ALWAYS hold: Points & vouchers should never be able to transfer beyond boundaries of a loyalty program. Loyalty program should always remain a closed system, despite use TBAs and external gift contracts.  
+// define INVARIANT that should ALWAYS hold: 
+// - Points & vouchers should never be able to transfer beyond boundaries of a loyalty program. 
+// - Loyalty program should always remain a closed system, despite use TBAs and external gift contracts.  
+//
 // Concretely: 
 // 1. Amount of minted points should ALWAYS equal sum of points on cards minted + owner loyalty Program.  
 // 2. Amount of minted vouchers should ALWAYS equal sum of vouchers on cards minted + loyalty Program.

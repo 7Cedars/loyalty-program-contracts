@@ -162,4 +162,4 @@ anvilDeploy:
 # all contracts here run on solc 0.8.24; while erc-6551 registry runs on solc 0.8.19. 
 # Due to changes in OpenZeppelin contracts, these cannot be deployed from the same folder / environment.
 anvilTest:
-	@forge test --match-test testDeployEmitsevent $(ANVIL_TEST_ARGS) -vvvv
+	@forge test $(ANVIL_TEST_ARGS) 
