@@ -24,15 +24,21 @@ contract ProgramToGiftsTest is Test {
     LoyaltyProgram loyaltyProgram;
     MockLoyaltyGifts mockLoyaltyGifts;
     HelperConfig helperConfig;
+    address programOwner; 
 
     uint256[] GIFTS_TO_SELECT = [3, 5];
     uint256[] VOUCHERS_TO_MINT = [3, 5];
     uint256[] AMOUNT_VOUCHERS_TO_MINT = [24, 45];
     uint256[] GIFTS_TO_DESELECT = [3];
+    
+    uint256 customerOneKey = 0x7ceda52;
+    address customerOneAddress = vm.addr(customerOneKey);
 
     function setUp() external {
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
         (loyaltyProgram, helperConfig) = deployer.run();
+        programOwner = loyaltyProgram.getOwner(); 
+
         DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts();
         mockLoyaltyGifts = giftDeployer.run();
     }
@@ -40,11 +46,9 @@ contract ProgramToGiftsTest is Test {
     ///////////////////////////////////////////////
     ///          Minting Vouchers               ///
     ///////////////////////////////////////////////
-    // NB! HERE ALSO WANT TO INSERT RANDOMISATION / FUZZINESS.
 
     function testLoyaltyProgramCanMintsVouchers() public {
-        address ownerProgram = loyaltyProgram.getOwner(); 
-        vm.startPrank(ownerProgram);
+        vm.startPrank(programOwner);
         // 1st select gifts..
         for (uint256 i = 0; i < GIFTS_TO_SELECT.length; i++) {
             loyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), GIFTS_TO_SELECT[i]);
@@ -54,12 +58,11 @@ contract ProgramToGiftsTest is Test {
         loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
         vm.stopPrank();
 
-        assertEq(mockLoyaltyGifts.balanceOf(ownerProgram, VOUCHERS_TO_MINT[0]), AMOUNT_VOUCHERS_TO_MINT[0]);
+        assertEq(mockLoyaltyGifts.balanceOf(programOwner, VOUCHERS_TO_MINT[0]), AMOUNT_VOUCHERS_TO_MINT[0]);
     }
 
-    // This one does not pass yet for some reason..
     function testMintingVouchersEmitsEvent() public {
-        vm.startPrank(loyaltyProgram.getOwner());
+        vm.startPrank(programOwner);
         // 1st select gifts..
         for (uint256 i = 0; i < GIFTS_TO_SELECT.length; i++) {
             loyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), GIFTS_TO_SELECT[i]);
@@ -75,7 +78,71 @@ contract ProgramToGiftsTest is Test {
             AMOUNT_VOUCHERS_TO_MINT
         );
 
-        vm.prank(loyaltyProgram.getOwner());
+        vm.prank(programOwner);
         loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
+    }
+
+    ///////////////////////////////////////////////
+    ///           Transferring Voucher          ///
+    ///////////////////////////////////////////////
+    function testOwnerCanTransferVoucherToLoyaltyCard() public {
+        uint256 loyaltyCardId = 1;
+        address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(loyaltyCardId);
+
+        vm.startPrank(programOwner); 
+        loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
+        loyaltyProgram.transferLoyaltyVoucher(
+            programOwner, 
+            loyaltyCardOne, 
+            VOUCHERS_TO_MINT[0],
+            address(mockLoyaltyGifts)
+        ); 
+        vm.stopPrank(); 
+
+        assertEq(mockLoyaltyGifts.balanceOf(loyaltyCardOne, VOUCHERS_TO_MINT[0]), 1); 
+    }
+
+    function testLoyaltyCardCanTransferVoucherToOwner() public {
+        uint256 loyaltyCardId = 1;
+        address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(loyaltyCardId);
+
+        // first transfer voucher to loyalty Card... 
+        vm.startPrank(programOwner); 
+        loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), VOUCHERS_TO_MINT, AMOUNT_VOUCHERS_TO_MINT);
+        loyaltyProgram.transferLoyaltyVoucher(
+            programOwner, 
+            loyaltyCardOne, 
+            VOUCHERS_TO_MINT[0],
+            address(mockLoyaltyGifts)
+        ); 
+        vm.stopPrank(); 
+        assertEq(mockLoyaltyGifts.balanceOf(loyaltyCardOne, VOUCHERS_TO_MINT[0]), 1); 
+        
+        // and then transfer voucher back to owner... 
+        vm.prank(customerOneAddress); 
+        loyaltyProgram.transferLoyaltyVoucher(
+            loyaltyCardOne, 
+            programOwner, 
+            VOUCHERS_TO_MINT[0],
+            address(mockLoyaltyGifts)
+        ); 
+        assertEq(mockLoyaltyGifts.balanceOf(loyaltyCardOne, VOUCHERS_TO_MINT[0]), 0); 
+    }
+
+    // owner cannot call transfer directly on loyaltyGift. 
+    function testVouchersCannotBeTransferredCiaGiftContract() public {
+        uint256 loyaltyCardId = 1;
+        address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(loyaltyCardId);
+
+        vm.expectRevert();  
+        vm.startPrank(programOwner); 
+        mockLoyaltyGifts.safeTransferFrom(
+            programOwner, 
+            loyaltyCardOne, 
+            VOUCHERS_TO_MINT[0], 
+            1, 
+            ""
+        ); 
+        vm.stopPrank(); 
     }
 }

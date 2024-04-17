@@ -46,6 +46,16 @@ interface ILoyaltyGift is IERC1155 {
      */
     function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfVouchers) external;
 
+    /* getter functions */
+    function getNumberOfGifts() external view returns (uint256); 
+
+    function getIsClaimable(uint256 index) external view returns (uint256); 
+
+    function getIsVoucher(uint256 index) external view returns (uint256); 
+
+    function getCost(uint256 index) external view returns (uint256); 
+
+    function getHasAdditionalRequirements(uint256 index) external view returns (uint256); 
 }
 
 // Structure contract // -- from Patrick Collins. 
