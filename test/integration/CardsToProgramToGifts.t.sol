@@ -200,7 +200,6 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 giftId = 3;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
-        address owner = loyaltyProgram.getOwner();
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request..

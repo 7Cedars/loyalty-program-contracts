@@ -61,7 +61,7 @@ contract HelperConfig is Script {
             uri: "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD",
             initialSupply: 1e25,
             interval: 30,
-            erc6551Registry: 0x000000006551c19487814612e58FE06813775758, // £ these are all old addresses. Not used? (if so, take out)
+            erc6551Registry: 0x000000006551c19487814612e58FE06813775758, 
             erc6551Implementation: payable(s_erc6551Implementation),
             callbackGasLimit: 50000
         });

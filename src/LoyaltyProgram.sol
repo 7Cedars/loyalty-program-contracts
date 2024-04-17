@@ -84,6 +84,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     /* State variables */
     uint256 public constant LOYALTY_POINTS_ID = 0;
     bytes32 private constant SALT_TOKEN_BASED_ACCOUNT = 0x05416460deb86d57af601be17e777b93592d9d4d4a4096c57876a91c84f4a712;
+    address private constant ERC6551_REGISTRY = 0x000000006551c19487814612e58FE06813775758; 
 
     // EIP712 domain separator
     struct EIP712Domain {
@@ -119,8 +120,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     mapping(address loyaltyGiftAddress => mapping(uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyGiftsClaimable; // 0 = false & 1 = true.
     mapping(address loyaltyGiftAddress => mapping(uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyVouchersRedeemable; // 0 = false & 1 = true.
     uint256 private s_loyaltyCardCounter;
-    ERC6551Registry public s_erc6551Registry;
-    LoyaltyCard6551Account public s_erc6551Implementation;
+    address public s_erc6551Implementation;
 
     /* Events */
     event DeployedLoyaltyProgram(address indexed owner, string name, string version);
@@ -142,7 +142,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
      * @param _uri the uri linked to the loyalty program. See for example layout of this Uri the LoyaltyPrograms folder.
      * @param _name the name of the Loyalty Program
      * @param _version the version of the Loyalty Program 
-     * @param erc6551Registry address of registry. This address is often the same but can change with test chains, versions, specific deployments of registries, etc. 
      * @param erc6551Implementation this is a bespoke - loyalty program specific - deployment of a standard ERC6551 account example from token bound.  
      *
      * @dev s_owner is now set as msg-sender and cannot be changed later on. This is on the list to change. 
@@ -151,11 +150,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
      *
      * emits a DeployedLoyaltyProgram event.
      */
-    constructor(string memory _uri, string memory _name, string memory _version, address erc6551Registry, address payable erc6551Implementation) ERC1155(_uri) {
+    constructor(string memory _uri, string memory _name, string memory _version, address payable erc6551Implementation) ERC1155(_uri) {
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
-        s_erc6551Registry = ERC6551Registry(erc6551Registry);
-        s_erc6551Implementation = LoyaltyCard6551Account(erc6551Implementation);
+        s_erc6551Implementation = erc6551Implementation; // this possibly too. 
 
         DOMAIN_SEPARATOR = hashDomain(
             EIP712Domain({
@@ -535,8 +533,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     }
 
     function _createTokenBoundAccount(uint256 _loyaltyCardId) internal returns (address tokenBoundAccount) {
-        tokenBoundAccount = s_erc6551Registry.createAccount(
-            address(s_erc6551Implementation), SALT_TOKEN_BASED_ACCOUNT, block.chainid, address(this), _loyaltyCardId
+        tokenBoundAccount = ERC6551Registry(ERC6551_REGISTRY).createAccount(
+            s_erc6551Implementation, SALT_TOKEN_BASED_ACCOUNT, block.chainid, address(this), _loyaltyCardId
         );
 
         return tokenBoundAccount;
@@ -596,8 +594,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     }
 
     function getTokenBoundAddress(uint256 _loyaltyCardId) public view returns (address tokenBoundAccount) {
-        tokenBoundAccount = s_erc6551Registry.account(
-            address(s_erc6551Implementation), SALT_TOKEN_BASED_ACCOUNT, block.chainid, address(this), _loyaltyCardId 
+        tokenBoundAccount = ERC6551Registry(ERC6551_REGISTRY).account(
+            s_erc6551Implementation, SALT_TOKEN_BASED_ACCOUNT, block.chainid, address(this), _loyaltyCardId 
         );
         return tokenBoundAccount;
     }
