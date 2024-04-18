@@ -73,6 +73,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     error LoyaltyProgram__RequestInvalid();
     error LoyaltyProgram__LoyaltyGiftInvalid();
     error LoyaltyProgram__LoyaltyVoucherInvalid();
+    error LoyaltyProgram__InvalidVoucherTransfer(); 
     error LoyaltyProgram__RequirementsGiftNotMet(); 
     error LoyaltyProgram__IncorrectInterface(address loyaltyGift, bytes4 interfaceId);
 
@@ -118,7 +119,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     mapping(address loyaltyCard => uint256 nonce) private s_nonceLoyaltyCard;
     mapping(address loyaltyCardAddress => uint256 exists) private s_LoyaltyCards; // 0 = false & 1 = true.
     mapping(address loyaltyGiftAddress => mapping(uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyGiftsClaimable; // 0 = false & 1 = true.
-    mapping(address loyaltyGiftAddress => mapping(uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyVouchersRedeemable; // 0 = false & 1 = true.
+    mapping(address loyaltyGiftAddress => mapping(uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyVouchersRedeemable; // NB! 0 = true & 1 = false. OPPOSITE OF s_LoyaltyGiftsClaimable!
     uint256 private s_loyaltyCardCounter;
     address public s_erc6551Implementation;
 
@@ -240,7 +241,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         //     revert LoyaltyProgram__IncorrectInterface(loyaltyGiftAddress, interfaceId);
         // }
         s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = 1;
-        s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] = 1;
         emit AddedLoyaltyGift(loyaltyGiftAddress, loyaltyGiftId);
     }
 
@@ -274,6 +274,9 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
      * @dev Calling this function is an extreme measure and should only be used on extreme cases (malfunction, hack, etc).
      * @dev it also removes gifts from claimable whitelist, avoiding scenario where voucher can be claimed but not redeemed.
      * @dev only owner can remove contracts from whitelist.
+     * @dev NOTICE opposite boolean logic of s_LoyaltyGiftsClaimable and s_LoyaltyVouchersRedeemable. 
+     * With s_LoyaltyGiftsClaimable     0 = false 
+     * With s_LoyaltyVouchersRedeemable 1 = false
      *
      * - emits an RemovedLoyaltyGiftRedeemable event.
      */
@@ -282,7 +285,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
             revert LoyaltyProgram__LoyaltyGiftInvalid();
         }
         s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = 0;
-        s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] = 0;
+        s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] = 1;
 
         emit RemovedLoyaltyGiftRedeemable(loyaltyGiftAddress, loyaltyGiftId);
     }
@@ -311,7 +314,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
      * @param to todo 
      * @param loyaltyGiftId todo 
      *
-     * @dev anyone can call this function; but will bounce (due to safeTransferFrom being called) when not owner of voucher.
+     * @dev safeTransferFrom at ILoyaltyGift bypasses the usual approval check because transfers need to be called via the LoyaltyProgram contract.  
+     * Instead, checks of ownership are placed at the LoyaltyProgram contract, before calling safeTransferFrom at ILoyaltyGift / Loyalty Gift contract.  
      *
      * - emits transferSingle event.
      */
@@ -321,6 +325,14 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         uint256 loyaltyGiftId, 
         address loyaltyGiftAddress
     ) public {
+        if (
+            from != s_owner && 
+            to != s_owner &&
+            ILoyaltyGift(loyaltyGiftAddress).balanceOf(from, loyaltyGiftId) == 0 
+        ) {
+            revert LoyaltyProgram__InvalidVoucherTransfer();
+        }
+
         ILoyaltyGift(loyaltyGiftAddress).safeTransferFrom(from, to, loyaltyGiftId, 1, "");
     }
 
@@ -467,7 +479,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
         }
 
         // check if loyalty Voucher is valid.
-        if (s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] == 0) {
+        if (s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] == 1) {
             revert LoyaltyProgram__LoyaltyVoucherInvalid();
         }
 
