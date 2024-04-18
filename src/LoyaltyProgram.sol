@@ -281,7 +281,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
      * - emits an RemovedLoyaltyGiftRedeemable event.
      */
     function removeLoyaltyGiftRedeemable(address loyaltyGiftAddress, uint256 loyaltyGiftId) public onlyOwner {
-        if (s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] == 0) {
+        if (s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] == 1) {
             revert LoyaltyProgram__LoyaltyGiftInvalid();
         }
         s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = 0;

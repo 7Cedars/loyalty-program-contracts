@@ -152,17 +152,15 @@ contract HelperConfig is Script {
 
     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
         
-        try vm.envString("ERC6551_ACCOUNT_IMPLEMENTED") {} 
+        try vm.envString("ERC6551_ACCOUNT_IMPLEMENTED") {console.log("ERC6551_ACCOUNT_IMPLEMENTED");  } 
         catch {
+            console.log("SETTING UP NEW ERC6551 IMPLEMENTATION"); 
             vm.startBroadcast();
             s_erc6551Implementation = new LoyaltyCard6551Account{salt: SALT}(); // note: determinsitic deployment. 
             vm.stopBroadcast();
             
             vm.setEnv("ERC6551_ACCOUNT_IMPLEMENTED", "TRUE");
         }
-
-        // try new LoyaltyCard6551Account{salt: SALT}() {
-        console.log("SETTING UP NEW ERC6551 IMPLEMENTATION"); 
 
         NetworkConfig memory anvilConfig = NetworkConfig({
             chainid: 31337,

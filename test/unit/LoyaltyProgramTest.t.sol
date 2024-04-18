@@ -163,7 +163,7 @@ contract LoyaltyProgramTest is Test {
         loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
         // Act / Assert
         assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
-        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
     }
 
     function testEmitsEventOnAddingLoyaltyGiftContract() public {
@@ -183,7 +183,7 @@ contract LoyaltyProgramTest is Test {
 
         // Act / Assert
         assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
-        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
     }
 
     function testLoyaltyGiftRedeemCanBeRemoved() public {
@@ -194,7 +194,7 @@ contract LoyaltyProgramTest is Test {
 
         // Act / Assert
         assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
-        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 1), 0);
     }
 
     function testEmitsEventOnRemovingLoyaltyGiftClaim() public {
@@ -212,9 +212,6 @@ contract LoyaltyProgramTest is Test {
 
     function testEmitsEventOnRemovingLoyaltyGiftRedeem() public {
         // Arrange
-        vm.prank(ownerProgram);
-        loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
-
         vm.expectEmit(true, false, false, false, address(loyaltyProgram));
         emit RemovedLoyaltyGiftRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
 

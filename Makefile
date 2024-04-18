@@ -165,8 +165,16 @@ anvilDeployGifts:
 	@forge script ../loyalty-gifts-contracts/script/DeployPointsForPseudoRaffle.s.sol:DeployPointsForPseudoRaffle $(ANVIL_ARGS_0)
 	@forge script ../loyalty-gifts-contracts/script/DeployTieredAccess.s.sol:DeployTieredAccess $(ANVIL_ARGS_0)
 
+anvilDeployAll: 
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ANVIL_ARGS_1)
+	@forge script ../loyalty-gifts-contracts/script/DeployFridaysFifteenPercent.s.sol:DeployFridaysFifteenPercent $(ANVIL_ARGS_0)
+	@forge script ../loyalty-gifts-contracts/script/DeployPointsForLoyaltyGifts.s.sol:DeployPointsForLoyaltyGifts $(ANVIL_ARGS_0)
+	@forge script ../loyalty-gifts-contracts/script/DeployPointsForLoyaltyVouchers.s.sol:DeployPointsForLoyaltyVouchers $(ANVIL_ARGS_0)
+	@forge script ../loyalty-gifts-contracts/script/DeployPointsForPseudoRaffle.s.sol:DeployPointsForPseudoRaffle $(ANVIL_ARGS_0)
+	@forge script ../loyalty-gifts-contracts/script/DeployTieredAccess.s.sol:DeployTieredAccess $(ANVIL_ARGS_0)
+
 # All tests need to be run through local anvil chain, with a registry deployed locally. 
 # all contracts here run on solc 0.8.24; while erc-6551 registry runs on solc 0.8.19. 
 # Due to changes in OpenZeppelin contracts, these cannot be deployed from the same folder / environment.
 anvilTest:
-	@forge test $(ANVIL_TEST_ARGS) 
+	@forge test  $(ANVIL_TEST_ARGS)
