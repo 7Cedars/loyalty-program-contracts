@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-// import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol"; // ERC165 not implemented for now. 
-// import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol"; // ERC165 not implemented for now. 
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol"; // ERC165 not implemented for now. 
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol"; // ERC165 not implemented for now. 
 import {ERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
 import {IERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
@@ -142,6 +142,15 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
         } 
         super._safeTransferFrom(from, to, id, amount, data);
     }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, ILoyaltyGift) returns (bool) {
+    
+      return 
+        interfaceId == type(ILoyaltyGift).interfaceId || 
+        interfaceId == 0x45f417cc || 
+        super.supportsInterface(interfaceId);
+    }
+
 
     /* getter functions */
     function getNumberOfGifts() external view returns (uint256) {

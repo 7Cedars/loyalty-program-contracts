@@ -5,12 +5,12 @@ pragma solidity ^0.8.19;
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+// import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {ILoyaltyGift} from "./interfaces/ILoyaltyGift.sol";
 
-import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {ERC6551Registry} from "../test/mocks/ERC6551Registry.t.sol";
 import {LoyaltyCard6551Account} from "./LoyaltyCard6551Account.sol";
@@ -75,7 +75,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     error LoyaltyProgram__LoyaltyVoucherInvalid();
     error LoyaltyProgram__InvalidVoucherTransfer(); 
     error LoyaltyProgram__RequirementsGiftNotMet(); 
-    error LoyaltyProgram__IncorrectInterface(address loyaltyGift, bytes4 interfaceId);
+    error LoyaltyProgram__IncorrectInterface(address loyaltyGift);
 
     /* Type declarations */
     using ECDSA for bytes32;
@@ -236,12 +236,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
 
     function addLoyaltyGift(address loyaltyGiftAddress, uint256 loyaltyGiftId) public onlyOwner {
         // £security £todo: I cannot get supportsInterface interface to work for now. Try again later. 
-        // bytes4 interfaceId = type(ILoyaltyGift).interfaceId;
-        // if (!loyaltyGiftAddress.supportsInterface(0x140b2c57) ) {
-        //     revert LoyaltyProgram__IncorrectInterface(loyaltyGiftAddress, interfaceId);
-        // }
-        s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = 1;
-        emit AddedLoyaltyGift(loyaltyGiftAddress, loyaltyGiftId);
+        if (ERC165Checker.supportsERC165InterfaceUnchecked(loyaltyGiftAddress, type(ILoyaltyGift).interfaceId)) {
+            s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = 1;
+            emit AddedLoyaltyGift(loyaltyGiftAddress, loyaltyGiftId);
+        }
     }
 
     /**

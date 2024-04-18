@@ -28,7 +28,7 @@ contract LoyaltyProgramTest is Test {
     uint256[] TOKENS_TO_MINT = [3, 5];
     uint256[] AMOUNT_TOKENS_TO_MINT = [24, 34];
     uint256[] GIFTS_TO_DESELECT = [2];
-    address MOCK_LOYALTY_GIFT_ADDRESS = 0xbdEd0D2bf404bdcBa897a74E6657f1f12e5C6fb6; 
+    address MOCK_LOYALTY_GIFT_ADDRESS = 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512; 
     bytes32 SALT = 0x05416460deb86d57af601be17e777b93592d9d4d4a4096c57876a91c84f4a712;
 
     uint256 vendorKey = vm.envUint("DEFAULT_ANVIL_KEY_0");
@@ -153,11 +153,9 @@ contract LoyaltyProgramTest is Test {
         loyaltyProgram.mintLoyaltyPoints(POINTS_TO_MINT);
     }
 
-
     ///////////////////////////////////////////////
     ///    Adding and Removing LoyaltyGifts      //
     ///////////////////////////////////////////////
-
     function testLoyaltyGiftContractCanBeAdded() public {
         vm.prank(ownerProgram);
         loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
