@@ -3,7 +3,11 @@ pragma solidity ^0.8.19;
 
 import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
+import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
+import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
+import {DeployMockERC1155} from "../../script/DeployMockERC1155.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {ERC6551Registry} from "../mocks/ERC6551Registry.t.sol";
 
@@ -17,6 +21,8 @@ contract LoyaltyProgramTest is Test {
     event RemovedLoyaltyGiftRedeemable(address indexed loyaltyGift, uint256 loyaltyGiftId);
 
     LoyaltyProgram loyaltyProgram;
+    ILoyaltyGift mockLoyaltyGifts; 
+    IERC1155 mockERC1155; 
     HelperConfig helperConfig;
     address ownerProgram; 
 
@@ -28,7 +34,6 @@ contract LoyaltyProgramTest is Test {
     uint256[] TOKENS_TO_MINT = [3, 5];
     uint256[] AMOUNT_TOKENS_TO_MINT = [24, 34];
     uint256[] GIFTS_TO_DESELECT = [2];
-    address MOCK_LOYALTY_GIFT_ADDRESS = 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512; 
     bytes32 SALT = 0x05416460deb86d57af601be17e777b93592d9d4d4a4096c57876a91c84f4a712;
 
     uint256 vendorKey = vm.envUint("DEFAULT_ANVIL_KEY_0");
@@ -42,13 +47,19 @@ contract LoyaltyProgramTest is Test {
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
         (loyaltyProgram, helperConfig) = deployer.run();
         ownerProgram = loyaltyProgram.getOwner(); 
+
+        DeployMockLoyaltyGifts deployerGifts = new DeployMockLoyaltyGifts(); 
+        (mockLoyaltyGifts) = deployerGifts.run();
+
+        DeployMockERC1155 deployerERC1155 = new DeployMockERC1155(); 
+        (mockERC1155) = deployerERC1155.run();
     }
 
-    function testLoyaltyProgramHasOwner() public {
+    function testLoyaltyProgramHasOwner() public view {
         assertNotEq(address(0), ownerProgram);
     }
 
-    function testLoyaltyCardCounter() public {
+    function testLoyaltyCardCounter() public view {
         assertEq(0, loyaltyProgram.getNumberLoyaltyCardsMinted());
     }
 
@@ -158,64 +169,73 @@ contract LoyaltyProgramTest is Test {
     ///////////////////////////////////////////////
     function testLoyaltyGiftContractCanBeAdded() public {
         vm.prank(ownerProgram);
-        loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+        loyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), 0);
         // Act / Assert
-        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 1);
-        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(address(mockLoyaltyGifts), 0), 1);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(address(mockLoyaltyGifts), 0), 0);
+    }
+
+    function testAddingGiftContractRevertsWithIncorrectInterfaceId() public {
+        vm.expectRevert(
+            abi.encodeWithSelector(LoyaltyProgram.LoyaltyProgram__IncorrectInterface.selector, address(address(mockERC1155))) 
+        );
+        
+        vm.prank(ownerProgram);
+        loyaltyProgram.addLoyaltyGift(address(mockERC1155), 0);
     }
 
     function testEmitsEventOnAddingLoyaltyGiftContract() public {
         // Arrange
         vm.expectEmit(true, false, false, false, address(loyaltyProgram));
-        emit AddedLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+        emit AddedLoyaltyGift(address(mockLoyaltyGifts), 0);
         // Act / Assert
         vm.prank(ownerProgram);
-        loyaltyProgram.addLoyaltyGift(payable(MOCK_LOYALTY_GIFT_ADDRESS), 0);
+        loyaltyProgram.addLoyaltyGift(payable(address(mockLoyaltyGifts)), 0);
     }
 
     function testLoyaltyGiftClaimCanBeRemoved() public {
         vm.startPrank(ownerProgram);
-        loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
-        loyaltyProgram.removeLoyaltyGiftClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+        loyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), 0);
+        loyaltyProgram.removeLoyaltyGiftClaimable(address(mockLoyaltyGifts), 0);
         vm.stopPrank();
 
         // Act / Assert
-        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
-        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(address(mockLoyaltyGifts), 0), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(address(mockLoyaltyGifts), 0), 0);
     }
 
     function testLoyaltyGiftRedeemCanBeRemoved() public {
         vm.startPrank(ownerProgram);
-        loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
-        loyaltyProgram.removeLoyaltyGiftRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+        loyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), 0);
+        loyaltyProgram.removeLoyaltyGiftRedeemable(address(mockLoyaltyGifts), 0);
         vm.stopPrank();
 
         // Act / Assert
-        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0), 0);
-        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 1), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(address(mockLoyaltyGifts), 0), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(address(mockLoyaltyGifts), 1), 0);
     }
 
     function testEmitsEventOnRemovingLoyaltyGiftClaim() public {
         // Arrange
         vm.prank(ownerProgram);
-        loyaltyProgram.addLoyaltyGift(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+        loyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), 0);
 
         vm.expectEmit(true, false, false, false, address(loyaltyProgram));
-        emit RemovedLoyaltyGiftClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+        emit RemovedLoyaltyGiftClaimable(address(mockLoyaltyGifts), 0);
 
         // Act / Assert
         vm.prank(ownerProgram);
-        loyaltyProgram.removeLoyaltyGiftClaimable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+        loyaltyProgram.removeLoyaltyGiftClaimable(address(mockLoyaltyGifts), 0);
     }
 
     function testEmitsEventOnRemovingLoyaltyGiftRedeem() public {
         // Arrange
         vm.expectEmit(true, false, false, false, address(loyaltyProgram));
-        emit RemovedLoyaltyGiftRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+        emit RemovedLoyaltyGiftRedeemable(address(mockLoyaltyGifts), 0);
 
         // Act / Assert
         vm.prank(ownerProgram);
-        loyaltyProgram.removeLoyaltyGiftRedeemable(MOCK_LOYALTY_GIFT_ADDRESS, 0);
+        loyaltyProgram.removeLoyaltyGiftRedeemable(address(mockLoyaltyGifts), 0);
     }
 }
 

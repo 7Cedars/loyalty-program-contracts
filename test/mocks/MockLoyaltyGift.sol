@@ -143,7 +143,7 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
         super._safeTransferFrom(from, to, id, amount, data);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, ILoyaltyGift) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ILoyaltyGift, ERC1155) returns (bool) {
     
       return 
         interfaceId == type(ILoyaltyGift).interfaceId || 

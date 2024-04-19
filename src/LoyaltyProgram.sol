@@ -73,7 +73,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     error LoyaltyProgram__RequestInvalid();
     error LoyaltyProgram__LoyaltyGiftInvalid();
     error LoyaltyProgram__LoyaltyVoucherInvalid();
-    error LoyaltyProgram__InvalidVoucherTransfer(); 
+    error LoyaltyProgram__VoucherTransferInvalid(); 
     error LoyaltyProgram__RequirementsGiftNotMet(); 
     error LoyaltyProgram__IncorrectInterface(address loyaltyGift);
 
@@ -154,7 +154,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
     constructor(string memory _uri, string memory _name, string memory _version, address payable erc6551Implementation) ERC1155(_uri) {
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
-        s_erc6551Implementation = erc6551Implementation; // this possibly too. 
+        s_erc6551Implementation = erc6551Implementation; 
 
         DOMAIN_SEPARATOR = hashDomain(
             EIP712Domain({
@@ -236,10 +236,11 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
 
     function addLoyaltyGift(address loyaltyGiftAddress, uint256 loyaltyGiftId) public onlyOwner {
         // £security £todo: I cannot get supportsInterface interface to work for now. Try again later. 
-        if (ERC165Checker.supportsERC165InterfaceUnchecked(loyaltyGiftAddress, type(ILoyaltyGift).interfaceId)) {
-            s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = 1;
-            emit AddedLoyaltyGift(loyaltyGiftAddress, loyaltyGiftId);
+        if (ERC165Checker.supportsInterface(loyaltyGiftAddress, type(ILoyaltyGift).interfaceId) == false) {
+            revert LoyaltyProgram__IncorrectInterface(loyaltyGiftAddress);
         }
+        s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = 1;
+        emit AddedLoyaltyGift(loyaltyGiftAddress, loyaltyGiftId);
     }
 
     /**
@@ -328,7 +329,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
             to != s_owner &&
             ILoyaltyGift(loyaltyGiftAddress).balanceOf(from, loyaltyGiftId) == 0 
         ) {
-            revert LoyaltyProgram__InvalidVoucherTransfer();
+            revert LoyaltyProgram__VoucherTransferInvalid();
         }
 
         ILoyaltyGift(loyaltyGiftAddress).safeTransferFrom(from, to, loyaltyGiftId, 1, "");
@@ -533,6 +534,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver { // removed: ReentrancyGua
                     revert LoyaltyProgram__TransferDenied();
                 }
             }
+            // loyalty cards cannot be transferred to other loyalty cards. 
             if (ids[i] != LOYALTY_POINTS_ID) {
                 if (s_LoyaltyCards[to] == 1) {
                     revert LoyaltyProgram__TransferDenied();
