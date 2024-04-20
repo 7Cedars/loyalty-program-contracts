@@ -147,7 +147,6 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
     
       return 
         interfaceId == type(ILoyaltyGift).interfaceId || 
-        interfaceId == 0x45f417cc || 
         super.supportsInterface(interfaceId);
     }
 
