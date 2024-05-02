@@ -16,9 +16,6 @@ Even though repository is public, For now, it is for personal use only.
 
 ## Know bugs (in order of priority)
 - [ ] CardsToProgramToGifts.t.sol sometimes fails, sometimes not. Find out why & fix. 
-- [ ] HelperConfig.s.sol deploys a new LoyaltyCard6551Account instance everytime it is run
-  - [ ] should use CREATE2 for determinsitc deployment 
-  - [ ] should check if already deployed. 
 - [ ]    
 
 ## Improvements to implement (in order of priority)

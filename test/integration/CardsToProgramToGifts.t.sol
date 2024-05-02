@@ -9,6 +9,7 @@ import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";
 
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
+import {DeployLoyaltyCard6551Account} from "../../script/DeployLoyaltyCard6551Account.s.sol";
 import {ERC6551Registry} from "../../test/mocks/ERC6551Registry.t.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
@@ -36,7 +37,6 @@ contract CardsToProgramToGiftsTest is Test {
     LoyaltyCard6551Account loyaltyCardAccount; 
     address owner; 
     address alternativeProgramOwner; 
-
 
     uint256 customerOneKey = 0xa11ce;
     uint256 customerTwoKey = 0x7ceda52;
@@ -96,12 +96,17 @@ contract CardsToProgramToGiftsTest is Test {
 
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
         loyaltyProgram = deployer.run();
-
         alternativeLoyaltyProgram = deployer.run();
+
         DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts();
         mockLoyaltyGifts = giftDeployer.run();
+
+        DeployLoyaltyCard6551Account accountDeployer = new DeployLoyaltyCard6551Account(); 
+        accountDeployer.run(); 
+        
         owner = loyaltyProgram.getOwner();
         alternativeProgramOwner = alternativeLoyaltyProgram.getOwner();
+
 
         // an extensive interaction context needed in all tests below.
         // (hence no modifier used)
@@ -115,23 +120,22 @@ contract CardsToProgramToGiftsTest is Test {
         // Loyalty Program minting Loyalty Points, Cards and Vouchers
         loyaltyProgram.mintLoyaltyPoints(pointsToMint);
         loyaltyProgram.mintLoyaltyCards(cardsToMint);
-        // loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), voucherIds, amountVoucherIds);
+        loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), voucherIds, amountVoucherIds);
 
         // Loyalty Program Transferring Points and vuchers to Cards
+        for (uint256 i = 0; i < cardIds.length; i++) {
+            loyaltyProgram.safeTransferFrom(
+                owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
+            );
+            loyaltyProgram.transferLoyaltyVoucher(
+                owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), address(mockLoyaltyGifts), voucherIds[0]
+                ); 
+        }
 
-        // for (uint256 i = 1; i < cardIds.length; i++) {
-        //     loyaltyProgram.safeTransferFrom(
-        //         owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
-        //     );
-        //     loyaltyProgram.transferLoyaltyVoucher(
-        //         owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), address(mockLoyaltyGifts), voucherIds[0]
-        //         ); 
-        // }
-
-        // loyaltyProgram.safeTransferFrom(owner, customerOneAddress, 1, 1, "");
+        loyaltyProgram.safeTransferFrom(owner, customerOneAddress, 1, 1, "");
         vm.stopPrank();
 
-        // Repeat these actions for alternative LoyaltyProgram. 
+        // // Repeat these actions for alternative LoyaltyProgram. 
         vm.startPrank(alternativeProgramOwner);
         // Loyalty Program selecting Gifts
         for (uint256 i = 0; i < giftIds.length; i++) {
@@ -162,7 +166,7 @@ contract CardsToProgramToGiftsTest is Test {
     function testCustomerCanClaimGift() public {
         uint256 giftId = 3;
         uint256 loyaltyCardId = 1;
-        address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
+        address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(loyaltyCardId);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request
@@ -173,7 +177,6 @@ contract CardsToProgramToGiftsTest is Test {
             cost: "1500 points",
             nonce: 0
         });
-
         console.logUint(loyaltyProgram.getNonceLoyaltyCard(loyaltyCardOne));
 
         // customer signs request
@@ -704,7 +707,6 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         // = loyalty card from loyaltyProgram
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
-        address alternativeProgramOwner = alternativeLoyaltyProgram.getOwner();
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request
@@ -743,7 +745,6 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         // = loyalty card from loyaltyProgram
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
-        address alternativeProgramOwner = alternativeLoyaltyProgram.getOwner();
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // customer creates request to _alternative_LoyaltyProgram

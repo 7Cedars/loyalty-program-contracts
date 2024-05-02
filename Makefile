@@ -147,6 +147,9 @@ ANVIL_TEST_ARGS := --rpc-url http://localhost:8545
 anvilDeploy:
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ANVIL_ARGS_1)
 
+anvilDeployLoyaltyCard6551Account: 
+	@forge script script/DeployLoyaltyCard6551Account.s.sol:DeployLoyaltyCard6551Account $(ANVIL_TEST_ARGS)
+
 anvilDeployGifts:
 	@forge script ../loyalty-gifts-contracts/script/DeployFridaysFifteenPercent.s.sol:DeployFridaysFifteenPercent $(ANVIL_ARGS_0)
 	@forge script ../loyalty-gifts-contracts/script/DeployPointsForLoyaltyGifts.s.sol:DeployPointsForLoyaltyGifts $(ANVIL_ARGS_0)
