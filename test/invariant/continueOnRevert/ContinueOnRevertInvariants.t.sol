@@ -19,10 +19,9 @@ import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {DeployLoyaltyProgram} from "../../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../../script/DeployLoyaltyGifts.s.sol";
 import {LoyaltyProgram} from "../../../src/LoyaltyProgram.sol" ;
- import {MockLoyaltyGift} from "../../mocks/MockLoyaltyGift.sol" ;
+import {MockLoyaltyGift} from "../../mocks/MockLoyaltyGift.sol" ;
 import {ContinueOnRevertHandlerPrograms} from "./ContinueOnRevertHandlerPrograms.t.sol";
 import {ContinueOnRevertHandlerCards} from "./ContinueOnRevertHandlerCards.t.sol";
-import {HelperConfig} from "../../../script/HelperConfig.s.sol" ;
 
 contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
   DeployLoyaltyProgram deployerLP;
@@ -30,15 +29,13 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
   ContinueOnRevertHandlerPrograms continueOnRevertHandlerPrograms;
   ContinueOnRevertHandlerCards continueOnRevertHandlerCards;
   LoyaltyProgram loyaltyProgram; 
-  HelperConfig helperConfig; 
   uint256 INITIAL_SUPPLY_POINTS = 5000000000; 
   uint256 INITIAL_SUPPLY_VOUCHERS = 15; 
 
   struct ProgramData {
     LoyaltyProgram loyaltyProgram; 
     address owner; 
-    address[] loyaltyCards; 
-    HelperConfig config; 
+    address[] loyaltyCards;
   }
   ProgramData[] programsData;
 
@@ -52,6 +49,10 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
   function testA() public {} // to have foundry ignore this file in coverage report. see £ack https://ethereum.stackexchange.com/questions/155700/force-foundry-to-ignore-contracts-during-a-coverage-report
 
   function setUp() external {
+    string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
+    uint256 forkId = vm.createFork(rpc_url);
+    vm.selectFork(forkId);
+
     deployerLP = new DeployLoyaltyProgram();
     deployerLG = new DeployMockLoyaltyGifts();
 
@@ -66,7 +67,7 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
     for (uint256 i = 0; i < numberLoyaltyPrograms; i++) { 
       address owner;
       cardAddresses = new address[](0);
-      (loyaltyProgram, helperConfig) = deployerLP.run(); 
+      loyaltyProgram = deployerLP.run(); 
       owner = loyaltyProgram.getOwner(); 
 
       vm.startPrank(owner); 
@@ -84,8 +85,7 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
       programsData.push(ProgramData(
         loyaltyProgram, 
         owner, 
-        cardAddresses,  
-        helperConfig
+        cardAddresses
       )); 
     }
  
@@ -93,14 +93,12 @@ contract ContinueOnRevertInvariantsTest is StdInvariant, Test {
       loyaltyPrograms, 
       allCardAddresses, 
       loyaltyGifts, 
-      helperConfig, 
       INITIAL_SUPPLY_VOUCHERS 
       ); 
     continueOnRevertHandlerCards = new ContinueOnRevertHandlerCards(
       loyaltyPrograms, 
       allCardAddresses, 
-      loyaltyGifts, 
-      helperConfig
+      loyaltyGifts
       ); 
     targetContract(address(continueOnRevertHandlerPrograms));
     targetContract(address(continueOnRevertHandlerCards));

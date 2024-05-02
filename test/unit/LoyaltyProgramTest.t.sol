@@ -8,7 +8,6 @@ import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
 import {DeployMockERC1155} from "../../script/DeployMockERC1155.s.sol";
-import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {ERC6551Registry} from "../mocks/ERC6551Registry.t.sol";
 
 contract LoyaltyProgramTest is Test {
@@ -23,7 +22,6 @@ contract LoyaltyProgramTest is Test {
     LoyaltyProgram loyaltyProgram;
     ILoyaltyGift mockLoyaltyGifts; 
     IERC1155 mockERC1155; 
-    HelperConfig helperConfig;
     address ownerProgram; 
 
     uint256 CARDS_TO_MINT = 5;
@@ -34,7 +32,7 @@ contract LoyaltyProgramTest is Test {
     uint256[] TOKENS_TO_MINT = [3, 5];
     uint256[] AMOUNT_TOKENS_TO_MINT = [24, 34];
     uint256[] GIFTS_TO_DESELECT = [2];
-    bytes32 SALT = 0x05416460deb86d57af601be17e777b93592d9d4d4a4096c57876a91c84f4a712;
+    bytes32 SALT = 0x0000000000000000000000000000000000000000000000000000000007ceda52;
 
     uint256 vendorKey = vm.envUint("DEFAULT_ANVIL_KEY_0");
     address vendorAddress = vm.addr(vendorKey);
@@ -44,8 +42,12 @@ contract LoyaltyProgramTest is Test {
     ///////////////////////////////////////////////
 
     function setUp() external {
+        string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
+        uint256 forkId = vm.createFork(rpc_url);
+        vm.selectFork(forkId);
+
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
-        (loyaltyProgram, helperConfig) = deployer.run();
+        loyaltyProgram = deployer.run();
         ownerProgram = loyaltyProgram.getOwner(); 
 
         DeployMockLoyaltyGifts deployerGifts = new DeployMockLoyaltyGifts(); 
@@ -66,8 +68,7 @@ contract LoyaltyProgramTest is Test {
     function testDeployEmitsevent() public {
         string memory name = "Loyalty Program"; 
         string memory version = "1"; 
-        (, string memory uri,,,, address payable erc65511Implementation,) =
-            helperConfig.activeNetworkConfig();
+        string memory uri = "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD"; 
 
         vm.expectEmit(true, false, false, false);
         emit DeployedLoyaltyProgram(vendorAddress, name, version);
@@ -76,8 +77,7 @@ contract LoyaltyProgramTest is Test {
         loyaltyProgram = new LoyaltyProgram(
         uri, 
         name, 
-        version,
-        erc65511Implementation
+        version
         );
     }
 
@@ -110,8 +110,8 @@ contract LoyaltyProgramTest is Test {
     }
 
     function testMintingCardsCreatesValidTokenBasedAccounts() public {
-        (uint256 chainid,,,, address erc65511Registry, address payable erc65511Implementation,) =
-            helperConfig.activeNetworkConfig();
+        address erc65511Registry = 0x000000006551c19487814612e58FE06813775758;
+        address erc65511Implementation = 0xD24087e42e80D8CA9BcCC21E0849160aEf1F7210;
 
         vm.prank(ownerProgram);
         loyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);
@@ -121,7 +121,7 @@ contract LoyaltyProgramTest is Test {
             deployedTBAAccount = loyaltyProgram.getTokenBoundAddress(CARDS_MINTED[i]);
 
             address registryComputedAddress = ERC6551Registry(erc65511Registry).account(
-                address(erc65511Implementation), SALT, chainid, address(loyaltyProgram), CARDS_MINTED[i] 
+                address(erc65511Implementation), SALT, block.chainid, address(loyaltyProgram), CARDS_MINTED[i] 
             );
 
             assertEq(deployedTBAAccount, registryComputedAddress);

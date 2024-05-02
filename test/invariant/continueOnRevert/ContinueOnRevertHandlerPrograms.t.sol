@@ -21,8 +21,7 @@ import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {DeployLoyaltyProgram} from "../../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../../script/DeployLoyaltyGifts.s.sol";
 import {LoyaltyProgram} from "../../../src/LoyaltyProgram.sol" ;
- import {MockLoyaltyGift} from "../../mocks/MockLoyaltyGift.sol" ;
-import {HelperConfig} from "../../../script/HelperConfig.s.sol" ;
+import {MockLoyaltyGift} from "../../mocks/MockLoyaltyGift.sol" ;
 
 contract ContinueOnRevertHandlerPrograms is Test  {
   DeployLoyaltyProgram deployerLP;
@@ -33,7 +32,6 @@ contract ContinueOnRevertHandlerPrograms is Test  {
   address[] loyaltyCards;
   MockLoyaltyGift[] loyaltyGifts;
   
-  HelperConfig helperConfig; 
   ContinueOnRevertHandlerPrograms handler;
   uint256 numberLCards; 
   uint256[] supplyVouchers; 
@@ -42,13 +40,11 @@ contract ContinueOnRevertHandlerPrograms is Test  {
     LoyaltyProgram[] memory _loyaltyPrograms,  
     address[] memory _loyaltyCards,  
     MockLoyaltyGift[] memory _loyaltyGifts, 
-    HelperConfig _helperConfig,
     uint256 _supplyVouchers
     ) {
       loyaltyPrograms = _loyaltyPrograms;
       loyaltyCards = _loyaltyCards; 
       loyaltyGifts = _loyaltyGifts;
-      helperConfig = _helperConfig;
       supplyVouchers = [_supplyVouchers]; 
     }
 

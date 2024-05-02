@@ -6,7 +6,6 @@ import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
-import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {ERC6551Registry} from "../../test/mocks/ERC6551Registry.t.sol";
 
 contract ProgramToGiftsTest is Test {
@@ -23,7 +22,6 @@ contract ProgramToGiftsTest is Test {
 
     LoyaltyProgram loyaltyProgram;
     MockLoyaltyGifts mockLoyaltyGifts;
-    HelperConfig helperConfig;
     address programOwner; 
 
     uint256[] GIFTS_TO_SELECT = [3, 5];
@@ -35,8 +33,12 @@ contract ProgramToGiftsTest is Test {
     address customerOneAddress = vm.addr(customerOneKey);
 
     function setUp() external {
+        string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
+        uint256 forkId = vm.createFork(rpc_url);
+        vm.selectFork(forkId);
+        
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
-        (loyaltyProgram, helperConfig) = deployer.run();
+        loyaltyProgram = deployer.run();
         programOwner = loyaltyProgram.getOwner(); 
 
         DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts();
@@ -94,8 +96,8 @@ contract ProgramToGiftsTest is Test {
         loyaltyProgram.transferLoyaltyVoucher(
             programOwner, 
             loyaltyCardOne, 
-            VOUCHERS_TO_MINT[0],
-            address(mockLoyaltyGifts)
+            address(mockLoyaltyGifts), 
+            VOUCHERS_TO_MINT[0]
         ); 
         vm.stopPrank(); 
 
@@ -112,8 +114,8 @@ contract ProgramToGiftsTest is Test {
         loyaltyProgram.transferLoyaltyVoucher(
             programOwner, 
             loyaltyCardOne, 
-            VOUCHERS_TO_MINT[0],
-            address(mockLoyaltyGifts)
+            address(mockLoyaltyGifts),
+            VOUCHERS_TO_MINT[0]
         ); 
         vm.stopPrank(); 
         assertEq(mockLoyaltyGifts.balanceOf(loyaltyCardOne, VOUCHERS_TO_MINT[0]), 1); 
@@ -123,8 +125,8 @@ contract ProgramToGiftsTest is Test {
         loyaltyProgram.transferLoyaltyVoucher(
             loyaltyCardOne, 
             programOwner, 
-            VOUCHERS_TO_MINT[0],
-            address(mockLoyaltyGifts)
+            address(mockLoyaltyGifts), 
+            VOUCHERS_TO_MINT[0]
         ); 
         assertEq(mockLoyaltyGifts.balanceOf(loyaltyCardOne, VOUCHERS_TO_MINT[0]), 0); 
     }

@@ -6,7 +6,7 @@ import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /// @dev the ERC-165 identifier for this interface is ... 
 interface ILoyaltyProgram is IERC165, IERC1155 {
-  
+
   function mintLoyaltyCards(uint256 numberOfLoyaltyCards) external; 
 
   function mintLoyaltyPoints(uint256 numberOfPoints) external;
@@ -17,11 +17,11 @@ interface ILoyaltyProgram is IERC165, IERC1155 {
    
   function removeLoyaltyGiftRedeemable(address loyaltyGiftAddress, uint256 loyaltyGiftId) external;
 
-  function checkRequirementsLoyaltyGiftMet(address loyaltyGiftAddress, uint256 loyaltyGiftId) external returns (bool);
+  function checkRequirementsLoyaltyGiftMet(address loyaltyCard, address loyaltyGiftAddress, uint256 loyaltyGiftId) external returns (bool);
 
   function mintLoyaltyVouchers(address loyaltyGiftAddress, uint256[] memory loyaltyGiftIds, uint256[] memory numberOfVouchers) external; 
 
-  function transferLoyaltyVoucher(address from, address to, uint256 loyaltyGiftId, address loyaltyGiftAddress) external; 
+  function transferLoyaltyVoucher(address from, address to, address loyaltyGiftAddress, uint256 loyaltyGiftId) external; 
 
   function claimLoyaltyGift(
         string memory _gift,

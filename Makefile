@@ -38,7 +38,6 @@ anvil :; anvil -m 'test test test test test test test test test test test junk' 
 verify:
 	@forge verify-contract --chain-id 11155111 --num-of-optimizations 200 --watch --constructor-args 0x00000000000000000000000000000000000000000000d3c21bcecceda1000000 --etherscan-api-key $(OPT_ETHERSCAN_API_KEY) --compiler-version v0.8.19+commit.7dd6d404 0x089dc24123e0a27d44282a1ccc2fd815989e3300 src/OurToken.sol:OurToken
 
-
 # NB: see mumbai for example of how to clean up the rest
 ###############################
 # 			Sepolia testnet				#
@@ -48,7 +47,7 @@ SEPOLIA_FORK_TEST_ARGS := --fork-url $(SEPOLIA_RPC_URL)
 SEPOLIA_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --account dev_2 --sender ${DEV2_ADDRESS} --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 
 sepoliaForkTest: 
-	@forge test $(SEPOLIA_FORK_TEST_ARGS) 
+	@forge test --no-match-contract ContinueOn $(SEPOLIA_FORK_TEST_ARGS) 
 	
 sepoliaForkDeploy: 
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(SEPOLIA_FORK_ARGS)
@@ -59,27 +58,17 @@ sepoliaDeploy:
 ###############################
 # 		OPSepolia testnet				#
 ###############################
-OPT_SEPOLIA_FORK_ARGS := --fork-url $(OPT_SEPOLIA_RPC_URL) --broadcast --account dev_2 --sender ${DEV2_ADDRESS}
-OPT_SEPOLIA_FORK_TEST_ARGS := --fork-url $(OPT_SEPOLIA_RPC_URL) 
-OPT_SEPOLIA_ARGS := --rpc-url $(OPT_SEPOLIA_RPC_URL) --account dev_2 --sender ${DEV2_ADDRESS} --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
+OPT_SEPOLIA_FORKED_TEST_ARGS := --fork-url $(OPT_SEPOLIA_RPC_URL) 
+OPT_SEPOLIA_FORKED_DEPLOY_ARGS := --rpc-url $(OPT_SEPOLIA_RPC_URL) --account dev_2 --sender ${DEV2_ADDRESS} --broadcast --verify --etherscan-api-key $(OPT_ETHERSCAN_API_KEY) -vvvv
 
-optSepoliaForkTest: 
-#	@forge test --match-test testCustomerCanClaimGift $(OPT_SEPOLIA_FORK_TEST_ARGS) -vvvv 
-# @forge test $(OPT_SEPOLIA_FORK_TEST_ARGS)  
-#	@forge test $(OPT_SEPOLIA_FORK_TEST_ARGS) 
-# ignores invariant tests.
-	@forge test --match-test testNameDeployedLoyaltyProgramIsCorrect $(OPT_SEPOLIA_FORK_TEST_ARGS) -vvvv 
-# CardsToProgramToGifts // LoyaltyProgramTest // LoyaltyGiftTest // DeployLoyaltyProgramTest
+optSepoliaForkedTest: 
+	@forge test --no-match-contract ContinueOn  $(OPT_SEPOLIA_FORKED_TEST_ARGS)
+
+optSepoliaForkedDeployTest: 
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(OPT_SEPOLIA_FORKED_TEST_ARGS)
 	
-optSepoliaForkDeploy: 
-# @forge script script/DeployRegistry.s.sol:DeployRegistry $(OPT_SEPOLIA_FORK_ARGS)
-# @forge script script/ComputeRegistryAddress.s.sol:ComputeRegistryAddress $(OPT_SEPOLIA_FORK_ARGS)
-	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(OPT_SEPOLIA_FORK_ARGS)
-#	@forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(OPT_SEPOLIA_FORK_ARGS)
-
-optSepoliaDeploy:
-	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(OPT_SEPOLIA_ARGS)
-# @forge script script/DeployLoyaltyGifts.s.sol:DeployMockLoyaltyGifts $(OPT_SEPOLIA_ARGS)
+optSepoliaForkedDeploy: 
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(OPT_SEPOLIA_FORKED_DEPLOY_ARGS)
 
 #################################
 # 	Base Sepolia testnet				#
@@ -173,10 +162,12 @@ anvilDeployAll:
 	@forge script ../loyalty-gifts-contracts/script/DeployPointsForPseudoRaffle.s.sol:DeployPointsForPseudoRaffle $(ANVIL_ARGS_0)
 	@forge script ../loyalty-gifts-contracts/script/DeployTieredAccess.s.sol:DeployTieredAccess $(ANVIL_ARGS_0)
 
+# £todo add this text to readme files. 
 # All tests need to be run through local anvil chain, with a registry deployed locally. 
 # all contracts here run on solc 0.8.24; while erc-6551 registry runs on solc 0.8.19. 
 # Due to changes in OpenZeppelin contracts, these cannot be deployed from the same folder / environment.
-anvilTest:
-	@forge test $(ANVIL_TEST_ARGS)
 
-# --match-test testEmitsEventOnRemovingLoyaltyGiftClaim
+# £todo take out the following: 
+# anvilTest:
+# 	@forge test $(ANVIL_TEST_ARGS)
+

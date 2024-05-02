@@ -21,8 +21,7 @@ import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {DeployLoyaltyProgram} from "../../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../../script/DeployLoyaltyGifts.s.sol";
 import {LoyaltyProgram} from "../../../src/LoyaltyProgram.sol" ;
- import {MockLoyaltyGift} from "../../mocks/MockLoyaltyGift.sol" ;
-import {HelperConfig} from "../../../script/HelperConfig.s.sol";
+import {MockLoyaltyGift} from "../../mocks/MockLoyaltyGift.sol" ;
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {LoyaltyCard6551Account} from "../../../src/LoyaltyCard6551Account.sol";
@@ -46,7 +45,6 @@ contract ContinueOnRevertHandlerCards is Test  {
   uint256 selectedCard; 
   LoyaltyCard6551Account loyaltyCardAccount; 
   
-  HelperConfig helperConfig; 
   ContinueOnRevertHandlerCards handler;
   uint256 numberLCards; 
 
@@ -69,8 +67,7 @@ contract ContinueOnRevertHandlerCards is Test  {
   struct ProgramData {
     LoyaltyProgram loyaltyProgram; 
     string owner; 
-    CardData[] loyaltyCards; 
-    HelperConfig config; 
+    CardData[] loyaltyCards;
   }
   ProgramData[] programsData;
 
@@ -110,13 +107,11 @@ contract ContinueOnRevertHandlerCards is Test  {
   constructor( 
     LoyaltyProgram[] memory _loyaltyPrograms,  
     address[] memory _loyaltyCards,  
-    MockLoyaltyGift[] memory _loyaltyGifts, 
-    HelperConfig _helperConfig
+    MockLoyaltyGift[] memory _loyaltyGifts
     ) {
       loyaltyPrograms = _loyaltyPrograms;
       loyaltyCards = _loyaltyCards; 
       loyaltyGifts = _loyaltyGifts;
-      helperConfig = _helperConfig;
       for (uint256 i = 0; i < loyaltyPrograms.length; i++) { allAddresses.push(address(loyaltyPrograms[i])); } 
       for (uint256 i = 0; i < loyaltyCards.length; i++) { allAddresses.push(loyaltyCards[i]); } 
       for (uint256 i = 0; i < loyaltyGifts.length; i++) { allAddresses.push(address(loyaltyGifts[i])); } 

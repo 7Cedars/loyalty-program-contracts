@@ -90,10 +90,11 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
     using ERC165Checker for address;
 
     /* State variables */
-    uint256 public constant LOYALTY_POINTS_ID = 0;
-    bytes32 private constant SALT_TOKEN_BASED_ACCOUNT = 0x05416460deb86d57af601be17e777b93592d9d4d4a4096c57876a91c84f4a712;
+    uint256 public  constant LOYALTY_POINTS_ID = 0;
+    bytes32 private constant SALT = 0x0000000000000000000000000000000000000000000000000000000007ceda52;
     address private constant ERC6551_REGISTRY = 0x000000006551c19487814612e58FE06813775758; 
-
+    address private constant ERC6551_CUSTOM_ACCOUNT = 0xD24087e42e80D8CA9BcCC21E0849160aEf1F7210; 
+    
     // EIP712 domain separator
     struct EIP712Domain {
         string name;
@@ -126,9 +127,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
     mapping(address loyaltyCard => uint256 nonce) private s_nonceLoyaltyCard;
     mapping(address loyaltyCardAddress => uint256 exists) private s_LoyaltyCards; // 0 = false & 1 = true.
     mapping(address loyaltyGiftAddress => mapping(uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyGiftsClaimable; // 0 = false & 1 = true.
-    mapping(address loyaltyGiftAddress => mapping(uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyVouchersRedeemable; // NB! 0 = true & 1 = false. OPPOSITE OF s_LoyaltyGiftsClaimable!
+    // NB! s_LoyaltyVouchersRedeemable 0 = true & 1 = false. OPPOSITE OF s_LoyaltyGiftsClaimable! 
+    // £security: does this mean that any voucher can be redeemed (because it initiates at 0)? 
+    mapping(address loyaltyGiftAddress => mapping(uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyVouchersRedeemable; 
     uint256 private s_loyaltyCardCounter;
-    address public s_erc6551Implementation;
 
     /* Modifiers */
     modifier onlyOwner() {
@@ -143,8 +145,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
      * 
      * @param _uri the uri linked to the loyalty program. See for example layout of this Uri the LoyaltyPrograms folder.
      * @param _name the name of the Loyalty Program
-     * @param _version the version of the Loyalty Program 
-     * @param erc6551Implementation this is a bespoke - loyalty program specific - deployment of a standard ERC6551 account example from token bound.  
+     * @param _version the version of the Loyalty Program
      *
      * @dev s_owner is now set as msg-sender and cannot be changed later on. This is on the list to change. 
      * @dev input for erc6551Registry and erc6551Implementation addresses. This is to allow for easy testing (Note that addresses on test networks for registry might differ from standard addresses.)
@@ -152,10 +153,9 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
      *
      * emits a DeployedLoyaltyProgram event.
      */
-    constructor(string memory _uri, string memory _name, string memory _version, address payable erc6551Implementation) ERC1155(_uri) {
+    constructor(string memory _uri, string memory _name, string memory _version) ERC1155(_uri) {
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
-        s_erc6551Implementation = erc6551Implementation; 
 
         DOMAIN_SEPARATOR = hashDomain(
             EIP712Domain({
@@ -297,14 +297,15 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
      * 
      */
     function checkRequirementsLoyaltyGiftMet(
+        address loyaltyCard, 
         address loyaltyGiftAddress,
         uint256 loyaltyGiftId 
     ) public returns (bool) {
-        uint256 balanceSender = balanceOf(msg.sender, 0);  
+        uint256 balanceSender = balanceOf(loyaltyCard, 0);  
         if (balanceSender == 0) {
             revert ("Sender does not own loyalty points"); 
         }
-        return ILoyaltyGift(loyaltyGiftAddress).requirementsLoyaltyGiftMet(msg.sender, loyaltyGiftId, balanceSender); 
+        return ILoyaltyGift(loyaltyGiftAddress).requirementsLoyaltyGiftMet(loyaltyCard, loyaltyGiftId, balanceSender); 
     }
 
     /**
@@ -340,8 +341,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
     function transferLoyaltyVoucher(
         address from,
         address to,
-        uint256 loyaltyGiftId, 
-        address loyaltyGiftAddress
+        address loyaltyGiftAddress, 
+        uint256 loyaltyGiftId
     ) public {
         if (
             from != s_owner && 
@@ -435,7 +436,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
         // and 4), if gift is tokenised, transfer voucher.
         if (ILoyaltyGift(loyaltyGiftAddress).getIsVoucher(loyaltyGiftId) == 1) {
             // refactor into MockLoyaltyGift(loyaltyGift)._safeTransferFrom ? 
-            transferLoyaltyVoucher(s_owner, loyaltyCardAddress, loyaltyGiftId, loyaltyGiftAddress); 
+            transferLoyaltyVoucher(s_owner, loyaltyCardAddress, loyaltyGiftAddress, loyaltyGiftId); 
         }
     }
 
@@ -508,7 +509,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
 
         // Interact.
         // 2) retrieve loyalty voucher
-        transferLoyaltyVoucher(loyaltyCardAddress, s_owner, loyaltyGiftId, loyaltyGiftAddress); 
+        transferLoyaltyVoucher(loyaltyCardAddress, s_owner, loyaltyGiftAddress, loyaltyGiftId); 
     }
 
     /* Implementation ERC standards */ 
@@ -578,7 +579,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
 
     function _createTokenBoundAccount(uint256 _loyaltyCardId) internal returns (address tokenBoundAccount) {
         tokenBoundAccount = ERC6551Registry(ERC6551_REGISTRY).createAccount(
-            s_erc6551Implementation, SALT_TOKEN_BASED_ACCOUNT, block.chainid, address(this), _loyaltyCardId
+            ERC6551_CUSTOM_ACCOUNT, SALT, block.chainid, address(this), _loyaltyCardId
         );
 
         return tokenBoundAccount;
@@ -639,7 +640,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
 
     function getTokenBoundAddress(uint256 _loyaltyCardId) public view returns (address tokenBoundAccount) {
         tokenBoundAccount = ERC6551Registry(ERC6551_REGISTRY).account(
-            s_erc6551Implementation, SALT_TOKEN_BASED_ACCOUNT, block.chainid, address(this), _loyaltyCardId 
+            ERC6551_CUSTOM_ACCOUNT, SALT, block.chainid, address(this), _loyaltyCardId 
         );
         return tokenBoundAccount;
     }

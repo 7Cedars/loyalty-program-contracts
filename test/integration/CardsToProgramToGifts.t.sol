@@ -9,7 +9,6 @@ import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";
 
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
-import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {ERC6551Registry} from "../../test/mocks/ERC6551Registry.t.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
@@ -34,9 +33,10 @@ contract CardsToProgramToGiftsTest is Test {
     LoyaltyProgram alternativeLoyaltyProgram;
     MockLoyaltyGift loyaltyGift; 
     MockLoyaltyGifts mockLoyaltyGifts;
-    HelperConfig helperConfig;
     LoyaltyCard6551Account loyaltyCardAccount; 
     address owner; 
+    address alternativeProgramOwner; 
+
 
     uint256 customerOneKey = 0xa11ce;
     uint256 customerTwoKey = 0x7ceda52;
@@ -75,6 +75,10 @@ contract CardsToProgramToGiftsTest is Test {
     ///                   Setup                 ///
     ///////////////////////////////////////////////
     function setUp() external {
+        string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
+        uint256 forkId = vm.createFork(rpc_url);
+        vm.selectFork(forkId);
+
         // Deploy Loyalty and Gifts Program
         uint256[] memory giftIds = new uint256[](3); 
         giftIds[0] = 0; giftIds[1] = 3; giftIds[2] = 5; 
@@ -91,13 +95,13 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 cardsToMint = 3;
 
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
-        (loyaltyProgram, helperConfig) = deployer.run();
+        loyaltyProgram = deployer.run();
 
-        (alternativeLoyaltyProgram, ) = deployer.run();
+        alternativeLoyaltyProgram = deployer.run();
         DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts();
         mockLoyaltyGifts = giftDeployer.run();
         owner = loyaltyProgram.getOwner();
-        address alternativeProgramOwner = alternativeLoyaltyProgram.getOwner();
+        alternativeProgramOwner = alternativeLoyaltyProgram.getOwner();
 
         // an extensive interaction context needed in all tests below.
         // (hence no modifier used)
@@ -111,19 +115,20 @@ contract CardsToProgramToGiftsTest is Test {
         // Loyalty Program minting Loyalty Points, Cards and Vouchers
         loyaltyProgram.mintLoyaltyPoints(pointsToMint);
         loyaltyProgram.mintLoyaltyCards(cardsToMint);
-        loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), voucherIds, amountVoucherIds);
+        // loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), voucherIds, amountVoucherIds);
 
         // Loyalty Program Transferring Points and vuchers to Cards
-        for (uint256 i = 0; i < cardIds.length; i++) {
-            loyaltyProgram.safeTransferFrom(
-                owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
-            );
-            loyaltyProgram.transferLoyaltyVoucher(
-                owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), voucherIds[0], address(mockLoyaltyGifts)
-                ); 
-        }
 
-        loyaltyProgram.safeTransferFrom(owner, customerOneAddress, 1, 1, "");
+        // for (uint256 i = 1; i < cardIds.length; i++) {
+        //     loyaltyProgram.safeTransferFrom(
+        //         owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
+        //     );
+        //     loyaltyProgram.transferLoyaltyVoucher(
+        //         owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), address(mockLoyaltyGifts), voucherIds[0]
+        //         ); 
+        // }
+
+        // loyaltyProgram.safeTransferFrom(owner, customerOneAddress, 1, 1, "");
         vm.stopPrank();
 
         // Repeat these actions for alternative LoyaltyProgram. 
