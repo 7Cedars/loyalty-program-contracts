@@ -162,6 +162,29 @@ contract CardsToProgramToGiftsTest is Test {
     ///       Claiming Gifts and Voucher        ///
     ///////////////////////////////////////////////
 
+    function testCardCanReceivePoints() public {
+        uint256 loyaltyCardId = 1;
+        address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(loyaltyCardId);
+        uint256 numberPointsToTransfer = 1500; 
+
+        uint256 balanceBefore = loyaltyProgram.getBalanceLoyaltyCard(loyaltyCardOne); 
+
+        vm.startPrank(owner); 
+        loyaltyProgram.safeTransferFrom(
+            owner, 
+            loyaltyCardOne, 
+            0, 
+            numberPointsToTransfer,
+            ""
+        ); 
+        vm.stopPrank();
+
+        uint256 balanceAfter = loyaltyProgram.getBalanceLoyaltyCard(loyaltyCardOne); 
+        assertEq(balanceBefore + numberPointsToTransfer, balanceAfter); 
+    }
+
+    // £todo: add test for direct transfer voucher. 
+
     // claiming gift - happy path
     function testCustomerCanClaimGift() public {
         uint256 giftId = 3;

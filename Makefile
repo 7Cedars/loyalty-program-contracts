@@ -144,11 +144,11 @@ ANVIL_ARGS_1 := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KE
 ANVIL_TEST_ARGS := --rpc-url http://localhost:8545
 
 #NB: DO NOT FORGET TO INITIATE REGISTRY, using script at cloning/reference. 
-anvilDeploy:
+anvilDeployLoyaltyProgram:
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ANVIL_ARGS_1)
 
 anvilDeployLoyaltyCard6551Account: 
-	@forge script script/DeployLoyaltyCard6551Account.s.sol:DeployLoyaltyCard6551Account $(ANVIL_TEST_ARGS)
+	@forge script script/DeployLoyaltyCard6551Account.s.sol:DeployLoyaltyCard6551Account $(ANVIL_ARGS_0)
 
 anvilDeployGifts:
 	@forge script ../loyalty-gifts-contracts/script/DeployFridaysFifteenPercent.s.sol:DeployFridaysFifteenPercent $(ANVIL_ARGS_0)

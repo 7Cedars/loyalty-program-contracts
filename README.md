@@ -22,7 +22,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/7Cedars/loyalty-program-contracts"> 
-    <img src="public/iconLoyaltyProgram.svg" alt="Logo" width="80" height="80">
+    <img src="public/iconLoyaltyProgram.png" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">Loyal: A Solidity Protocol for Web3 Customer Engagement Programs</h3>
