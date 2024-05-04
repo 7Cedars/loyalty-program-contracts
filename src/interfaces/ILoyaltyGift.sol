@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.19;
+pragma solidity 0.8.24;
 
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol"; // ERC165 not implemented for now. 
 
 /// @dev the ERC-165 identifier for this interface is `0xeff4d378`
-interface ILoyaltyGift is IERC165, IERC1155 {
+interface ILoyaltyGift is IERC1155 {
     /**
      * @dev natspecs TBI
      */
     event LoyaltyGiftDeployed(address indexed issuer, string indexed version);
-
+    
     /**
      * @notice provides the requirement logics for receiving gifts.  Returns true or false. 
      * 
@@ -54,7 +53,6 @@ interface ILoyaltyGift is IERC165, IERC1155 {
     function getHasAdditionalRequirements(uint256 index) external view returns (uint256); 
 
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
-
 }
 
 // Structure contract // -- from Patrick Collins. 

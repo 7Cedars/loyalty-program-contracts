@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
 import {MockLoyaltyGift} from "./MockLoyaltyGift.sol";
 import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
@@ -26,6 +26,7 @@ contract MockLoyaltyGifts is MockLoyaltyGift {
     @param cost =>  What is cost (in points) of voucher? 
     @param hasAdditionalRequirements =>  Are their additional requirements? 
     */
+    string version = "test_0.2"; 
     uint256[] isClaimable = [1, 1, 1, 1, 1]; 
     uint256[] isVoucher = [0, 0, 1, 1, 1]; 
     uint256[] cost = [2500, 4500, 2500, 4500, 50_000];
@@ -39,6 +40,7 @@ contract MockLoyaltyGifts is MockLoyaltyGift {
     constructor()
         MockLoyaltyGift(
             "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmXS9s48RkDDDSqsyjBHN9HRSXpUud3FsBDVa1uZjXYMAH/{id}",
+            version, 
             isClaimable,
             isVoucher,
             cost,

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
@@ -12,7 +12,7 @@ import {ERC6551Registry} from "../mocks/ERC6551Registry.t.sol";
 
 contract LoyaltyProgramTest is Test {
     /* events */
-    event DeployedLoyaltyProgram(address indexed owner, string name, string version);
+    event DeployedLoyaltyProgram(address indexed owner, string name, string indexed version);
     event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
     event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values);
     event AddedLoyaltyGift(address indexed loyaltyGift, uint256 loyaltyGiftId);
@@ -67,7 +67,7 @@ contract LoyaltyProgramTest is Test {
 
     function testDeployEmitsevent() public {
         string memory name = "Loyalty Program"; 
-        string memory version = "1"; 
+        string memory version = "testversion02"; 
         string memory uri = "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD"; 
 
         vm.expectEmit(true, false, false, false);

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
 import {Script} from "forge-std/Script.sol";
 import {LoyaltyProgram} from "../src/LoyaltyProgram.sol";
@@ -13,9 +13,9 @@ contract DeployLoyaltyProgram is Script {
 
     // NB: If I need a helper config, see helperConfig.s.sol + learning/foundry-fund-me-f23
     function run() external returns (LoyaltyProgram) {
-        string memory name = "Loyalty Program"; 
         string memory uri = "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmU3uuSj2wiL5e19pvymT4WejPF67q4qaQWtAC7YiSxCoE"; 
-        string memory version = "1";
+        string memory name = "Loyalty Program"; 
+        string memory version = "test_version_0.2";
 
         vm.startBroadcast();
             loyaltyProgram = new LoyaltyProgram(

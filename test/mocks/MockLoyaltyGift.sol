@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity 0.8.24;
 
 import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import {ERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
@@ -46,7 +46,6 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
      * @notice constructor function. 
      * 
      * @param loyaltyGiftUri URI of vouchers. Follows ERC 1155 standard.  
-     * @param version string description of version. 
      * @param isClaimable => can gift directly be claimed by customer?
      * @param isVoucher => is the gift a voucher (to be redeemed later) or has to be immediatly redeemed at the till? 
      * @param cost =>  What is cost (in points) of voucher? 
@@ -54,7 +53,7 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
      * 
      * emits a LoyaltyGiftDeployed event.  
      */
-  constructor(
+    constructor(
         string memory loyaltyGiftUri, 
         string memory version, 
         uint256[] memory isClaimable,
