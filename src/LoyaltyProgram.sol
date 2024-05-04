@@ -79,7 +79,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
     error LoyaltyProgram__IncorrectInterface(address loyaltyGift);
     
     /* Events */
-    event DeployedLoyaltyProgram(address indexed owner, string name, string version);
+    event DeployedLoyaltyProgram(address indexed owner, string name, string indexed version);
     event AddedLoyaltyGift(address indexed loyaltyGift, uint256 loyaltyGiftId);
     event RemovedLoyaltyGiftClaimable(address indexed loyaltyGift, uint256 loyaltyGiftId);
     event RemovedLoyaltyGiftRedeemable(address indexed loyaltyGift, uint256 loyaltyGiftId);

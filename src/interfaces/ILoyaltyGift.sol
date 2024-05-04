@@ -6,15 +6,10 @@ import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /// @dev the ERC-165 identifier for this interface is `0xeff4d378`
 interface ILoyaltyGift is IERC165, IERC1155 {
-    /* errors */
-    error LoyaltyGift__LoyaltyProgramNotRecognised(address loyaltyToken);
-    error LoyaltyGift__NftNotOwnedByloyaltyCard(address loyaltyToken);
-    error LoyaltyGift__RequirementsNotMet(address loyaltyToken, uint256 loyaltyGiftId);
-
     /**
      * @dev natspecs TBI
      */
-    event LoyaltyGiftDeployed(address indexed issuer);
+    event LoyaltyGiftDeployed(address indexed issuer, string indexed version);
 
     /**
      * @notice provides the requirement logics for receiving gifts.  Returns true or false. 

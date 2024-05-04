@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol"; // ERC165 not implemented for now. 
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol"; // ERC165 not implemented for now. 
+import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import {ERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
 import {IERC1155} from "../../lib/openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
+import {ILoyaltyProgram} from "../../src/interfaces/ILoyaltyProgram.sol";
 
 /**
  * @title Loyalty Gift
@@ -20,9 +20,12 @@ import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
  */
 contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
     /* errors */
-    error LoyaltyGift__NoVouchersAvailable(address loyaltyToken);
-    error LoyaltyGift__IsNotVoucher(address loyaltyToken, uint256 loyaltyGiftId);
-    error LoyaltyGift__TransferToNonAffiliate(address loyaltyToken);
+    error LoyaltyGift__LoyaltyProgramNotRecognised(address loyaltyToken);
+    error LoyaltyGift__RequirementsNotMet(address loyaltyToken, uint256 loyaltyGiftId);
+    error LoyaltyGift__NoVouchersAvailable(address loyaltyGift);
+    error LoyaltyGift__IsNotVoucher(address loyaltyGift, uint256 loyaltyGiftId);
+    error LoyaltyGift__TransferToNonAffiliate(address loyaltyGift);
+    error LoyaltyGift__IncorrectInterface(address loyaltyGift); 
 
     /* State variables */
     uint256[] s_isClaimable; 
@@ -30,11 +33,20 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
     uint256[] s_cost;
     uint256[] s_hasAdditionalRequirements;   
 
+    /* Modifiers */
+    modifier onlyLoyaltyProgram() {
+        if (ERC165Checker.supportsInterface(msg.sender, type(ILoyaltyProgram).interfaceId) == false) {
+            revert LoyaltyGift__IncorrectInterface(address(this));
+        }
+        _;
+    }
+
     /* FUNCTIONS: */
     /**
      * @notice constructor function. 
      * 
-     * @param loyaltyTokenUri URI of vouchers. Follows ERC 1155 standard.  
+     * @param loyaltyGiftUri URI of vouchers. Follows ERC 1155 standard.  
+     * @param version string description of version. 
      * @param isClaimable => can gift directly be claimed by customer?
      * @param isVoucher => is the gift a voucher (to be redeemed later) or has to be immediatly redeemed at the till? 
      * @param cost =>  What is cost (in points) of voucher? 
@@ -42,22 +54,21 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
      * 
      * emits a LoyaltyGiftDeployed event.  
      */
-    constructor(
-        string memory loyaltyTokenUri, 
+  constructor(
+        string memory loyaltyGiftUri, 
+        string memory version, 
         uint256[] memory isClaimable,
         uint256[] memory isVoucher,
         uint256[] memory cost,
         uint256[] memory hasAdditionalRequirements   
-        ) ERC1155(loyaltyTokenUri) {
+        ) ERC1155(loyaltyGiftUri) {
             s_isClaimable = isClaimable; 
             s_isVoucher = isVoucher;
             s_cost = cost;
             s_hasAdditionalRequirements = hasAdditionalRequirements;  
             
-            emit LoyaltyGiftDeployed(msg.sender);
+            emit LoyaltyGiftDeployed(msg.sender, version);
     }
-
-    function test() public { } // skip in foundry coverage  
 
     /**
      * @notice provides the requirement logics for receiving gifts.  Returns true or false. 
@@ -71,14 +82,13 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
      * - loyaltyPoints: number of LoyaltyPoints sent. 
      *
      */
-    function requirementsLoyaltyGiftMet(address, /*loyaltyCard*/ uint256 loyaltyGiftId, uint256 /*loyaltyPoints*/ )
-        public
-        virtual
-        returns (bool success)
-    {
-        if (s_isClaimable[loyaltyGiftId] == 0) revert ("Token is not claimable."); 
-
-        return true;
+    function requirementsLoyaltyGiftMet(
+        address /*loyaltyCard*/, 
+        uint256 loyaltyGiftId, 
+        uint256 /*loyaltyPoints*/ 
+        ) public virtual onlyLoyaltyProgram returns (bool success) {
+            if (s_isClaimable[loyaltyGiftId] == 0) revert ("Gift is not claimable."); 
+            return true;
     }
 
     /**
@@ -94,18 +104,19 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
      * emits a TransferSINGLE event when one type of voucher minted; TransferBatch when multiple are minted. 
      * £todo: CHECK If this is true!  
      */
-    function mintLoyaltyVouchers(uint256[] memory loyaltyGiftIds, uint256[] memory numberOfVouchers) public {
-        
-        for (uint256 i; i < 1; ) { // uint256 i; i < loyaltyGiftIds.length; 
-            if (s_isVoucher[loyaltyGiftIds[i]] == 0) {
-                revert LoyaltyGift__IsNotVoucher(address(this), loyaltyGiftIds[i]);
+    function mintLoyaltyVouchers(
+        uint256[] memory loyaltyGiftIds, 
+        uint256[] memory numberOfVouchers
+        ) public onlyLoyaltyProgram {
+            for (uint256 i; i < loyaltyGiftIds.length; ) {
+                if (s_isVoucher[loyaltyGiftIds[i]] == 0) {
+                    revert LoyaltyGift__IsNotVoucher(address(this), loyaltyGiftIds[i]);
+                }
+            unchecked { ++i; } 
             }
-        unchecked { i++; } 
-        }
-        _mintBatch(LoyaltyProgram(msg.sender).getOwner(), loyaltyGiftIds, numberOfVouchers, ""); // emits batchtransfer event
+            _mintBatch(LoyaltyProgram(msg.sender).getOwner(), loyaltyGiftIds, numberOfVouchers, ""); // emits batchtransfer event
     }
-
-
+ 
     /**
      * @notice added checks to safeTransfer that ensure vouchers can only be transferred between Loyalty Cards and their Loyalty Program. 
      * 
@@ -119,7 +130,7 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
      * @dev I here update safeTransferFrom (and not the inetrnal _update function) because _update does not take a data field.  
      * 
      */
-      function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data)
+    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data)
         public
         override(ERC1155, IERC1155)
     {
@@ -143,13 +154,16 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
         super._safeTransferFrom(from, to, id, amount, data);
     }
 
+    /**
+     * @notice implementation ERC-165 interface id. 
+     * 
+     * @param interfaceId: id of interface 
+     */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ILoyaltyGift, ERC1155) returns (bool) {
-    
       return 
         interfaceId == type(ILoyaltyGift).interfaceId || 
         super.supportsInterface(interfaceId);
     }
-
 
     /* getter functions */
     function getNumberOfGifts() external view returns (uint256) {
@@ -172,3 +186,26 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
         return s_hasAdditionalRequirements[index]; 
     }
 }
+
+
+// Structure contract // -- from Patrick Collins. 
+/* version */
+/* imports */
+/* errors */
+/* interfaces, libraries, contracts */
+/* Type declarations */
+/* State variables */
+/* Events */
+/* Modifiers */
+
+/* FUNCTIONS: */
+/* constructor */
+/* receive function (if exists) */
+/* fallback function (if exists) */
+/* external */
+/* public */
+/* internal */
+/* private */
+/* internal & private view & pure functions */
+/* external & public view & pure functions */
+
