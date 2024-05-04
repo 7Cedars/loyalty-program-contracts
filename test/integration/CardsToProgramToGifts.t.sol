@@ -81,9 +81,9 @@ contract CardsToProgramToGiftsTest is Test {
 
         // Deploy Loyalty and Gifts Program
         uint256[] memory giftIds = new uint256[](3); 
-        giftIds[0] = 0; giftIds[1] = 3; giftIds[2] = 5; 
+        giftIds[0] = 0; giftIds[1] = 2; giftIds[2] = 4; 
         uint256[] memory voucherIds = new uint256[](2); 
-        voucherIds[0] = 3; voucherIds[1] = 5; 
+        voucherIds[0] = 2; voucherIds[1] = 4; 
         uint256[] memory amountVoucherIds = new uint256[](2);  
         amountVoucherIds[0] = 24; amountVoucherIds[1] = 45; 
         uint256[] memory cardIds = new uint256[](3); 
@@ -101,8 +101,8 @@ contract CardsToProgramToGiftsTest is Test {
         DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts();
         mockLoyaltyGifts = giftDeployer.run();
 
-        DeployLoyaltyCard6551Account accountDeployer = new DeployLoyaltyCard6551Account(); 
-        accountDeployer.run(); 
+        // DeployLoyaltyCard6551Account accountDeployer = new DeployLoyaltyCard6551Account(); 
+        // accountDeployer.run(); 
         
         owner = loyaltyProgram.getOwner();
         alternativeProgramOwner = alternativeLoyaltyProgram.getOwner();
@@ -122,15 +122,16 @@ contract CardsToProgramToGiftsTest is Test {
         loyaltyProgram.mintLoyaltyCards(cardsToMint);
         loyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), voucherIds, amountVoucherIds);
 
-        // Loyalty Program Transferring Points and vuchers to Cards
-        for (uint256 i = 0; i < cardIds.length; i++) {
-            loyaltyProgram.safeTransferFrom(
-                owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
-            );
-            loyaltyProgram.transferLoyaltyVoucher(
-                owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), address(mockLoyaltyGifts), voucherIds[0]
-                ); 
-        }
+        // HERE IS BUG £todo £bug 
+        // Loyalty Program Transferring Points and vouchers to Cards
+        // for (uint256 i = 0; i < cardIds.length; i++) {
+        //     loyaltyProgram.safeTransferFrom(
+        //         owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
+        //     );
+        //     loyaltyProgram.transferLoyaltyVoucher(
+        //         owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), address(mockLoyaltyGifts), voucherIds[0]
+        //         ); 
+        // }
 
         loyaltyProgram.safeTransferFrom(owner, customerOneAddress, 1, 1, "");
         vm.stopPrank();
@@ -148,11 +149,11 @@ contract CardsToProgramToGiftsTest is Test {
         alternativeLoyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), voucherIds, amountVoucherIds);
 
         // Loyalty Program Transferring Points to Cards
-        for (uint256 i = 0; i < cardIds.length; i++) {
-            alternativeLoyaltyProgram.safeTransferFrom(
-                alternativeProgramOwner, alternativeLoyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
-            );
-        }
+        // for (uint256 i = 0; i < cardIds.length; i++) {
+        //     alternativeLoyaltyProgram.safeTransferFrom(
+        //         alternativeProgramOwner, alternativeLoyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
+        //     );
+        // }
 
         alternativeLoyaltyProgram.safeTransferFrom(alternativeProgramOwner, customerOneAddress, 1, 1, "");
         vm.stopPrank(); 

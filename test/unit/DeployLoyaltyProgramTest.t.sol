@@ -19,7 +19,7 @@ contract DeployLoyaltyProgramTest is Test {
     }
 
     function testNameDeployedLoyaltyProgramIsCorrect() public {
-        string memory uri = "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/Qmac3tnopwY6LGfqsDivJwRwEmhMJrCWsx4453JbUyVUnD"; 
+        string memory uri = "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmU3uuSj2wiL5e19pvymT4WejPF67q4qaQWtAC7YiSxCoE"; 
 
         loyaltyProgram = deployer.run();
 

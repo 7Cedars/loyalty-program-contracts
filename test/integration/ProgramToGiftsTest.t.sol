@@ -24,8 +24,8 @@ contract ProgramToGiftsTest is Test {
     MockLoyaltyGifts mockLoyaltyGifts;
     address programOwner; 
 
-    uint256[] GIFTS_TO_SELECT = [3, 5];
-    uint256[] VOUCHERS_TO_MINT = [3, 5];
+    uint256[] GIFTS_TO_SELECT = [2, 4];
+    uint256[] VOUCHERS_TO_MINT = [2, 4];
     uint256[] AMOUNT_VOUCHERS_TO_MINT = [24, 45];
     uint256[] GIFTS_TO_DESELECT = [3];
     

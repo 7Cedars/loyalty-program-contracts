@@ -28,8 +28,8 @@ contract LoyaltyProgramTest is Test {
     uint256[] CARDS_MINTED = [1, 2, 3, 4, 5];
     uint256[] CARDS_AMOUNT = [1, 1, 1, 1, 1];
     uint256 POINTS_TO_MINT = 500000000;
-    uint256[] GIFTS_TO_SELECT = [0, 3, 5];
-    uint256[] TOKENS_TO_MINT = [3, 5];
+    uint256[] GIFTS_TO_SELECT = [0, 2, 4];
+    uint256[] TOKENS_TO_MINT = [2, 4];
     uint256[] AMOUNT_TOKENS_TO_MINT = [24, 34];
     uint256[] GIFTS_TO_DESELECT = [2];
     bytes32 SALT = 0x0000000000000000000000000000000000000000000000000000000007ceda52;
