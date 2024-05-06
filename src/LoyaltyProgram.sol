@@ -93,7 +93,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
     uint256 public  constant LOYALTY_POINTS_ID = 0;
     bytes32 private constant SALT = 0x0000000000000000000000000000000000000000000000000000000007ceda52;
     address private constant ERC6551_REGISTRY = 0x000000006551c19487814612e58FE06813775758; 
-    address private constant ERC6551_CUSTOM_ACCOUNT = 0xD24087e42e80D8CA9BcCC21E0849160aEf1F7210; 
+    address private constant ERC6551_CUSTOM_ACCOUNT = 0xCE2d5249Ad4042641956c3E016c3D97F7cCfB908; 
     
     // EIP712 domain separator
     struct EIP712Domain {

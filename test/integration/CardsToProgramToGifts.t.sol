@@ -107,7 +107,6 @@ contract CardsToProgramToGiftsTest is Test {
         owner = loyaltyProgram.getOwner();
         alternativeProgramOwner = alternativeLoyaltyProgram.getOwner();
 
-
         // an extensive interaction context needed in all tests below.
         // (hence no modifier used)
         vm.startPrank(owner);
@@ -124,14 +123,14 @@ contract CardsToProgramToGiftsTest is Test {
 
         // HERE IS BUG £todo £bug 
         // Loyalty Program Transferring Points and vouchers to Cards
-        // for (uint256 i = 0; i < cardIds.length; i++) {
-        //     loyaltyProgram.safeTransferFrom(
-        //         owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
-        //     );
-        //     loyaltyProgram.transferLoyaltyVoucher(
-        //         owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), address(mockLoyaltyGifts), voucherIds[0]
-        //         ); 
-        // }
+        for (uint256 i = 0; i < cardIds.length; i++) {
+            loyaltyProgram.safeTransferFrom(
+                owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
+            );
+            loyaltyProgram.transferLoyaltyVoucher(
+                owner, loyaltyProgram.getTokenBoundAddress(cardIds[i]), address(mockLoyaltyGifts), voucherIds[0]
+                ); 
+        }
 
         loyaltyProgram.safeTransferFrom(owner, customerOneAddress, 1, 1, "");
         vm.stopPrank();
@@ -149,11 +148,11 @@ contract CardsToProgramToGiftsTest is Test {
         alternativeLoyaltyProgram.mintLoyaltyVouchers(address(mockLoyaltyGifts), voucherIds, amountVoucherIds);
 
         // Loyalty Program Transferring Points to Cards
-        // for (uint256 i = 0; i < cardIds.length; i++) {
-        //     alternativeLoyaltyProgram.safeTransferFrom(
-        //         alternativeProgramOwner, alternativeLoyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
-        //     );
-        // }
+        for (uint256 i = 0; i < cardIds.length; i++) {
+            alternativeLoyaltyProgram.safeTransferFrom(
+                alternativeProgramOwner, alternativeLoyaltyProgram.getTokenBoundAddress(cardIds[i]), 0, pointsToTransfer[i], ""
+            );
+        }
 
         alternativeLoyaltyProgram.safeTransferFrom(alternativeProgramOwner, customerOneAddress, 1, 1, "");
         vm.stopPrank(); 
@@ -188,7 +187,7 @@ contract CardsToProgramToGiftsTest is Test {
 
     // claiming gift - happy path
     function testCustomerCanClaimGift() public {
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(loyaltyCardId);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -228,7 +227,7 @@ contract CardsToProgramToGiftsTest is Test {
 
     function testClaimGiftRevertsWithInvalidKey() public {
         // PREPARE
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -265,7 +264,7 @@ contract CardsToProgramToGiftsTest is Test {
 
     function testClaimGiftRevertsIfNotOwnerLoyaltyCard() public {
         // PREPARE
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -299,7 +298,7 @@ contract CardsToProgramToGiftsTest is Test {
 
     function testClaimGiftRevertsIfAlreadyExecuted() public {
         // PREPARE
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -346,7 +345,7 @@ contract CardsToProgramToGiftsTest is Test {
 
     function testClaimGiftRevertsIfGiftNotClaimable() public {
         // PREPARE
-        uint256 giftId = 2; // NOTICE: gift ID that has NOT been selected at setup.
+        uint256 giftId = 3; // NOTICE: gift ID that has NOT been selected at setup.
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -382,7 +381,7 @@ contract CardsToProgramToGiftsTest is Test {
 
     function testClaimGiftRevertsIfRequirementsNotMet() public {
         // PREPARE
-        uint256 giftId = 3; 
+        uint256 giftId = 2; 
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -418,7 +417,7 @@ contract CardsToProgramToGiftsTest is Test {
 
     function testNonceUpdatedAfterSuccessfulClaim() public {
         // PREPARE
-        uint256 giftId = 3; 
+        uint256 giftId = 2; 
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -454,11 +453,14 @@ contract CardsToProgramToGiftsTest is Test {
 
     function testClaimGiftEmitsTransferSingleEventAtLoyaltyProgram() public {
         // PREPARE
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         uint256 loyaltyPoints = 4500;
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
+
+        uint256 checkNonce = loyaltyProgram.getNonceLoyaltyCard(loyaltyCardOne);
+        console.log("nonce loyaltyCardOne:", checkNonce); 
 
         // customer creates request..
         RequestGift memory message = RequestGift({
@@ -503,7 +505,7 @@ contract CardsToProgramToGiftsTest is Test {
     ///////////////////////////////////////////////
     function testClaimGiftEmitsTransferSingleEventAtMockLoyaltyGiftsWhenVoucherisExchanged() public {
         // PREPARE
-        uint256 giftId = 3; // NOTICE: this gift is a voucher.
+        uint256 giftId = 2; // NOTICE: this gift is a voucher.
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         uint256 loyaltyPoints = 4500;
@@ -548,7 +550,7 @@ contract CardsToProgramToGiftsTest is Test {
 
     // redeeming voucher success - happy path.
     function testCustomerCanRedeemVoucher() public {
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -582,7 +584,7 @@ contract CardsToProgramToGiftsTest is Test {
 
     // redeeming voucher reverts.
     function testRedeemVoucherRevertsWithInvalidSigner() public {
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -614,7 +616,7 @@ contract CardsToProgramToGiftsTest is Test {
     }
 
     function testRedeemVoucherRevertsIfSignerDoesNotOwnLoyaltyCard() public {
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -646,14 +648,14 @@ contract CardsToProgramToGiftsTest is Test {
     }
 
     function testRedeemVoucherRevertsIfTokenNotRedeemable() public {
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
         // removing voucher as being redeemable.
         vm.prank(owner);
-        loyaltyProgram.removeLoyaltyGiftRedeemable(address(mockLoyaltyGifts), 3);
+        loyaltyProgram.removeLoyaltyGiftRedeemable(address(mockLoyaltyGifts), 2);
 
         // customer creates request
         RedeemVoucher memory message = RedeemVoucher({
@@ -684,7 +686,7 @@ contract CardsToProgramToGiftsTest is Test {
 
     // redeeming voucher event emits.
     function testRedeemVoucherEmitsTransferSingleEvent() public {
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -727,7 +729,7 @@ contract CardsToProgramToGiftsTest is Test {
     ///    Transfer Checks Loyalty Gifts and Voucher   ///
     //////////////////////////////////////////////////////
     function testLoyaltyCardCannotClaimAtAnotherProgram() public {
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         // = loyalty card from loyaltyProgram
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
@@ -765,7 +767,7 @@ contract CardsToProgramToGiftsTest is Test {
     }
 
     function testVoucherCannotBeRedeemedAtAnotherProgram() public {
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         uint256 loyaltyCardId = 1;
         // = loyalty card from loyaltyProgram
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
@@ -800,7 +802,7 @@ contract CardsToProgramToGiftsTest is Test {
     }
 
     function testVouchersCannotBeTransferredBetweenLoyaltyCards() public {
-        uint256 giftId = 3;
+        uint256 giftId = 2;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         address loyaltyCardTwo = loyaltyProgram.getTokenBoundAddress(2);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
@@ -860,7 +862,7 @@ contract CardsToProgramToGiftsTest is Test {
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
                 keccak256(bytes("Loyalty Program")), // name
-                keccak256(bytes("1")), // version
+                keccak256(bytes("test_version_0.2")), // version
                 block.chainid, // chainId
                 loyaltyProgram //  0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3 // verifyingContract
             )

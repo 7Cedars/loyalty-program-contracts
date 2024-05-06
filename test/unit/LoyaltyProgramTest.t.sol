@@ -111,7 +111,7 @@ contract LoyaltyProgramTest is Test {
 
     function testMintingCardsCreatesValidTokenBasedAccounts() public {
         address erc65511Registry = 0x000000006551c19487814612e58FE06813775758;
-        address erc65511Implementation = 0xD24087e42e80D8CA9BcCC21E0849160aEf1F7210;
+        address erc65511Implementation = 0xCE2d5249Ad4042641956c3E016c3D97F7cCfB908;
 
         vm.prank(ownerProgram);
         loyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);

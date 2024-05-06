@@ -151,7 +151,7 @@
 //     }
 
 //     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
-//         address ercImplementation = address(0xD24087e42e80D8CA9BcCC21E0849160aEf1F7210);
+//         address ercImplementation = address(0xCE2d5249Ad4042641956c3E016c3D97F7cCfB908);
         
 //         try vm.envString("ERC6551_ACCOUNT_IMPLEMENTED") {console.log("ERC6551_ACCOUNT_IMPLEMENTED");  } 
 //         catch {
@@ -166,7 +166,7 @@
 //         NetworkConfig memory anvilConfig = NetworkConfig({
 //             chainid: 31337,
 //             erc6551Registry: 0x000000006551c19487814612e58FE06813775758,
-//             erc6551Implementation: payable(0xD24087e42e80D8CA9BcCC21E0849160aEf1F7210)
+//             erc6551Implementation: payable(0xCE2d5249Ad4042641956c3E016c3D97F7cCfB908)
 //         });
 
 //         console.log("ERC-6551 Account implementation (should be 0xD240...F7210):", address(s_erc6551Implementation));

@@ -15,7 +15,7 @@ contract DeployLoyaltyProgram is Script {
     function run() external returns (LoyaltyProgram) {
         string memory uri = "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmU3uuSj2wiL5e19pvymT4WejPF67q4qaQWtAC7YiSxCoE"; 
         string memory name = "Loyalty Program"; 
-        string memory version = "test_version_0.2";
+        string memory version = "alpha.2";
 
         vm.startBroadcast();
             loyaltyProgram = new LoyaltyProgram(
