@@ -1,5 +1,5 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity 0.8.24;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
 
 // // based on: Patrick Collins: helperConfig.s.sol + learning/foundry-fund-me-f23
 
