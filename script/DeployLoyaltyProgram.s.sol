@@ -4,7 +4,6 @@ pragma solidity 0.8.24;
 import {Script} from "forge-std/Script.sol";
 import {LoyaltyProgram} from "../src/LoyaltyProgram.sol";
 import {MockLoyaltyGifts} from "../test/mocks/MockLoyaltyGifts.sol";
-import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
