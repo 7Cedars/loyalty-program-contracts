@@ -3,8 +3,6 @@
 
 -include .env
 
-.PHONY: all test clean deploy fund help install snapshot format anvil 
-
 help:
 	@echo "Usage:"
 	@echo "  make deploy [ARGS=...]\n    example: make deploy ARGS=\"--network sepolia\""
@@ -19,11 +17,13 @@ clean  :; forge clean
 # Remove modules
 remove :; rm -rf .gitmodules && rm -rf .git/modules/* && rm -rf lib && touch .gitmodules && git add . && git commit -m "modules"
 
-install :; forge install Cyfrin/foundry-devops@0.0.11 --no-commit --no-commit && forge install foundry-rs/forge-std@v1.5.3 --no-commit && forge install openzeppelin/openzeppelin-contracts@v4.8.3 --no-commit
+# Install modules
+install :; forge install forge install foundry-rs/forge-std@v1.7.6 --no-commit && forge install openzeppelin/openzeppelin-contracts@v5.0.2 --no-commit
 
 # Update Dependencies
 update:; forge update
 
+# Build
 build:; forge build
 
 test :; forge test 
