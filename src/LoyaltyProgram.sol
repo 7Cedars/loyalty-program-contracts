@@ -4,7 +4,6 @@ pragma solidity 0.8.24;
 // import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol"; // removed
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import {ReentrancyGuard} from  "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
