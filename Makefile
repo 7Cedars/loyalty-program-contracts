@@ -3,11 +3,7 @@
 
 -include .env
 
-help:
-	@echo "Usage:"
-	@echo "  make deploy [ARGS=...]\n    example: make deploy ARGS=\"--network sepolia\""
-	@echo ""
-	@echo "  make fund [ARGS=...]\n    example: make deploy ARGS=\"--network sepolia\""
+.PHONY: all test clean deploy fund help install snapshot format anvil 
 
 all: clean remove install update build
 
