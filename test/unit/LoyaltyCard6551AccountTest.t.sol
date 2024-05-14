@@ -2,7 +2,7 @@
 
 // test files builds on original from Standard ERC6511 example. see: ADD LINK. -- tokenbound website?
 // This should include added features of ERC6551BespokeAccount
-pragma solidity ^0.8.0;
+pragma solidity 0.8.24;
 
 import "forge-std/Test.sol";
 

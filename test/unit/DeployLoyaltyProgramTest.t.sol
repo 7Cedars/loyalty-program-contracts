@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity 0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
@@ -19,7 +19,7 @@ contract DeployLoyaltyProgramTest is Test {
     }
 
     function testNameDeployedLoyaltyProgramIsCorrect() public {
-        string memory uri = "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmU3uuSj2wiL5e19pvymT4WejPF67q4qaQWtAC7YiSxCoE"; 
+        string memory uri = "https://aqua-famous-sailfish-288.mypinata.cloud/ipfs/QmfA8Sf8YxigXGapwqMXCAB6fPQUPWugav5xKzJPVG6uo6"; 
 
         loyaltyProgram = deployer.run();
 

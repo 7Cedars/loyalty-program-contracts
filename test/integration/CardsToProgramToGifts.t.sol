@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity 0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
@@ -653,6 +653,8 @@ contract CardsToProgramToGiftsTest is Test {
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
 
+        
+
         // removing voucher as being redeemable.
         vm.prank(owner);
         loyaltyProgram.removeLoyaltyGiftRedeemable(address(mockLoyaltyGifts), 2);
@@ -746,7 +748,8 @@ contract CardsToProgramToGiftsTest is Test {
 
         // customer signs request
         bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message));
-        console.logBytes32(digest);
+        // console.logBytes32(digest);
+        console.logBytes32(keccak256(bytes("alpha.2"))); 
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOneKey, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
@@ -856,13 +859,13 @@ contract CardsToProgramToGiftsTest is Test {
     }
 
     // helper function separator
-    function hashDomainSeparator () public view returns (bytes32) {
+    function hashDomainSeparator() public view returns (bytes32) {
         
         return keccak256(
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
                 keccak256(bytes("Loyalty Program")), // name
-                keccak256(bytes("test_version_0.2")), // version
+                keccak256(bytes("alpha.2")), // version
                 block.chainid, // chainId
                 loyaltyProgram //  0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3 // verifyingContract
             )

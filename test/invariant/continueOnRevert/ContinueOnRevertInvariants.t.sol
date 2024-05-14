@@ -12,7 +12,7 @@
 // 3. getter view functions should never revert.
 //
 
-pragma solidity ^0.8.24;
+pragma solidity 0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 import {StdInvariant} from "forge-std/StdInvariant.sol";

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity 0.8.24;
 
 // import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol"; // removed
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import {ReentrancyGuard} from  "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
@@ -20,33 +21,34 @@ import {LoyaltyCard6551Account} from "./LoyaltyCard6551Account.sol";
  * @dev THIS CONTRACT HAS NOT BEEN AUDITED. TESTING IS INCOMPLETE. DO NOT DEPLOY ON ANYTHING ELSE THAN A TEST CHAIN! 
  * 
  * @title Loyalty Program 
- * @author Seven Cedars, based on ERC-1155 implementation by OpenZeppelin.  
- * @notice This contract allows for loyalty *points* to be distributed to loyalty *cards* that 
- *  - are locked in for use with the (single) loyalty *program* that minted the points and cards; 
- *  - points can be exchanged for *gifts* or *vouchers* through __external__ contracts following ILoyaltyGift interface; 
- *  - these external LoyaltyGift contracts are (de)selected at the LoyaltyProgram; 
- *  - vouchers are saved at Loyalty cards and locked in for use with the loyalty program that minted these cards. 
- *  - all gas costs are covered by the Loyalty Program contract.
- * In short, it aims to provide a light weight, composable, gas efficient framework for blockchain based customer engagement programs. 
+ * @author Seven Cedars, based on OpenZeppelin's ERC-1155 implementation.
+ * @notice TL;DR The Loyalty protocol provides a modular, composable and gas efficient framework for blockchain based customer engagement programs.
+ * 
+ * @notice This contract, LoyaltyProgram, allows for loyalty *points* to be distributed to loyalty *cards* that can only be used in a single loyalty *program*. 
+ *  - points can be exchanged for *gifts* or *vouchers* through __external__ gift contracts following ILoyaltyGift interface; 
+ *  - these external LoyaltyGift contracts are (de)selected by the owner of the LoyaltyProgram; 
+ *  - vouchers are saved at Loyalty cards and locked in for use with the loyalty program that minted the cards. 
+ *  - all interactions are initiated (and their gas costs covered) by the Loyalty Program contract.
  * 
  * @dev It builds on the following standards 
  *  - ERC-1155 (Multi-Token Standard): the Loyalty Program contract mints fungible points and non-fungible loyalty Cards; external contracts can mint semi-fungible vouchers. 
  *  - ERC-6551 (Non-fungible Token Bound Accounts): Loyalty Cards are transformed into Token Based Accounts using ERC-6551 registry.   
  *  - EIP-712 (Typed structured data hashing and signing): customer requests are executed through signed messages (transferred in front-end app as Qr codes) to the vendor. It allows the vendor to cover all gas costs. 
+ *  - ERC-165 (Standard Interface Detection): gift contracts are checked if they follow they ILoyaltyGift interface.  
  * The project is meant as a showcase of using fungible, semi-fungible and non-fungible tokens (NFTs) as a utility, rather than store of value.
  * 
- * @dev Central objects / concepts in this framework
+ * @dev Important concepts in the Loyalty protocol: 
  *  - Loyalty Program: this contract. Mints points and cards, (de)selects external loyalty programs. Inherits ERC1155 & IERC1155Receiver. 
- *  - Vendor: EOA that created the LoyaltyProgram contract. More advanced governance options are planned for future versions.   
+ *   
  *  - Customer: EOA that owns a loyalty card. Loyalty Cards can be freely transferred to other EOAs.   
  *  - Loyalty Points: Fungible token minted at loyalty program by *vendor*.   
  *  - Loyalty Cards: non-fungible token minted at loyalty program by *vendor*. They are registered at ERC-6551 registry and give access to a token based account.
  *  - Loyalty Gifts: a ERC-1155 based contract that holds a 'requirementsMet' function providing a boolean result: True if a contract specific requirement was met. (This most often is transfer of points, but can be virtually anything.)  
  *  - Loyalty Vouchers: optional semi-fungible tokens minted by *loyalty program* at external gift contract. They can be transferred to loyalty card when loyalty gift resulted in true. Vouchers can be used for delayed exchange of gift.  
  *
- * @dev A few gotchas: 
- *  - points and vouchers are operated by _different_ contracts (vendor versus loyalty program).
- *  - ... 
+ * @dev Roles in the protocol: 
+ *  -  Vendor: Address that created the LoyaltyProgram contract. More advanced governance options are planned for future versions.  
+ *  -  Customer: Address that owns a loyaltyCard.  
  */
 
 /**
@@ -54,18 +56,17 @@ import {LoyaltyCard6551Account} from "./LoyaltyCard6551Account.sol";
  * 
  * - This project was build while following Patrick Collins' "Learn Solidity, Blockchain Development, & Smart Contracts" Youtube course. 
  *   Not only does the course come highly recommended (it's really a fantastic course!) many parts of this repo started out as direct rip offs from his examples. 
- *   I have tried to note all specific cases, but please forgive me if / when  I missed some.
+ *   I have tried to note all specific cases, but please forgive me when I missed some.
  * 
  * - The Foundry book (and example of EIP0-712 was immensly helpful; as was learnweb3's covering gas cost tutorial. 
  *   see: https://learnweb3.io/lessons/using-metatransaction-to-pay-for-your-users-gas
  *   and see: https://book.getfoundry.sh/tutorials/testing-eip712
  *   this also goes for: https://medium.com/coinmonks/eip-712-example-d5877a1600bd
  * 
- * - Regarding ERC-6551. The website tokenbound.org was very helpful. 
- *   ... £todo. 
+ * - Regarding ERC-6551. The website tokenbound.org was very helpful.  
  */
 
-contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // removed: ReentrancyGuard
+contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { 
     /* errors */
     error LoyaltyProgram__OnlyOwner();
     error LoyaltyProgram__TransferDenied();
@@ -80,21 +81,15 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
     
     /* Events */
     event DeployedLoyaltyProgram(address indexed owner, string name, string indexed version);
-    event AddedLoyaltyGift(address indexed loyaltyGift, uint256 loyaltyGiftId);
-    event RemovedLoyaltyGiftClaimable(address indexed loyaltyGift, uint256 loyaltyGiftId);
-    event RemovedLoyaltyGiftRedeemable(address indexed loyaltyGift, uint256 loyaltyGiftId);
+    event AddedLoyaltyGift(address indexed loyaltyGift, uint256 indexed loyaltyGiftId);
+    event RemovedLoyaltyGiftClaimable(address indexed loyaltyGift, uint256 indexed loyaltyGiftId);
+    event RemovedLoyaltyGiftRedeemable(address indexed loyaltyGift, uint256 indexed loyaltyGiftId);
 
     /* Type declarations */
     using ECDSA for bytes32;
     using MessageHashUtils for bytes32;
     using ERC165Checker for address;
 
-    /* State variables */
-    uint256 public  constant LOYALTY_POINTS_ID = 0;
-    bytes32 private constant SALT = 0x0000000000000000000000000000000000000000000000000000000007ceda52;
-    address private constant ERC6551_REGISTRY = 0x000000006551c19487814612e58FE06813775758; 
-    address private constant ERC6551_CUSTOM_ACCOUNT = 0xCE2d5249Ad4042641956c3E016c3D97F7cCfB908; 
-    
     // EIP712 domain separator
     struct EIP712Domain {
         string name;
@@ -119,7 +114,13 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
         string voucher;
         uint256 nonce;
     }
-    
+
+    /* State variables */
+    uint256 public  constant LOYALTY_POINTS_ID = 0;
+    bytes32 private constant SALT = 0x0000000000000000000000000000000000000000000000000000000007ceda52;
+    address private constant ERC6551_REGISTRY = 0x000000006551c19487814612e58FE06813775758; 
+    address private constant ERC6551_CUSTOM_ACCOUNT = 0xCE2d5249Ad4042641956c3E016c3D97F7cCfB908; 
+
     address private immutable s_owner;
     bytes32 private immutable DOMAIN_SEPARATOR;
 
@@ -131,6 +132,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
     // £security: does this mean that any voucher can be redeemed (because it initiates at 0)? 
     mapping(address loyaltyGiftAddress => mapping(uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyVouchersRedeemable; 
     uint256 private s_loyaltyCardCounter;
+    RequestGift claimMessage;
+    RedeemVoucher redeemMessage; 
 
     /* Modifiers */
     modifier onlyOwner() {
@@ -143,7 +146,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
     /**
      * @notice constructor function for Loyalty program contract.
      * 
-     * @param _uri the uri linked to the loyalty program. See for example layout of this Uri the LoyaltyPrograms folder.
+     * @param _uri the uri linked to the loyalty program.
      * @param _name the name of the Loyalty Program
      * @param _version the version of the Loyalty Program
      *
@@ -170,10 +173,11 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
     }
 
     /**
-     * @notice mints loyaltyCards. Each is a non-fungible token (NFT), that is linked to a token bound account. - this function is a real gas guzzler. 
+     * @notice mints loyaltyCards. Each is a non-fungible token (NFT) that is linked to a token bound account.
      * 
      * @param numberOfLoyaltyCards amount of loyaltycards to be minted.
      *
+     * @dev This function is a real gas guzzler. 
      * @dev only owner of program can mint loyalty cards.
      * @dev first id of card is 1. (not 0, this id is reserved for loyalty points). 
      * @dev no limit to the amount of cards to mint - when to many are minted, gas limits kick in. 
@@ -190,7 +194,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
         uint256 counter = s_loyaltyCardCounter;
 
         /**
-         * @dev £security note that I log these addresses as TBAs BEFORE they have actually been minted.
+         * @dev £security question: note that I log these addresses as TBAs BEFORE they have actually been minted. Problem? 
          */
         for (uint256 i; i < numberOfLoyaltyCards; ) {
             counter = ++counter;
@@ -303,7 +307,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
     ) public returns (bool) {
         uint256 balanceSender = balanceOf(loyaltyCard, 0);  
         if (balanceSender == 0) {
-            revert ("Sender does not own loyalty points"); 
+            revert ("No loyalty points on card."); 
         }
         return ILoyaltyGift(loyaltyGiftAddress).requirementsLoyaltyGiftMet(loyaltyCard, loyaltyGiftId, balanceSender); 
     }
@@ -383,19 +387,18 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
         address customerAddress,
         uint256 loyaltyPoints,
         bytes memory signature
-    ) external onlyOwner {
+    ) external onlyOwner { // £security. nonRentrant not necessary here. - OnlyOwner function. 
         address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
 
         // filling up RequestGift struct with provided data. 
-        RequestGift memory message;
-        message.from = loyaltyCardAddress;
-        message.to = address(this);
-        message.gift = _gift;
-        message.cost = _cost;
-        message.nonce = s_nonceLoyaltyCard[loyaltyCardAddress];
+        claimMessage.from = loyaltyCardAddress;
+        claimMessage.to = address(this);
+        claimMessage.gift = _gift;
+        claimMessage.cost = _cost;
+        claimMessage.nonce = s_nonceLoyaltyCard[loyaltyCardAddress];
         
         // creating digest. 
-        bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message));
+        bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(claimMessage));
 
         // using this digest and signature to recover customer address 
         address signer = digest.recover(signature);
@@ -469,14 +472,13 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { // remov
         address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
         
         // filling up RequestGift struct with provided data. 
-        RedeemVoucher memory message;
-        message.from = loyaltyCardAddress;
-        message.to = address(this);
-        message.voucher = _voucher;
-        message.nonce = s_nonceLoyaltyCard[loyaltyCardAddress];
+        redeemMessage.from = loyaltyCardAddress;
+        redeemMessage.to = address(this);
+        redeemMessage.voucher = _voucher;
+        redeemMessage.nonce = s_nonceLoyaltyCard[loyaltyCardAddress];
         
         // creating digest hash 
-        bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRedeemVoucher(message));
+        bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRedeemVoucher(redeemMessage));
 
         // Retrieving signer address from digest and signature.  
         address signer = digest.recover(signature);

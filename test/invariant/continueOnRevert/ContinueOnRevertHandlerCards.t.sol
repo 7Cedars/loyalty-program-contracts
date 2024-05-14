@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity 0.8.24;
 
 // needs a setup / constructor that 
 // - set ups 0 - 3 loyalty programs 
