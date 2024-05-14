@@ -75,6 +75,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
     error LoyaltyProgram__RequestInvalid();
     error LoyaltyProgram__LoyaltyGiftInvalid();
     error LoyaltyProgram__LoyaltyVoucherInvalid();
+    error LoyaltyProgram__VoucherNotOwnedBySender();
     error LoyaltyProgram__VoucherTransferInvalid(); 
     error LoyaltyProgram__RequirementsGiftNotMet(); 
     error LoyaltyProgram__IncorrectInterface(address loyaltyGift);
@@ -176,8 +177,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      * @notice mints loyaltyCards. Each is a non-fungible token (NFT) that is linked to a token bound account.
      * 
      * @param numberOfLoyaltyCards amount of loyaltycards to be minted.
-     *
-     * @dev This function is a real gas guzzler. 
+     * 
      * @dev only owner of program can mint loyalty cards.
      * @dev first id of card is 1. (not 0, this id is reserved for loyalty points). 
      * @dev no limit to the amount of cards to mint - when to many are minted, gas limits kick in. 
@@ -186,6 +186,8 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      * This is crucial as the LoyaltyCard6551Account contract does not have a check for this - due to this contract being ERC-1155 based (instead of ERC-721). 
      * if more than one card of the same id are minted, you _will_ have a loyalty Card with multiple owners. 
      *
+     * @dev This function is a real gas guzzler. 
+     * 
      * - emits a transferBatch event.
      */
     function mintLoyaltyCards(uint256 numberOfLoyaltyCards) public onlyOwner {
@@ -226,7 +228,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
     /**
      * @notice whitelisting gift contracts and gift ids (these are contracts that provide requirements for redeeming loyalty points to gifts or vouchers).
      * A single gift contract can have mutliple gifts with each a seperate requirement.  
-     * £security £todo If contract does not have LoyaltyGift interface, it should revert. NOT YET IMPLEMENTED. 
      *
      * @param loyaltyGiftAddress address of loyalty gift
      * @param loyaltyGiftId id of gift. 
@@ -240,7 +241,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      */
 
     function addLoyaltyGift(address loyaltyGiftAddress, uint256 loyaltyGiftId) public onlyOwner {
-        // £security £todo: I cannot get supportsInterface interface to work for now. Try again later. 
         if (ERC165Checker.supportsInterface(loyaltyGiftAddress, type(ILoyaltyGift).interfaceId) == false) {
             revert LoyaltyProgram__IncorrectInterface(loyaltyGiftAddress);
         }
@@ -274,11 +274,11 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      * @param loyaltyGiftAddress address of loyalty gift
      * @param loyaltyGiftId id of gift. 
      *
-     * @dev Note that delisting means that customers' vouchers - without warning - become worthless.  
-     * @dev Calling this function is an extreme measure and should only be used on extreme cases (malfunction, hack, etc).
+     * @dev Note that delisting means that customers' vouchers - without warning - become worthless. 
+     * Calling this function is an extreme measure and should only be used on extreme cases (malfunction, hack, etc).
      * @dev it also removes gifts from claimable whitelist, avoiding scenario where voucher can be claimed but not redeemed.
      * @dev only owner can remove contracts from whitelist.
-     * @dev NOTICE opposite boolean logic of s_LoyaltyGiftsClaimable and s_LoyaltyVouchersRedeemable. 
+     * @dev NB: opposite boolean logic of s_LoyaltyGiftsClaimable and s_LoyaltyVouchersRedeemable. 
      * With s_LoyaltyGiftsClaimable     0 = false 
      * With s_LoyaltyVouchersRedeemable 1 = false
      *
@@ -319,7 +319,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      * @param numberOfVouchers amount of vouchers to be minted.
      *
      * @dev the limit of loyalty vouchers that customers can be gifted is limited by the amount of vouchers minted by the owner of loyalty program.
-     * @dev only owner can remove contracts from whitelist.
+     * @dev only owner can mint vouchers.
      *
      * - emits transferSingle event when one vouchers is minted.
      * - emits transferBatch when more vouchers are minted
@@ -333,13 +333,16 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
     }
 
     /**
-     * @notice transfer voucher between owner and/or among loyalty cards - bypassing any (requirement) checks
-     * @param to todo 
-     * @param loyaltyGiftId todo 
+     * @notice transfer voucher between owner and/or among loyalty cards - bypassing any (requirement) checks.
+     * @param from address from which voucher is send.  
+     * @param to address that will receive voucher. 
+     * @param loyaltyGiftAddress Address if Loyalty Gift contract. 
+     * @param loyaltyGiftId Id of loyalty gift at Loyalty Gift contract. 
      *
+     * @dev Either the to or from address have to be the owner of the contract. 
      * @dev safeTransferFrom at ILoyaltyGift bypasses the usual approval check because transfers need to be called via the LoyaltyProgram contract.  
      * Instead, checks of ownership are placed at the LoyaltyProgram contract, before calling safeTransferFrom at ILoyaltyGift / Loyalty Gift contract.  
-     *
+     * 
      * - emits transferSingle event.
      */
     function transferLoyaltyVoucher(
@@ -348,12 +351,12 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
         address loyaltyGiftAddress, 
         uint256 loyaltyGiftId
     ) public {
-        if (
-            from != s_owner && 
-            to != s_owner &&
-            ILoyaltyGift(loyaltyGiftAddress).balanceOf(from, loyaltyGiftId) == 0 
-        ) {
+        if (from != s_owner && to != s_owner) {
             revert LoyaltyProgram__VoucherTransferInvalid();
+        }
+
+        if ( ILoyaltyGift(loyaltyGiftAddress).balanceOf(from, loyaltyGiftId) == 0 ) {
+            revert LoyaltyProgram__VoucherNotOwnedBySender();
         }
 
         ILoyaltyGift(loyaltyGiftAddress).safeTransferFrom(from, to, loyaltyGiftId, 1, "");
@@ -373,7 +376,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      *
      * @dev only one voucher can be claimed per call.
      * @dev only loyaltyCards minted through this loyalty program can be used redeem loyalty points.
-     * @dev £security removed nonReentrant guard as CEI (Check-Effect-Interaction) structure was followed. This is correct - right? 
+     * @dev £security removed nonReentrant guard as CEI (Check-Effect-Interaction) structure was followed and the function is onlyOwner. This is correct - right? 
      * @dev if customer does not own TBA / loyalty card it will revert at ERC6551 account.
      *
      * - emits a TransferSingle event
@@ -456,7 +459,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      *
      * @dev only one voucher can be redeemed per call.
      * @dev only loyaltyCards minted through this loyalty program can be used redeem loyalty vouchers.
-     * @dev £security removed nonReentrant guard as CEI (Check-Effect-Interaction) structure was followed. This is correct - right? 
+     * @dev £security removed nonReentrant guard as CEI (Check-Effect-Interaction) structure was followed and the function is onlyOwner. This is correct - right? 
      * @dev if customer does not own TBA / loyalty card it will revert at ERC6551 account.
      *
      * - emits a TransferSingle event
