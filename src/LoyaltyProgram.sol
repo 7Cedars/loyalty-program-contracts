@@ -125,7 +125,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
     bytes32 private immutable DOMAIN_SEPARATOR;
 
     mapping(bytes => uint256 executed) private requestExecuted; // 0 = false & 1 = true.
-    mapping(address loyaltyCard => uint256 nonce) private s_nonceLoyaltyCard;
+    mapping(address loyaltyCard => uint256 nonce) private s_nonceLoyaltyCard; // NB: this data can be taken from blockchain. -- £sec = attack vector? 
     mapping(address loyaltyCardAddress => uint256 exists) private s_LoyaltyCards; // 0 = false & 1 = true.
     mapping(address loyaltyGiftAddress => mapping(uint256 loyaltyGiftId => uint256 exists)) private s_LoyaltyGiftsClaimable; // 0 = false & 1 = true.
     // NB! s_LoyaltyVouchersRedeemable 0 = true & 1 = false. OPPOSITE OF s_LoyaltyGiftsClaimable! 
@@ -136,6 +136,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
     RedeemVoucher redeemMessage; 
 
     /* Modifiers */
+    // use Ownable here? 
     modifier onlyOwner() {
         if (msg.sender != s_owner) {
             revert LoyaltyProgram__OnlyOwner();
@@ -665,7 +666,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
         return s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId];
     }
 
-    function getNumberLoyaltyCardsMinted() external view returns (uint256) {
+    function getNumberLoyaltyCardsMinted() external view returns (uint256) { // £improve can this bea public state var? -- this would mean I don't need this getter function 
         return s_loyaltyCardCounter;
     }
 
@@ -674,7 +675,6 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
     }
 
     function getNonceLoyaltyCard(address loyaltyCardAddress) external view returns (uint256) {
-        // should build in check here later. Only owner of card + loyalty program can request nonce.
         return s_nonceLoyaltyCard[loyaltyCardAddress];
     }
 }

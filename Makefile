@@ -1,5 +1,4 @@
 # £ack this file was originally copied from https://github.com/Cyfrin/foundry-erc20-f23/blob/main/Makefile
-# £todo: it needs a clean up.  
 
 -include .env
 
@@ -11,7 +10,6 @@ all: clean remove install update build
 clean  :; forge clean
 
 # Remove modules
-# NB: contract is now broken on incompatible versions (seemingly internally in openZeppelin). 
 remove :; rm -rf .gitmodules && rm -rf .git/modules/* && rm -rf lib && touch .gitmodules && git add . && git commit -m "modules"
 
 # Install modules
