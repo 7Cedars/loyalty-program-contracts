@@ -65,12 +65,11 @@
 The Loyalty protocol provides a modular, composable and gas efficient framework for blockchain based customer engagement programs. 
 
 Key features: 
-- It allows anyone to act as a vendor, deploying a loyalty program, minting loyalty points and cards, and distributing points to loyalty cards. 
-- It allows anyone to deploy gift programs that exchanges loyalty points to gifts and vouchers. 
-- It disallows the use of loyalty points and vouchers in any other loyalty program than the one in which they were minted.
-In other words, loyalty points do not have value of themselves, but give easy-access to a wide range of customer experiences. 
+- It **allows** anyone to act as a vendor, deploying a loyalty program, minting loyalty points and cards, and distributing points to loyalty cards. 
+- It **allows** anyone to deploy gift programs that exchanges loyalty points to gifts or vouchers. 
+- It **disallows** the use of loyalty points and vouchers in any other loyalty program than the one in which they were minted.
 
-The project showcases how tokens can be used as a utility, rather than store of value.
+In other words, loyalty points do not have value of themselves, but give easy-access to a wide range of customer experiences. The project showcases how tokens can be used as a utility, rather than store of value.
 
 ### Roles
 The roles in the protocol are
