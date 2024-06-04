@@ -14,13 +14,6 @@ import {ERC6551Registry} from "../../test/mocks/ERC6551Registry.t.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-/**
- * @title Intergation Test Loyalty Cards To Loyalty Programs to Loyalty Gifts  
- * @author Seven Cedars
- * @notice Integration tests
- * @dev For now I did not - at all - focus on efficiency and readability of this code. Focused on covering basic functions. 
- */
-
 contract CardsToProgramToGiftsTest is Test {
     /* events */
     event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
@@ -101,8 +94,8 @@ contract CardsToProgramToGiftsTest is Test {
         DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts();
         mockLoyaltyGifts = giftDeployer.run();
 
-        // DeployLoyaltyCard6551Account accountDeployer = new DeployLoyaltyCard6551Account(); 
-        // accountDeployer.run(); 
+        DeployLoyaltyCard6551Account accountDeployer = new DeployLoyaltyCard6551Account(); 
+        accountDeployer.run(); 
         
         owner = loyaltyProgram.getOwner();
         alternativeProgramOwner = alternativeLoyaltyProgram.getOwner();
@@ -652,8 +645,6 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 loyaltyCardId = 1;
         address loyaltyCardOne = loyaltyProgram.getTokenBoundAddress(1);
         DOMAIN_SEPARATOR = hashDomainSeparator(); 
-
-        
 
         // removing voucher as being redeemable.
         vm.prank(owner);

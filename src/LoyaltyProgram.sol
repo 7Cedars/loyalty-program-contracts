@@ -78,7 +78,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
     uint256 public  constant LOYALTY_POINTS_ID = 0;
     bytes32 private constant SALT = 0x0000000000000000000000000000000000000000000000000000000007ceda52;
     address private constant ERC6551_REGISTRY = 0x000000006551c19487814612e58FE06813775758; 
-    address private constant ERC6551_CUSTOM_ACCOUNT = 0xfA76334FbeA6Bef50F63B4Cb7E6F86460Ecf5208; 
+    address private constant ERC6551_CUSTOM_ACCOUNT = 0x15747d3cE7737B88f935968D1A2e1b8e38290D7a; // 0x9C7b4118554F6014495f19c6ad4cB39587eef9bd; 
 
     address private immutable s_owner;
     bytes32 private immutable DOMAIN_SEPARATOR;
@@ -457,7 +457,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
         }
 
         // check if loyalty Voucher is valid.
-        if (s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] == true) {
+        if (s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] == false) {
             revert LoyaltyProgram__LoyaltyVoucherInvalid();
         }
 

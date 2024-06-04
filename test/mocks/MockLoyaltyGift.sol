@@ -69,6 +69,9 @@ contract MockLoyaltyGift is ERC1155, ILoyaltyGift {
             emit LoyaltyGiftDeployed(msg.sender, version);
     }
 
+    function testA() public virtual {} // skip in foundry coverage
+    
+
     /**
      * @notice provides the requirement logics for receiving gifts.  Returns true or false. 
      * 

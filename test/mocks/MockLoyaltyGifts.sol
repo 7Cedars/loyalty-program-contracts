@@ -48,8 +48,8 @@ contract MockLoyaltyGifts is MockLoyaltyGift {
         )
     {}
 
-    function testA() public {} // skip in foundry coverage
-
+    function testA() public override {} // skip in foundry coverage
+    
     /**
      * @notice Sets requirement logics of tokens. Overrides function from the standard LoyaltyGift contract.
      * 

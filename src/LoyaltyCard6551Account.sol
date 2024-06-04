@@ -3,7 +3,10 @@
  * 
  * @title LoyaltyCard 6551 Account.  
  * @author Seven Cedars, based on the 
- * @notice TL;DR a bespoke ERC-6551 implementation, optimised for ERC-1155 tokens. It adds a `owner1155()` function. See below for more information. 
+ * @notice TL;DR a bespoke ERC-6551 implementation, optimised for ERC-1155 tokens. It adds an onERC1155Received and onERC1155BatchReceived function. 
+ * 
+ * @dev because ERC1155 tokens do not have a ownerOf function, owners of loyalty Cards cannot initiate any action themselves. 
+ * For the Loyalty protocol this is no problem as all actions are initiated by vendor.   
  * 
  * */
 
@@ -111,23 +114,6 @@ contract LoyaltyCard6551Account is IERC165, IERC1271, IERC6551Account, IERC6551E
         if (chainId != block.chainid) return address(0);
 
         return IERC721(tokenContract).ownerOf(tokenId);
-    }
-
-    /**
-     * @notice check for ownership of Erc-1155 token.
-     * 
-     * @dev note that there is no guarantee there is only one token per id. ERC-1155 allows for mintin of multiple tokens of the same id.  
-     * This check HAS to be implemented at external contract. 
-     * 
-     * It is a general security issue: using ERC-1155 for ERC-6551 token based accounts.   
-     */
-
-    function owner1155() public view returns (bool) {
-        (uint256 chainId, address tokenContract, uint256 tokenId) = this.token();
-        if (chainId != block.chainid) return false;
-        // note: just checks if account holds more than 0 tokens... 
-        if (IERC1155(tokenContract).balanceOf(msg.sender, tokenId) == 0) return false;
-        return true;
     }
 
     function _isValidSigner(address signer) internal view virtual returns (bool) {

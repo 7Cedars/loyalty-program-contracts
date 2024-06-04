@@ -15,9 +15,9 @@ contract LoyaltyProgramTest is Test {
     event DeployedLoyaltyProgram(address indexed owner, string name, string indexed version);
     event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
     event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values);
-    event AddedLoyaltyGift(address indexed loyaltyGift, uint256 loyaltyGiftId);
-    event RemovedLoyaltyGiftClaimable(address indexed loyaltyGift, uint256 loyaltyGiftId);
-    event RemovedLoyaltyGiftRedeemable(address indexed loyaltyGift, uint256 loyaltyGiftId);
+    event AddedLoyaltyGift(address indexed loyaltyGift, uint256 indexed loyaltyGiftId);
+    event RemovedLoyaltyGiftClaimable(address indexed loyaltyGift, uint256 indexed loyaltyGiftId);
+    event RemovedLoyaltyGiftRedeemable(address indexed loyaltyGift, uint256 indexed loyaltyGiftId);
 
     LoyaltyProgram loyaltyProgram;
     ILoyaltyGift mockLoyaltyGifts; 
@@ -111,7 +111,7 @@ contract LoyaltyProgramTest is Test {
 
     function testMintingCardsCreatesValidTokenBasedAccounts() public {
         address erc65511Registry = 0x000000006551c19487814612e58FE06813775758;
-        address erc65511Implementation = 0xfA76334FbeA6Bef50F63B4Cb7E6F86460Ecf5208;
+        address erc65511Implementation = 0x9C7b4118554F6014495f19c6ad4cB39587eef9bd;
 
         vm.prank(ownerProgram);
         loyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);
@@ -233,6 +233,9 @@ contract LoyaltyProgramTest is Test {
     // £todo this one currently fails with a [FAIL. Reason: log != expected log] error. Except... the log == log. Sort this out later.. 
     function testEmitsEventOnRemovingLoyaltyGiftRedeem() public {
         // Arrange
+        vm.prank(ownerProgram);
+        loyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), 0);
+
         vm.expectEmit(true, false, false, false, address(loyaltyProgram));
         emit RemovedLoyaltyGiftRedeemable(address(mockLoyaltyGifts), 0);
 

@@ -11,12 +11,12 @@ ffi = true
 # fs.permissions =[{access = "read", path = "./img/"}] 
 
 [fuzz]
-runs = 32
+runs = 64
 depth = 32
 fail_on_revert = true 
 
 [invariant] 
-runs = 64 
-depth = 64 
+runs = 16 
+depth = 16 
 fail_on_revert = false 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

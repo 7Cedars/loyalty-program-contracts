@@ -11,12 +11,14 @@ import "../../src/interfaces/IERC6551Account.sol";
 import "../../src/interfaces/IERC6551Executable.sol";
 import "../../test/mocks/ERC6551Registry.t.sol";
 import "../mocks/MockERC721.sol";
+import "../mocks/MockERC1155.sol";
 import "../mocks/MockERC6551Account.sol";
 
 contract AccountTest is Test {
     ERC6551Registry public registry;
     LoyaltyCard6551Account public implementation;
     MockERC721 nft = new MockERC721();
+    MockERC1155 nft1155 = new MockERC1155();
 
     function setUp() public {
         registry = new ERC6551Registry();
@@ -59,4 +61,5 @@ contract AccountTest is Test {
         assertEq(vm.addr(2).balance, 0.5 ether);
         assertEq(accountInstance.state(), 1);
     }
+    
 }
