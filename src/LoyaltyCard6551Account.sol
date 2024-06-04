@@ -1,3 +1,12 @@
+/**
+ * NB: THIS CONTRACT HAS NOT BEEN AUDITED. TESTING IS INCOMPLETE. DO NOT DEPLOY ON ANYTHING ELSE THAN A TEST CHAIN 
+ * 
+ * @title LoyaltyCard 6551 Account.  
+ * @author Seven Cedars, based on the 
+ * @notice TL;DR a bespoke ERC-6551 implementation, optimised for ERC-1155 tokens. It adds a `owner1155()` function. See below for more information. 
+ * 
+ * */
+
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
@@ -104,11 +113,19 @@ contract LoyaltyCard6551Account is IERC165, IERC1271, IERC6551Account, IERC6551E
         return IERC721(tokenContract).ownerOf(tokenId);
     }
 
-    // Added function for ERC-1155. 
-    // It's quite a big security issue... to integrate ERC-1155 with ERC-6551. hmm.    
+    /**
+     * @notice check for ownership of Erc-1155 token.
+     * 
+     * @dev note that there is no guarantee there is only one token per id. ERC-1155 allows for mintin of multiple tokens of the same id.  
+     * This check HAS to be implemented at external contract. 
+     * 
+     * It is a general security issue: using ERC-1155 for ERC-6551 token based accounts.   
+     */
+
     function owner1155() public view returns (bool) {
         (uint256 chainId, address tokenContract, uint256 tokenId) = this.token();
         if (chainId != block.chainid) return false;
+        // note: just checks if account holds more than 0 tokens... 
         if (IERC1155(tokenContract).balanceOf(msg.sender, tokenId) == 0) return false;
         return true;
     }

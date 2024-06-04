@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
@@ -47,9 +47,9 @@ interface ILoyaltyProgram is IERC165, IERC1155 {
 
   function getTokenBoundAddress(uint256 _loyaltyCardId) external view returns (address);
 
-  function getLoyaltyGiftIsClaimable(address loyaltyGiftAddress, uint256 loyaltyGiftId) external view returns (uint256);
+  function getLoyaltyGiftIsClaimable(address loyaltyGiftAddress, uint256 loyaltyGiftId) external view returns (bool);
 
-  function getLoyaltyGiftIsRedeemable(address loyaltyGiftAddress, uint256 loyaltyGiftId) external view returns (uint256);
+  function getLoyaltyGiftIsRedeemable(address loyaltyGiftAddress, uint256 loyaltyGiftId) external view returns (bool);
 
   function getNumberLoyaltyCardsMinted() external view returns (uint256);
 

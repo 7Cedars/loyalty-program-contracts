@@ -174,6 +174,9 @@ This contract has not been audited. Do not deploy on anything else than a test c
 - Testing coverage is still low. Fuzz tests especially are still underdeveloped.   
 - ERC-1155 and ERC-6551 combination ... WIP 
 - Centralisation. Owner has core priviledges in a consumer program. 
+- I use a simple self build onlyOwner() modifier, instead of OpenZeppelin's implemntation. Keep gas cost down. 
+- Owner of a loyalty program is set at construction, cannot be changed later on. 
+-  
 
 
 

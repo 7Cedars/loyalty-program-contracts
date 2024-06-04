@@ -111,7 +111,7 @@ contract LoyaltyProgramTest is Test {
 
     function testMintingCardsCreatesValidTokenBasedAccounts() public {
         address erc65511Registry = 0x000000006551c19487814612e58FE06813775758;
-        address erc65511Implementation = 0xCE2d5249Ad4042641956c3E016c3D97F7cCfB908;
+        address erc65511Implementation = 0xfA76334FbeA6Bef50F63B4Cb7E6F86460Ecf5208;
 
         vm.prank(ownerProgram);
         loyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);
@@ -171,8 +171,8 @@ contract LoyaltyProgramTest is Test {
         vm.prank(ownerProgram);
         loyaltyProgram.addLoyaltyGift(address(mockLoyaltyGifts), 0);
         // Act / Assert
-        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(address(mockLoyaltyGifts), 0), 1);
-        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(address(mockLoyaltyGifts), 0), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(address(mockLoyaltyGifts), 0), true);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(address(mockLoyaltyGifts), 0), true);
     }
 
     function testAddingGiftContractRevertsWithIncorrectInterfaceId() public {
@@ -184,13 +184,14 @@ contract LoyaltyProgramTest is Test {
         loyaltyProgram.addLoyaltyGift(address(mockERC1155), 0);
     }
 
+    // £todo this one currently fails with a [FAIL. Reason: log != expected log] error. Except... the log == log. Sort this out later.. 
     function testEmitsEventOnAddingLoyaltyGiftContract() public {
-        // Arrange
         vm.expectEmit(true, false, false, false, address(loyaltyProgram));
         emit AddedLoyaltyGift(address(mockLoyaltyGifts), 0);
-        // Act / Assert
-        vm.prank(ownerProgram);
+        
+        vm.startPrank(ownerProgram);
         loyaltyProgram.addLoyaltyGift(payable(address(mockLoyaltyGifts)), 0);
+        vm.stopPrank(); 
     }
 
     function testLoyaltyGiftClaimCanBeRemoved() public {
@@ -200,8 +201,8 @@ contract LoyaltyProgramTest is Test {
         vm.stopPrank();
 
         // Act / Assert
-        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(address(mockLoyaltyGifts), 0), 0);
-        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(address(mockLoyaltyGifts), 0), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(address(mockLoyaltyGifts), 0), false);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(address(mockLoyaltyGifts), 0), true);
     }
 
     function testLoyaltyGiftRedeemCanBeRemoved() public {
@@ -211,10 +212,11 @@ contract LoyaltyProgramTest is Test {
         vm.stopPrank();
 
         // Act / Assert
-        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(address(mockLoyaltyGifts), 0), 0);
-        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(address(mockLoyaltyGifts), 1), 0);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsClaimable(address(mockLoyaltyGifts), 0), false);
+        assertEq(loyaltyProgram.getLoyaltyGiftIsRedeemable(address(mockLoyaltyGifts), 0), false);
     }
 
+    // £todo this one currently fails with a [FAIL. Reason: log != expected log] error. Except... the log == log. Sort this out later.. 
     function testEmitsEventOnRemovingLoyaltyGiftClaim() public {
         // Arrange
         vm.prank(ownerProgram);
@@ -228,6 +230,7 @@ contract LoyaltyProgramTest is Test {
         loyaltyProgram.removeLoyaltyGiftClaimable(address(mockLoyaltyGifts), 0);
     }
 
+    // £todo this one currently fails with a [FAIL. Reason: log != expected log] error. Except... the log == log. Sort this out later.. 
     function testEmitsEventOnRemovingLoyaltyGiftRedeem() public {
         // Arrange
         vm.expectEmit(true, false, false, false, address(loyaltyProgram));

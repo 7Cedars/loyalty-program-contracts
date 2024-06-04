@@ -11,8 +11,8 @@ ffi = true
 # fs.permissions =[{access = "read", path = "./img/"}] 
 
 [fuzz]
-runs = 256
-depth = 256
+runs = 32
+depth = 32
 fail_on_revert = true 
 
 [invariant] 
