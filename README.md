@@ -13,7 +13,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/7Cedars/loyalty-program-contracts"> 
-    <img src="public/iconLoyaltyProgram.png" alt="Logo" width="80" height="80">
+    <img src="public/iconLoyaltyProgram.svg" alt="Logo" width="200" height="200">
   </a>
 
 <h3 align="center">Loyal: A Solidity Protocol for Web3 Customer Engagement Programs</h3>
@@ -36,34 +36,29 @@
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about">About</a>
-      <ul>
-        <li><a href="#roles">Roles</a></li>
-        <li><a href="#contracts">Contracts</a></li>
-        <li><a href="#diagram">Roles</a></li>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#known-issues">Known Issues</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
+
+- [About The Project](#about-the-project)
+  - [Roles](#roles)
+  - [Contracts](#contracts)
+  - [Diagram](#diagram)
+  - [Built With](#built-with)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Quickstart](#quickstart)
+- [Usage](#usage)
+  - [Test](#test)
+  - [Test coverage](#test-coverage)
+  - [Build](#build)
+  - [Deploy](#deploy)
+  - [Live example](#live-example)
+- [Known Issues](#known-issues)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+- [Acknowledgments](#acknowledgments)
+  
 </details>
-
-
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
@@ -97,9 +92,6 @@ See the following schema for more detail:
     <img src="public/PoCModularLoyaltyProgram.png" alt="Schema Protocol" width="100%" height="100%">
   </a>
 
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 ### Built With
 - Solidity 0.8.19
 - Foundry 0.2.0
@@ -111,8 +103,6 @@ See the following schema for more detail:
   - [EIP-712: Typed structured data hashing and signing]: customer requests are executed through signed messages (transferred in front-end app as Qr codes) to the vendor. It allows the vendor to cover all gas costs. 
   - [ERC-165: Standard Interface Detection]: gift contracts are checked if they follow they ILoyaltyGift interface.  
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- GETTING STARTED -->
 ## Getting Started
 
@@ -120,56 +110,64 @@ To get a local copy up and running do the following.
 
 ### Prerequisites
 
-  Install Foundry
-  ```sh
-  $ curl -L https://foundry.paradigm.xyz | bash
-  ```
+Foundry
+  - Install following the directions at [getfoundry.sh](https://getfoundry.sh/).
+  - You'll know you did it right if you can run `forge --version` and you see a response like `forge 0.2.0 (816e00b 2023-03-16T00:05:26.396218Z)`
 
-  ```sh
-  $ foundryup
-  ```
+A blockchain with an ERC-6551 registry (v.0.3.1) deployed at address 0x000000006551c19487814612e58FE06813775758. 
+  - To check what chains have an ERC-6551 registry deployed, see [tokenbound.org deploy](https://docs.tokenbound.org/contracts/deployments). 
+  - To deploy yourself (or on a local chain) follow the steps at [tokenbound.org deploy](https://docs.tokenbound.org/guides/deploy-registry).
 
-  Check if the chain has an ERC-6551 registry at address 0x000000006551c19487814612e58FE06813775758.
-  If not (and if the contract is deployed on a local chain), set up a registry following the steps at [tokenbound.org](https://docs.tokenbound.org/guides/deploy-registry). 
-
-### Clone the repository
+### Quickstart
 <!-- NB: I have to actually follow these steps and check if I missed anyting £todo -->
 
 1. Get a free alchemy API Key at [alchemy.com](https://docs.alchemy.com/docs/alchemy-quickstart-guide)
 2. Clone the repo
-  ```sh
-   git clone https://github.com/7Cedars/loyalty-program-contracts.git
-   ```
-3. Install packages
-  ```sh
-   yarn add
-   ```
+    ```
+    git clone https://github.com/7Cedars/loyalty-program-contracts.git
+    ```
+4. navigate to the folder
+    ```
+    cd loyalty-program-contracts
+    ```
+6. run make
+    ```
+    make
+    ```
 
-### Run the test and build the contracts
-4. Run tests
+## Usage 
+### Test 
   ```sh
   $ forge test
    ```
-5. Build contracts
+
+### Test coverage
+  ```sh
+  forge coverage
+  ```
+
+and for coverage based testing: 
+  ```sh
+  forge coverage --report debug
+  ```
+
+### Build
   ```sh
    $ forge build
    ```
 
 ### Deploy
-6. Run deploy script at an EVM compatible Chain
   ```sh
    $ forge script --fork-url <RPC_URL> script/DeployLoyaltyProgram.s.sol --broadcast
    ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Where <RPC_URL> is the url to your rpc provider, for example: https://eth-sepolia.g.alchemy.com/v2/...  
 
 
 <!-- USAGE EXAMPLES -->
-## Usage
+### Live example
 A front-end dApp demonstration of this web3 protocol has been deployed on vercel.com. 
 Try it out at [https://loyalty-program-psi.vercel.app/](https://loyalty-program-psi.vercel.app/). 
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- KNOWN ISSUES -->
 ## Known Issues
@@ -178,7 +176,6 @@ This contract has not been audited. Do not deploy on anything else than a test c
 - ERC-1155 and ERC-6551 combination ... WIP 
 - Centralisation. Owner has core priviledges in a consumer program. 
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- ROADMAP -->
@@ -190,7 +187,6 @@ This contract has not been audited. Do not deploy on anything else than a test c
 
 See the [open issues](https://github.com/7Cedars/loyalty-program-contracts/issues) for a full list of proposed features (and known issues).
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -202,7 +198,6 @@ If you have a suggestion that would make this better, please fork the repo and c
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- LICENSE -->
@@ -210,7 +205,6 @@ If you have a suggestion that would make this better, please fork the repo and c
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTACT -->
 ## Contact
@@ -219,7 +213,6 @@ Seven Cedars - [@7__Cedars](https://twitter.com/7__Cedars) - cedars7@proton.me
 
 GitHub profile [https://github.com/7Cedars](https://github.com/7Cedars)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
@@ -232,7 +225,6 @@ GitHub profile [https://github.com/7Cedars](https://github.com/7Cedars)
 - I took the template for the readme file from [Drew Othneil](https://github.com/othneildrew/Best-README-Template/blob/master/README.md?plain=1). 
 - And a special thanks should go out to [SpeedRunEthereum](https://speedrunethereum.com/) and [LearnWeb3](https://learnweb3.io/) for providing the first introductions to solidity coding. 
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 [issues-shield]: https://img.shields.io/github/issues/7Cedars/loyalty-program-contracts.svg?style=for-the-badge
 [issues-url]: https://github.com/7Cedars/loyalty-program-contracts/issues/
