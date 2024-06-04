@@ -12,7 +12,7 @@ contract DeployLoyaltyCard6551Account is Script {
         s_erc6551Implementation = new LoyaltyCard6551Account{salt: 0x0000000000000000000000000000000000000000000000000000000007ceda52}();
         vm.stopBroadcast();
         
-        console.log("CHECK: erc6551Implementation deployed at 0xCE2d5...CfB908? Actual address -> ", address(s_erc6551Implementation)); 
+        console.log("CHECK: erc6551Implementation deployed at 0xfA763...Ecf5208? Actual address -> ", address(s_erc6551Implementation)); 
         return true;
     }
 }

@@ -1,3 +1,13 @@
+/**
+ * 
+ * @title Loyalty Program 
+ * @author Seven Cedars, based on OpenZeppelin's ERC-1155 implementation.
+ * @notice TL;DR The Loyalty protocol provides a modular, composable and gas efficient framework for blockchain based customer engagement programs.
+ * 
+ * NB: THIS CONTRACT HAS NOT BEEN AUDITED. TESTING IS INCOMPLETE. DO NOT DEPLOY ON ANYTHING ELSE THAN A TEST CHAIN 
+ * 
+ * */
+
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
@@ -15,55 +25,6 @@ import {ILoyaltyProgram} from "./interfaces/ILoyaltyProgram.sol";
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {ERC6551Registry} from "../test/mocks/ERC6551Registry.t.sol";
 import {LoyaltyCard6551Account} from "./LoyaltyCard6551Account.sol";
-
-/**
- * @dev THIS CONTRACT HAS NOT BEEN AUDITED. TESTING IS INCOMPLETE. DO NOT DEPLOY ON ANYTHING ELSE THAN A TEST CHAIN! 
- * 
- * @title Loyalty Program 
- * @author Seven Cedars, based on OpenZeppelin's ERC-1155 implementation.
- * @notice TL;DR The Loyalty protocol provides a modular, composable and gas efficient framework for blockchain based customer engagement programs.
- * 
- * @notice This contract, LoyaltyProgram, allows for loyalty *points* to be distributed to loyalty *cards* that can only be used in a single loyalty *program*. 
- *  - points can be exchanged for *gifts* or *vouchers* through __external__ gift contracts following ILoyaltyGift interface; 
- *  - these external LoyaltyGift contracts are (de)selected by the owner of the LoyaltyProgram; 
- *  - vouchers are saved at Loyalty cards and locked in for use with the loyalty program that minted the cards. 
- *  - all interactions are initiated (and their gas costs covered) by the Loyalty Program contract.
- * 
- * @dev It builds on the following standards 
- *  - ERC-1155 (Multi-Token Standard): the Loyalty Program contract mints fungible points and non-fungible loyalty Cards; external contracts can mint semi-fungible vouchers. 
- *  - ERC-6551 (Non-fungible Token Bound Accounts): Loyalty Cards are transformed into Token Based Accounts using ERC-6551 registry.   
- *  - EIP-712 (Typed structured data hashing and signing): customer requests are executed through signed messages (transferred in front-end app as Qr codes) to the vendor. It allows the vendor to cover all gas costs. 
- *  - ERC-165 (Standard Interface Detection): gift contracts are checked if they follow they ILoyaltyGift interface.  
- * The project is meant as a showcase of using fungible, semi-fungible and non-fungible tokens (NFTs) as a utility, rather than store of value.
- * 
- * @dev Important concepts in the Loyalty protocol: 
- *  - Loyalty Program: this contract. Mints points and cards, (de)selects external loyalty programs. Inherits ERC1155 & IERC1155Receiver. 
- *   
- *  - Customer: EOA that owns a loyalty card. Loyalty Cards can be freely transferred to other EOAs.   
- *  - Loyalty Points: Fungible token minted at loyalty program by *vendor*.   
- *  - Loyalty Cards: non-fungible token minted at loyalty program by *vendor*. They are registered at ERC-6551 registry and give access to a token based account.
- *  - Loyalty Gifts: a ERC-1155 based contract that holds a 'requirementsMet' function providing a boolean result: True if a contract specific requirement was met. (This most often is transfer of points, but can be virtually anything.)  
- *  - Loyalty Vouchers: optional semi-fungible tokens minted by *loyalty program* at external gift contract. They can be transferred to loyalty card when loyalty gift resulted in true. Vouchers can be used for delayed exchange of gift.  
- *
- * @dev Roles in the protocol: 
- *  -  Vendor: Address that created the LoyaltyProgram contract. More advanced governance options are planned for future versions.  
- *  -  Customer: Address that owns a loyaltyCard.  
- */
-
-/**
- * Acknowledgments 
- * 
- * - This project was build while following Patrick Collins' "Learn Solidity, Blockchain Development, & Smart Contracts" Youtube course. 
- *   Not only does the course come highly recommended (it's really a fantastic course!) many parts of this repo started out as direct rip offs from his examples. 
- *   I have tried to note all specific cases, but please forgive me when I missed some.
- * 
- * - The Foundry book (and example of EIP0-712 was immensly helpful; as was learnweb3's covering gas cost tutorial. 
- *   see: https://learnweb3.io/lessons/using-metatransaction-to-pay-for-your-users-gas
- *   and see: https://book.getfoundry.sh/tutorials/testing-eip712
- *   this also goes for: https://medium.com/coinmonks/eip-712-example-d5877a1600bd
- * 
- * - Regarding ERC-6551. The website tokenbound.org was very helpful.  
- */
 
 contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { 
     /* errors */
@@ -119,7 +80,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
     uint256 public  constant LOYALTY_POINTS_ID = 0;
     bytes32 private constant SALT = 0x0000000000000000000000000000000000000000000000000000000007ceda52;
     address private constant ERC6551_REGISTRY = 0x000000006551c19487814612e58FE06813775758; 
-    address private constant ERC6551_CUSTOM_ACCOUNT = 0xCE2d5249Ad4042641956c3E016c3D97F7cCfB908; 
+    address private constant ERC6551_CUSTOM_ACCOUNT = 0xfA76334FbeA6Bef50F63B4Cb7E6F86460Ecf5208; 
 
     address private immutable s_owner;
     bytes32 private immutable DOMAIN_SEPARATOR;

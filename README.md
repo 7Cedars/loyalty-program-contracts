@@ -1,18 +1,9 @@
 <!--
 *** NB: This template was taken from: https://github.com/othneildrew/Best-README-Template/blob/master/README.md?plain=1 
 *** For shields, see: https://shields.io/
+*** It was rafactored along examples in the Cyfrin updraft course to follow some standard practices in solidity projects. 
 -->
 <a name="readme-top"></a>
-
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-
 
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
@@ -47,8 +38,11 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#about-the-project">About The Project</a>
+      <a href="#about">About</a>
       <ul>
+        <li><a href="#roles">Roles</a></li>
+        <li><a href="#contracts">Contracts</a></li>
+        <li><a href="#diagram">Roles</a></li>
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
@@ -60,6 +54,7 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
+    <li><a href="#known-issues">Known Issues</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
@@ -72,18 +67,30 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-A fully open source solidity protocol for real-world customer engagment.
+The Loyalty protocol provides a modular, composable and gas efficient framework for blockchain based customer engagement programs. 
 
-This protocol sets out a standard for loyalty programs: ERC-1155 based contracts that mint (fungible) points and (non-fungible) loyalty cards.
-Loyalty Cards are implemented as ERC-6551 Token Based Accounts that accumulate loyalty points. 
-See [this repository](https://github.com/7Cedars/loyalty-program-contracts) for an example implementation. 
+Key features: 
+- It allows anyone to act as a vendor, deploying a loyalty program, minting loyalty points and cards, and distributing points to loyalty cards. 
+- It allows anyone to deploy gift programs that exchanges loyalty points to gifts and vouchers. 
+- It disallows the use of loyalty points and vouchers in any other loyalty program than the one in which they were minted.
+In other words, loyalty points do not have value of themselves, but give easy-access to a wide range of customer experiences. 
 
-Loyalty programs interact with a second protocol that sets out a standard for contracts - loyalty gift contracts - that exchange points for gifts or vouchers.
-For this protocol, see [this repository](https://github.com/7Cedars/loyalty-gifts-contracts) for example implementations.
+The project showcases how tokens can be used as a utility, rather than store of value.
 
-Crucially, interactions between the two protocols are bounded: points and vouchers that are minted by a loyalty program can only be used among its own loyalty cards. 
-Loyalty cards themselves are freely transferable.
+### Roles
+The roles in the protocol are
+-  Vendor: Address that created the LoyaltyProgram contract. More advanced governance options are planned for future versions.  
+-  Customer: Address that owns a loyaltyCard.  
 
+### Contracts
+The contracts that make up the Loyalty protocol: 
+ - `LoyaltyProgram.sol`: Mints loyalty points and loyalty cards, distributes points to cards and (de)selects external gift programs. 
+ - `LoyaltyCard6551Account.sol`: a bespoke ERC6551 account implementation optimised for the use with ERC1155 tokens. It acts as loyalty card and collects loyalty points and vouchers.
+ - `ILoyaltyGift.sol` and `LoyaltyGift.sol`: The interface and base implementation of an, ERC-1155 based, gift contract. Loyalty Gifts are external contracts, examples can be found in the dedicated repository for [gift contracts](https://github.com/7Cedars/loyalty-gifts-contracts). These contracts exchange loyalty points to  
+   - either a boolean `true` result. This signals that requirements for the gift have been met and the vendor can give a gift to the customer. 
+   - or a loyalty voucher. A semi-fungible token minted at an external gift contract that allows the exchange for a gift at a later stage. 
+
+### Diagram
 See the following schema for more detail:
 
   <a href="https://github.com/7Cedars/loyalty-program-contracts/blob/master/public/PoCModularLoyaltyProgram.png"> 
@@ -94,12 +101,15 @@ See the following schema for more detail:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
-<!-- See for a list of badges: https://github.com/Envoy-VC/awesome-badges -->
-<!-- * [![React][React.js]][React-url]  -->
-* Solidity 0.8.19
-* Foundry 0.2.0
-* OpenZeppelin 5.0
+- Solidity 0.8.19
+- Foundry 0.2.0
+- OpenZeppelin 5.0
 
+- It builds on the following ERC standards:  
+  - [ERC-1155: Multi-Token Standard]: the Loyalty Program contract mints fungible points and non-fungible loyalty Cards; external contracts can mint semi-fungible vouchers. 
+  - [ERC-6551: Non-fungible Token Bound Accounts]: Loyalty Cards are transformed into Token Based Accounts using ERC-6551 registry.   
+  - [EIP-712: Typed structured data hashing and signing]: customer requests are executed through signed messages (transferred in front-end app as Qr codes) to the vendor. It allows the vendor to cover all gas costs. 
+  - [ERC-165: Standard Interface Detection]: gift contracts are checked if they follow they ILoyaltyGift interface.  
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -161,6 +171,16 @@ Try it out at [https://loyalty-program-psi.vercel.app/](https://loyalty-program-
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- KNOWN ISSUES -->
+## Known Issues
+This contract has not been audited. Do not deploy on anything else than a test chain. More specifically:
+- Testing coverage is still low. Fuzz tests especially are still underdeveloped.   
+- ERC-1155 and ERC-6551 combination ... WIP 
+- Centralisation. Owner has core priviledges in a consumer program. 
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
 <!-- ROADMAP -->
 ## Roadmap
 
@@ -174,9 +194,6 @@ See the [open issues](https://github.com/7Cedars/loyalty-program-contracts/issue
 
 <!-- CONTRIBUTING -->
 ## Contributing
-
-Contributions make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
-
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement". Thank you! 
 
 1. Fork the Project
@@ -204,28 +221,19 @@ GitHub profile [https://github.com/7Cedars](https://github.com/7Cedars)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
-* This project was build while following [PatrickCollins](https://www.youtube.com/watch?v=wUjYK5gwNZs&t) amazing Learn Solidity, Blockchain Development, & Smart Contracts Youtube course. Comes highly recommended for anyone wanting to get into Foundry & intermediate/advanced solidity coding. 
-* An [introduction to ERC-6551](https://www.youtube.com/watch?v=GLTVd5P5LCw) by Pinata's Kelly Kim was really useful. 
-* As was the documentation from [Tokenbound](https://docs.tokenbound.org/) (an organisation advocating the implementation of Tokan Based Accounts). 
-* I took the template for the readme file from [Drew Othneil](https://github.com/othneildrew/Best-README-Template/blob/master/README.md?plain=1). 
-* And a special thanks should go out to [SpeedRunEthereum](https://speedrunethereum.com/) and [LearnWeb3](https://learnweb3.io/) for providing the first introductions to solidity coding. 
+- This project was build while following [PatrickCollins](https://www.youtube.com/watch?v=wUjYK5gwNZs&t) amazing Learn Solidity, Blockchain Development, & Smart Contracts Youtube course. Not only does the course come highly recommended (it's really a fantastic course!) many parts of this repo started out as direct rip offs from his examples. I have tried to note all specific cases, but please forgive me when I missed some.
+- An [introduction to ERC-6551](https://www.youtube.com/watch?v=GLTVd5P5LCw) by Pinata's Kelly Kim was really useful. 
+- When it comes to EIP-712, the Foundry book was immensly helpful. See https://book.getfoundry.sh/tutorials/testing-eip712. Some other sources I used were: 
+  - https://learnweb3.io/lessons/using-metatransaction-to-pay-for-your-users-gas
+  - this also goes for: https://medium.com/coinmonks/eip-712-example-d5877a1600bd
+- As was the documentation from [Tokenbound](https://docs.tokenbound.org/) (an organisation advocating the implementation of Tokan Based Accounts). 
+- I took the template for the readme file from [Drew Othneil](https://github.com/othneildrew/Best-README-Template/blob/master/README.md?plain=1). 
+- And a special thanks should go out to [SpeedRunEthereum](https://speedrunethereum.com/) and [LearnWeb3](https://learnweb3.io/) for providing the first introductions to solidity coding. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-<!-- [contributors-shield]: https://img.shields.io/github/contributors/7Cedars/loyalty-program-contracts.svg?style=for-the-badge
-[contributors-url]: https://github.com/7Cedars/loyalty-program-contracts/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/7Cedars/loyalty-program-contracts.svg?style=for-the-badge
-[forks-url]: https://github.com/7Cedars/loyalty-program-contracts/network/members
-[stars-shield]: https://img.shields.io/github/stars/7Cedars/loyalty-program-contracts.svg?style=for-the-badge
-[stars-url]: https://github.com/7Cedars/loyalty-program-contracts/stargazers -->
 [issues-shield]: https://img.shields.io/github/issues/7Cedars/loyalty-program-contracts.svg?style=for-the-badge
 [issues-url]: https://github.com/7Cedars/loyalty-program-contracts/issues/
 [license-shield]: https://img.shields.io/github/license/7Cedars/loyalty-program-contracts.svg?style=for-the-badge
@@ -243,14 +251,3 @@ GitHub profile [https://github.com/7Cedars](https://github.com/7Cedars)
 [Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
 [Redux]: https://img.shields.io/badge/Redux-593D88?style=for-the-badge&logo=redux&logoColor=white
 [Redux-url]: https://redux.js.org/
-[Vue-url]: https://vuejs.org/
-[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
-[Angular-url]: https://angular.io/
-[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
-[Svelte-url]: https://svelte.dev/
-[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
-[Laravel-url]: https://laravel.com
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 

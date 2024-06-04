@@ -124,6 +124,7 @@ anvilDeployGifts:
 
 anvilDeployAll: 
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ANVIL_ARGS_1)
+	@forge script script/DeployLoyaltyCard6551Account.s.sol:DeployLoyaltyCard6551Account $(ANVIL_ARGS_0)
 	@forge script ../loyalty-gifts-contracts/script/DeployFridaysFifteenPercent.s.sol:DeployFridaysFifteenPercent $(ANVIL_ARGS_0)
 	@forge script ../loyalty-gifts-contracts/script/DeployPointsForLoyaltyGifts.s.sol:DeployPointsForLoyaltyGifts $(ANVIL_ARGS_0)
 	@forge script ../loyalty-gifts-contracts/script/DeployPointsForLoyaltyVouchers.s.sol:DeployPointsForLoyaltyVouchers $(ANVIL_ARGS_0)
