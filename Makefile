@@ -1,8 +1,7 @@
 # £ack this file was originally copied from https://github.com/Cyfrin/foundry-erc20-f23/blob/main/Makefile
-
 -include .env
 
-# .PHONY: all test clean deploy fund help install snapshot format anvil 
+.PHONY: all test clean deploy fund help install snapshot format anvil 
 
 all: clean remove install update build
 

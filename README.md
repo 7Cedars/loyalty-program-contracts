@@ -114,8 +114,8 @@ Foundry
   - You'll know you did it right if you can run `forge --version` and you see a response like `forge 0.2.0 (816e00b 2023-03-16T00:05:26.396218Z)`
 
 A blockchain with an ERC-6551 registry (v.0.3.1) deployed at address 0x000000006551c19487814612e58FE06813775758. 
-  - To check what chains have an ERC-6551 registry deployed, see [tokenbound.org deploy](https://docs.tokenbound.org/contracts/deployments). 
-  - To deploy yourself (or on a local chain) follow the steps at [tokenbound.org deploy](https://docs.tokenbound.org/guides/deploy-registry).
+  - To check what chains have an ERC-6551 registry deployed, see [tokenbound.org](https://docs.tokenbound.org/contracts/deployments). 
+  - To deploy yourself (or on a local chain) follow the steps at [tokenbound.org](https://docs.tokenbound.org/guides/deploy-registry).
 
 ### Quickstart
 <!-- NB: I have to actually follow these steps and check if I missed anyting £todo -->
@@ -189,7 +189,7 @@ See the [open issues](https://github.com/7Cedars/loyalty-program-contracts/issue
 
 <!-- CONTRIBUTING -->
 ## Contributing
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement". Thank you! 
+Contributions and suggestions are more than welcome. If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement". Thank you! 
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
