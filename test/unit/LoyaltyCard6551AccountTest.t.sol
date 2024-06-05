@@ -9,10 +9,10 @@ import "forge-std/Test.sol";
 import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
 import "../../src/interfaces/IERC6551Account.sol";
 import "../../src/interfaces/IERC6551Executable.sol";
-import "../../test/mocks/ERC6551Registry.t.sol";
 import "../mocks/MockERC721.sol";
 import "../mocks/MockERC1155.sol";
 import "../mocks/MockERC6551Account.sol";
+// NB install and import ERCregistry! 
 
 contract AccountTest is Test {
     ERC6551Registry public registry;

@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test, console, console2} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
+import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
 import {DeployMockERC1155} from "../../script/DeployMockERC1155.s.sol";
-import {ERC6551Registry} from "../mocks/ERC6551Registry.t.sol";
 
 contract LoyaltyProgramTest is Test {
     /* events */
@@ -20,6 +20,7 @@ contract LoyaltyProgramTest is Test {
     event RemovedLoyaltyGiftRedeemable(address indexed loyaltyGift, uint256 indexed loyaltyGiftId);
 
     LoyaltyProgram loyaltyProgram;
+    LoyaltyCard6551Account loyaltyCard6551Account;
     ILoyaltyGift mockLoyaltyGifts; 
     IERC1155 mockERC1155; 
     address ownerProgram; 
@@ -42,13 +43,15 @@ contract LoyaltyProgramTest is Test {
     ///////////////////////////////////////////////
 
     function setUp() external {
-        string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
-        uint256 forkId = vm.createFork(rpc_url);
-        vm.selectFork(forkId);
+        // string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
+        // uint256 forkId = vm.createFork(rpc_url);
+        // vm.selectFork(forkId);
 
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
-        loyaltyProgram = deployer.run();
+        (loyaltyProgram, loyaltyCard6551Account) = deployer.run();
         ownerProgram = loyaltyProgram.getOwner(); 
+
+        console2.log("address loyaltyCard6551Account:" , address(loyaltyCard6551Account)); 
 
         DeployMockLoyaltyGifts deployerGifts = new DeployMockLoyaltyGifts(); 
         (mockLoyaltyGifts) = deployerGifts.run();
@@ -77,7 +80,8 @@ contract LoyaltyProgramTest is Test {
         loyaltyProgram = new LoyaltyProgram(
         uri, 
         name, 
-        version
+        version, 
+        address(loyaltyCard6551Account) 
         );
     }
 
@@ -111,7 +115,6 @@ contract LoyaltyProgramTest is Test {
 
     function testMintingCardsCreatesValidTokenBasedAccounts() public {
         address erc65511Registry = 0x000000006551c19487814612e58FE06813775758;
-        address erc65511Implementation = 0x9C7b4118554F6014495f19c6ad4cB39587eef9bd;
 
         vm.prank(ownerProgram);
         loyaltyProgram.mintLoyaltyCards(CARDS_TO_MINT);
@@ -121,7 +124,7 @@ contract LoyaltyProgramTest is Test {
             deployedTBAAccount = loyaltyProgram.getTokenBoundAddress(CARDS_MINTED[i]);
 
             address registryComputedAddress = ERC6551Registry(erc65511Registry).account(
-                address(erc65511Implementation), SALT, block.chainid, address(loyaltyProgram), CARDS_MINTED[i] 
+                address(loyaltyCard6551Account), SALT, block.chainid, address(loyaltyProgram), CARDS_MINTED[i] 
             );
 
             assertEq(deployedTBAAccount, registryComputedAddress);

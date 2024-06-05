@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test, console, console2} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
 import {MockLoyaltyGift} from "../mocks/MockLoyaltyGift.sol";
@@ -9,8 +9,6 @@ import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";
 
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
-import {DeployLoyaltyCard6551Account} from "../../script/DeployLoyaltyCard6551Account.s.sol";
-import {ERC6551Registry} from "../../test/mocks/ERC6551Registry.t.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
@@ -88,15 +86,14 @@ contract CardsToProgramToGiftsTest is Test {
         uint256 cardsToMint = 3;
 
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
-        loyaltyProgram = deployer.run();
-        alternativeLoyaltyProgram = deployer.run();
+        (loyaltyProgram, loyaltyCardAccount) = deployer.run();
+        (alternativeLoyaltyProgram, loyaltyCardAccount) = deployer.run();
 
         DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts();
-        mockLoyaltyGifts = giftDeployer.run();
+        mockLoyaltyGifts = giftDeployer.run(); 
 
-        DeployLoyaltyCard6551Account accountDeployer = new DeployLoyaltyCard6551Account(); 
-        accountDeployer.run(); 
-        
+        console2.log("HAS REGISTRY DEPLOYED CORRECTLY?", address(0x000000006551c19487814612e58FE06813775758).code.length > 0);
+
         owner = loyaltyProgram.getOwner();
         alternativeProgramOwner = alternativeLoyaltyProgram.getOwner();
 
@@ -740,7 +737,7 @@ contract CardsToProgramToGiftsTest is Test {
         // customer signs request
         bytes32 digest = MessageHashUtils.toTypedDataHash(DOMAIN_SEPARATOR, hashRequestGift(message));
         // console.logBytes32(digest);
-        console.logBytes32(keccak256(bytes("alpha.2"))); 
+        console.logBytes32(keccak256(bytes("alpha.3"))); 
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(customerOneKey, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
@@ -856,7 +853,7 @@ contract CardsToProgramToGiftsTest is Test {
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
                 keccak256(bytes("Loyalty Program")), // name
-                keccak256(bytes("alpha.2")), // version
+                keccak256(bytes("alpha.3")), // version
                 block.chainid, // chainId
                 loyaltyProgram //  0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3 // verifyingContract
             )

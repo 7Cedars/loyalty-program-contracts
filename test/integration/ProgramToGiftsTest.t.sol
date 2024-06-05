@@ -3,10 +3,10 @@ pragma solidity 0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
+import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
 import {MockLoyaltyGifts} from "../mocks/MockLoyaltyGifts.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
-import {ERC6551Registry} from "../../test/mocks/ERC6551Registry.t.sol";
 
 contract ProgramToGiftsTest is Test {
     /* events */
@@ -21,6 +21,7 @@ contract ProgramToGiftsTest is Test {
     ///////////////////////////////////////////////
 
     LoyaltyProgram loyaltyProgram;
+    LoyaltyCard6551Account loyaltyCardAccount; 
     MockLoyaltyGifts mockLoyaltyGifts;
     address programOwner; 
 
@@ -38,7 +39,7 @@ contract ProgramToGiftsTest is Test {
         vm.selectFork(forkId);
         
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
-        loyaltyProgram = deployer.run();
+        (loyaltyProgram, loyaltyCardAccount) = deployer.run();
         programOwner = loyaltyProgram.getOwner(); 
 
         DeployMockLoyaltyGifts giftDeployer = new DeployMockLoyaltyGifts();

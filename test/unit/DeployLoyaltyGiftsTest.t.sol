@@ -10,9 +10,9 @@ contract DeployMockLoyaltyGiftsTest is Test {
     DeployMockLoyaltyGifts public deployer;
 
     function setUp() public {
-        string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
-        uint256 forkId = vm.createFork(rpc_url);
-        vm.selectFork(forkId);
+        // string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
+        // uint256 forkId = vm.createFork(rpc_url);
+        // vm.selectFork(forkId);
 
         deployer = new DeployMockLoyaltyGifts();
     }

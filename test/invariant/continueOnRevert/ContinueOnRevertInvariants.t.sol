@@ -49,7 +49,7 @@
 //   function testA() public {} // to have foundry ignore this file in coverage report. see £ack https://ethereum.stackexchange.com/questions/155700/force-foundry-to-ignore-contracts-during-a-coverage-report
 
 //   function setUp() external {
-//     string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
+//     string memory rpc_url = vm.envString("SELECTED_RPC_URL"); // DO NOT DO THIS EVER AGAIN! -- you forget about, run test, call gazilion calls to RPC! 
 //     uint256 forkId = vm.createFork(rpc_url);
 //     vm.selectFork(forkId);
 

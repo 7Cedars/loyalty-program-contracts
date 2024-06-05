@@ -120,21 +120,29 @@ A blockchain with an ERC-6551 registry (v.0.3.1) deployed at address 0x000000006
 ### Quickstart
 <!-- NB: I have to actually follow these steps and check if I missed anyting £todo -->
 
-1. Get a free alchemy API Key at [alchemy.com](https://docs.alchemy.com/docs/alchemy-quickstart-guide)
-2. Clone the repo
+1. Clone the repo
     ```
     git clone https://github.com/7Cedars/loyalty-program-contracts.git
     ```
-4. navigate to the folder
+2. navigate to the folder
     ```
     cd loyalty-program-contracts
     ```
-6. run make
+3. create a .env file and add the following:
+     ```
+     SELECTED_RPC_URL = <path_to_rpc> 
+     ```
+   
+   <path_to_rpc> can be http://localhost:8545 if you have a local anvil chain running, or https://eth-sepolia.g.alchemy.com/v2/... if you wish to test on a forked OP sepolia chain. Other chains are also possible.
+
+   _note: the erc6551 registry needs to be deployed 
+
+4. run make
     ```
     make
     ```
 
-## Usage 
+## Usage
 ### Test 
   ```sh
   $ forge test

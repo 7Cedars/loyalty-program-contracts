@@ -21,7 +21,7 @@ import {ILoyaltyGift} from "./interfaces/ILoyaltyGift.sol";
 import {ILoyaltyProgram} from "./interfaces/ILoyaltyProgram.sol";
 
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {ERC6551Registry} from "../test/mocks/ERC6551Registry.t.sol";
+import {ERC6551Registry} from "../test/mocks/ERC6551Registry.t.sol"; // HAVE TO INSTALL THIS! 
 import {LoyaltyCard6551Account} from "./LoyaltyCard6551Account.sol";
 
 contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { 
@@ -77,9 +77,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
     /* State variables */
     uint256 public  constant LOYALTY_POINTS_ID = 0;
     bytes32 private constant SALT = 0x0000000000000000000000000000000000000000000000000000000007ceda52;
-    address private constant ERC6551_REGISTRY = 0x000000006551c19487814612e58FE06813775758; 
-    address private constant ERC6551_CUSTOM_ACCOUNT = 0x15747d3cE7737B88f935968D1A2e1b8e38290D7a; // 0x9C7b4118554F6014495f19c6ad4cB39587eef9bd; 
+    address private constant ERC6551_REGISTRY = 0x000000006551c19487814612e58FE06813775758;
 
+    // not set as constant as address can differ between chains and deployments. 
+    address private immutable s_erc6551_account; 
     address private immutable s_owner;
     bytes32 private immutable DOMAIN_SEPARATOR;
 
@@ -113,9 +114,10 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      *
      * emits a DeployedLoyaltyProgram event.
      */
-    constructor(string memory _uri, string memory _name, string memory _version) ERC1155(_uri) {
+    constructor(string memory _uri, string memory _name, string memory _version, address _erc6551_account) ERC1155(_uri) {
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
+        s_erc6551_account = _erc6551_account; 
 
         DOMAIN_SEPARATOR = hashDomain(
             EIP712Domain({
@@ -538,7 +540,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
 
     function _createTokenBoundAccount(uint256 _loyaltyCardId) internal returns (address tokenBoundAccount) {
         tokenBoundAccount = ERC6551Registry(ERC6551_REGISTRY).createAccount(
-            ERC6551_CUSTOM_ACCOUNT, SALT, block.chainid, address(this), _loyaltyCardId
+            s_erc6551_account, SALT, block.chainid, address(this), _loyaltyCardId
         );
 
         return tokenBoundAccount;
@@ -599,7 +601,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
 
     function getTokenBoundAddress(uint256 _loyaltyCardId) public view returns (address tokenBoundAccount) {
         tokenBoundAccount = ERC6551Registry(ERC6551_REGISTRY).account(
-            ERC6551_CUSTOM_ACCOUNT, SALT, block.chainid, address(this), _loyaltyCardId 
+            s_erc6551_account, SALT, block.chainid, address(this), _loyaltyCardId 
         );
         return tokenBoundAccount;
     }
