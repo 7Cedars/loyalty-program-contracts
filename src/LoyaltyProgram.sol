@@ -16,16 +16,18 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {ILoyaltyGift} from "./interfaces/ILoyaltyGift.sol";
 import {ILoyaltyProgram} from "./interfaces/ILoyaltyProgram.sol";
 
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import { ERC6551Registry } from "@erc6551/ERC6551Registry.sol"; 
+import {ERC6551Registry} from "@erc6551/ERC6551Registry.sol"; 
 import {LoyaltyCard6551Account} from "./LoyaltyCard6551Account.sol";
 
-contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { 
+contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram, ReentrancyGuard { 
     /* errors */
+    error LoyaltyProgram__ZeroCheckFailed();
     error LoyaltyProgram__OnlyOwner();
     error LoyaltyProgram__TransferDenied();
     error LoyaltyProgram__RequestAlreadyExecuted();
@@ -39,6 +41,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
     error LoyaltyProgram__IncorrectInterface(address loyaltyGift);
     
     /* Events */
+    event LoyaltyCardsMinted(uint256 numberOfCards);
     event DeployedLoyaltyProgram(address indexed owner, string name, string indexed version);
     event AddedLoyaltyGift(address indexed loyaltyGift, uint256 indexed loyaltyGiftId);
     event RemovedLoyaltyGiftClaimable(address indexed loyaltyGift, uint256 indexed loyaltyGiftId);
@@ -102,10 +105,17 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
         _;
     }
 
+    modifier notZeroAddress(address addressToCheck) {
+        if (addressToCheck == address(0)) {
+            revert (); 
+        }
+        _;
+    }
+
     /**
      * @notice constructor function for Loyalty program contract.
      * 
-     * @param _uri the uri linked to the loyalty program.
+     * @param _uriProgram the uri linked to the loyalty program.
      * @param _name the name of the Loyalty Program
      * @param _version the version of the Loyalty Program
      *
@@ -114,7 +124,12 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      *
      * emits a DeployedLoyaltyProgram event.
      */
-    constructor(string memory _uri, string memory _name, string memory _version, address _erc6551_account) ERC1155(_uri) {
+    constructor(
+        string memory _uriProgram, 
+        string memory _name, 
+        string memory _version, 
+        address _erc6551_account
+        ) ERC1155(_uriProgram) notZeroAddress(_erc6551_account) {
         s_owner = msg.sender;
         s_loyaltyCardCounter = 0;
         s_erc6551_account = _erc6551_account; 
@@ -148,14 +163,13 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      * 
      * - emits a transferBatch event.
      */
-    function mintLoyaltyCards(uint256 numberOfLoyaltyCards) public onlyOwner {
+    function mintLoyaltyCards(uint256 numberOfLoyaltyCards) public onlyOwner nonReentrant {
         uint256[] memory loyaltyCardIds = new uint256[](numberOfLoyaltyCards);
         uint256[] memory mintNfts = new uint256[](numberOfLoyaltyCards);
         uint256 counter = s_loyaltyCardCounter;
 
-        /**
-         * @dev £security question: note that I log these addresses as TBAs BEFORE they have actually been minted. Problem? 
-         */
+        // £security: external call inside loop. if one of the _createTokenBoundAccount calls fails, they all fail. 
+        // 
         for (uint256 i; i < numberOfLoyaltyCards; ) {
             counter = ++counter;
             loyaltyCardIds[i] = counter;
@@ -166,7 +180,9 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
         }
 
         _mintBatch(msg.sender, loyaltyCardIds, mintNfts, "");
+
         s_loyaltyCardCounter = s_loyaltyCardCounter + numberOfLoyaltyCards;
+        emit LoyaltyCardsMinted(numberOfLoyaltyCards);
     }
 
     /**
@@ -199,7 +215,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      */
 
     function addLoyaltyGift(address loyaltyGiftAddress, uint256 loyaltyGiftId) public onlyOwner {
-        if (ERC165Checker.supportsInterface(loyaltyGiftAddress, type(ILoyaltyGift).interfaceId) == false) {
+        if (!ERC165Checker.supportsInterface(loyaltyGiftAddress, type(ILoyaltyGift).interfaceId)) {
             revert LoyaltyProgram__IncorrectInterface(loyaltyGiftAddress);
         }
         s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = true;
@@ -219,7 +235,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      * - emits an RemovedLoyaltyGiftClaimable event.
      */
     function removeLoyaltyGiftClaimable(address loyaltyGiftAddress, uint256 loyaltyGiftId) public onlyOwner {
-        if (s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] == false) {
+        if (!s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId]) {
             revert LoyaltyProgram__LoyaltyGiftInvalid();
         }
         s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = false;
@@ -241,7 +257,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      * - emits an RemovedLoyaltyGiftRedeemable event.
      */
     function removeLoyaltyGiftRedeemable(address loyaltyGiftAddress, uint256 loyaltyGiftId) public onlyOwner {
-        if (s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] == false) {
+        if (!s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId]) {
             revert LoyaltyProgram__LoyaltyGiftInvalid();
         }
         s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] = false;
@@ -332,7 +348,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
      *
      * @dev only one voucher can be claimed per call.
      * @dev only loyaltyCards minted through this loyalty program can be used redeem loyalty points.
-     * @dev £security removed nonReentrant guard as CEI (Check-Effect-Interaction) structure was followed and the function is onlyOwner. This is correct - right? 
+     * @dev £security added nonReentrant as slither brought it up. But still noted the reentrant. 
      * @dev if customer does not own TBA / loyalty card it will revert at ERC6551 account.
      *
      * - emits a TransferSingle event
@@ -346,7 +362,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
         address customerAddress,
         uint256 loyaltyPoints,
         bytes memory signature
-    ) external onlyOwner { // £security. nonRentrant not necessary here. - OnlyOwner function. 
+    ) external onlyOwner nonReentrant { 
         address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
 
         // filling up RequestGift struct with provided data. 
@@ -364,7 +380,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
 
         // Checks. 
         // Check that this signature hasn't already been executed
-        if (requestExecuted[signature] == true) {
+        if (requestExecuted[signature]) {
             revert LoyaltyProgram__RequestAlreadyExecuted();
         }
 
@@ -379,7 +395,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
         }
 
         // check if Loyalty gift is valid.
-        if (s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId] == false) {
+        if (!s_LoyaltyGiftsClaimable[loyaltyGiftAddress][loyaltyGiftId]) {
             revert LoyaltyProgram__LoyaltyGiftInvalid();
         }
 
@@ -427,7 +443,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
         uint256 loyaltyCardId,
         address customerAddress,
         bytes memory signature
-    ) external onlyOwner {
+    ) external onlyOwner nonReentrant {
         address loyaltyCardAddress = getTokenBoundAddress(loyaltyCardId);
         
         // filling up RequestGift struct with provided data. 
@@ -444,7 +460,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
 
         // Checks. 
         // Check that this digest hasn't already been executed
-        if (requestExecuted[signature] == true) {
+        if (requestExecuted[signature]) {
             revert LoyaltyProgram__RequestAlreadyExecuted();
         }
 
@@ -459,7 +475,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
         }
 
         // check if loyalty Voucher is valid.
-        if (s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId] == false) {
+        if (!s_LoyaltyVouchersRedeemable[loyaltyGiftAddress][loyaltyGiftId]) {
             revert LoyaltyProgram__LoyaltyVoucherInvalid();
         }
 
@@ -521,7 +537,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
         for (uint256 i; i < ids.length; ++i) {
             if (ids[i] == LOYALTY_POINTS_ID) {
                 if ( // if ...
-                    s_LoyaltyCards[to] == false && // points are not transferred to loyalty cards...
+                    !s_LoyaltyCards[to] && // points are not transferred to loyalty cards...
                     to != s_owner // ...or to owner...
                 ) {
                     // ...revert
@@ -530,7 +546,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram {
             }
             // loyalty cards cannot be transferred to other loyalty cards. 
             if (ids[i] != LOYALTY_POINTS_ID) {
-                if (s_LoyaltyCards[to] == true) {
+                if (s_LoyaltyCards[to]) {
                     revert LoyaltyProgram__TransferDenied();
                 }
             }

@@ -17,11 +17,11 @@ ffi = true
 
 [fuzz]
 runs = 64
-depth = 32
+depth = 64
 fail_on_revert = true 
 
 [invariant] 
-runs = 16 
-depth = 16 
+runs = 64
+depth = 64 
 fail_on_revert = false 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

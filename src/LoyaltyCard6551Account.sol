@@ -48,7 +48,6 @@ contract LoyaltyCard6551Account is IERC165, IERC1271, IERC6551Account, IERC6551E
 
     receive() external payable {}
 
-    // NB! not executeCall! as in v.0.2.0. ALSO a uint8 operation value included. 
     function execute(
       address to, 
       uint256 value, 
