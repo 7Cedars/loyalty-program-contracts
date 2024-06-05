@@ -3,7 +3,6 @@
 *** For shields, see: https://shields.io/
 *** It was rafactored along examples in the Cyfrin updraft course to follow some standard practices in solidity projects. 
 -->
-<a name="readme-top"></a>
 
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
@@ -37,7 +36,7 @@
 <details>
   <summary>Table of Contents</summary>
 
-- [About The Project](#about-the-project)
+- [About](#about)
   - [Roles](#roles)
   - [Contracts](#contracts)
   - [Diagram](#diagram)
@@ -60,9 +59,9 @@
   
 </details>
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
-The Loyalty protocol provides a modular, composable and gas efficient framework for blockchain based customer engagement programs. 
+<!-- ABOUT  -->
+## About
+The Loyal protocol provides a modular, composable and gas efficient framework for blockchain based customer engagement programs. 
 
 Key features: 
 - It **allows** anyone to act as a vendor, deploying a loyalty program, minting loyalty points and cards, and distributing points to loyalty cards. 
@@ -128,10 +127,10 @@ A blockchain with an ERC-6551 registry (v.0.3.1) deployed at address 0x000000006
     ```
 3. create a .env file and add the following:
      ```
-     SELECTED_RPC_URL = <path_to_rpc> 
+     SELECTED_RPC_URL = <PATH_TO_RPC> 
      ```
    
-  Where <SELECTED_RPC_URL> is the url to your rpc provider, for example: https://eth-sepolia.g.alchemy.com/v2/... or http://localhost:8545 for a local anvil chain. 
+  Where <PATH_TO_RPC> is the url to your rpc provider, for example: https://eth-sepolia.g.alchemy.com/v2/... or http://localhost:8545 for a local anvil chain. 
 
   Note that tests will not ru on a chain that does not have an ERC-6551 registry deployed. Due to compiler conflicts, it is not possible to deterministically deploy the erc6511 registry inside the test suite itself.    
 
@@ -182,8 +181,6 @@ This contract has not been audited. Do not deploy on anything else than a test c
 - Centralisation. Owner has core priviledges in a consumer program. 
 - I use a simple self build onlyOwner() modifier, instead of OpenZeppelin's implemntation. Keep gas cost down. 
 - Owner of a loyalty program is set at construction, cannot be changed later on. 
--  
-
 
 
 <!-- ROADMAP -->

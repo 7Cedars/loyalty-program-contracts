@@ -12,7 +12,7 @@ remappings = [
   "@erc6551/=lib/reference/src/"
   ]
 # ways to open access to filesystem. First is very generic and should be avoided.  
-ffi = true
+# ffi = true
 # fs.permissions =[{access = "read", path = "./img/"}] 
 
 [fuzz]

@@ -348,7 +348,7 @@ contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram, Reentranc
      *
      * @dev only one voucher can be claimed per call.
      * @dev only loyaltyCards minted through this loyalty program can be used redeem loyalty points.
-     * @dev £security added nonReentrant as slither brought it up. But still noted the reentrant. 
+     * @dev £security added nonReentrant as slither brought it up. Don't think it is necessary. In any case, slither _still_ brings up the error message.  
      * @dev if customer does not own TBA / loyalty card it will revert at ERC6551 account.
      *
      * - emits a TransferSingle event
