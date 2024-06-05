@@ -7,12 +7,12 @@ pragma solidity 0.8.24;
 import "forge-std/Test.sol";
 
 import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
+import {ERC6551Registry} from "@erc6551/ERC6551Registry.sol"; 
 import "../../src/interfaces/IERC6551Account.sol";
 import "../../src/interfaces/IERC6551Executable.sol";
 import "../mocks/MockERC721.sol";
 import "../mocks/MockERC1155.sol";
 import "../mocks/MockERC6551Account.sol";
-// NB install and import ERCregistry! 
 
 contract AccountTest is Test {
     ERC6551Registry public registry;

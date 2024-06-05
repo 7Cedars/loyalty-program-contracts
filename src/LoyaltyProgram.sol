@@ -21,7 +21,7 @@ import {ILoyaltyGift} from "./interfaces/ILoyaltyGift.sol";
 import {ILoyaltyProgram} from "./interfaces/ILoyaltyProgram.sol";
 
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {ERC6551Registry} from "../test/mocks/ERC6551Registry.t.sol"; // HAVE TO INSTALL THIS! 
+import { ERC6551Registry } from "@erc6551/ERC6551Registry.sol"; 
 import {LoyaltyCard6551Account} from "./LoyaltyCard6551Account.sol";
 
 contract LoyaltyProgram is ERC1155, IERC1155Receiver, ILoyaltyProgram { 

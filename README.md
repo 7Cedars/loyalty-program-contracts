@@ -118,8 +118,6 @@ A blockchain with an ERC-6551 registry (v.0.3.1) deployed at address 0x000000006
   - To deploy yourself (or on a local chain) follow the steps at [tokenbound.org](https://docs.tokenbound.org/guides/deploy-registry).
 
 ### Quickstart
-<!-- NB: I have to actually follow these steps and check if I missed anyting £todo -->
-
 1. Clone the repo
     ```
     git clone https://github.com/7Cedars/loyalty-program-contracts.git
@@ -133,9 +131,9 @@ A blockchain with an ERC-6551 registry (v.0.3.1) deployed at address 0x000000006
      SELECTED_RPC_URL = <path_to_rpc> 
      ```
    
-   <path_to_rpc> can be http://localhost:8545 if you have a local anvil chain running, or https://eth-sepolia.g.alchemy.com/v2/... if you wish to test on a forked OP sepolia chain. Other chains are also possible.
+  Where <SELECTED_RPC_URL> is the url to your rpc provider, for example: https://eth-sepolia.g.alchemy.com/v2/... or http://localhost:8545 for a local anvil chain. 
 
-   _note: the erc6551 registry needs to be deployed 
+  Note that tests will not run without a chain with the ERC-6551 registry deployed. 
 
 4. run make
     ```

@@ -13,9 +13,9 @@ contract DeployLoyaltyProgramTest is Test {
     uint256 LOYALTYCARDS_TO_MINT = 5;
 
     function setUp() public {
-        // string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
-        // uint256 forkId = vm.createFork(rpc_url);
-        // vm.selectFork(forkId);
+        string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
+        uint256 forkId = vm.createFork(rpc_url);
+        vm.selectFork(forkId);
 
         deployer = new DeployLoyaltyProgram();
     }

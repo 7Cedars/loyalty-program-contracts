@@ -5,6 +5,7 @@ import {Test, console, console2} from "forge-std/Test.sol";
 import {LoyaltyProgram} from "../../src/LoyaltyProgram.sol";
 import {LoyaltyCard6551Account} from "../../src/LoyaltyCard6551Account.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import {ERC6551Registry} from "@erc6551/ERC6551Registry.sol"; 
 import {ILoyaltyGift} from "../../src/interfaces/ILoyaltyGift.sol";
 import {DeployLoyaltyProgram} from "../../script/DeployLoyaltyProgram.s.sol";
 import {DeployMockLoyaltyGifts} from "../../script/DeployLoyaltyGifts.s.sol";
@@ -43,9 +44,9 @@ contract LoyaltyProgramTest is Test {
     ///////////////////////////////////////////////
 
     function setUp() external {
-        // string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
-        // uint256 forkId = vm.createFork(rpc_url);
-        // vm.selectFork(forkId);
+        string memory rpc_url = vm.envString("SELECTED_RPC_URL"); 
+        uint256 forkId = vm.createFork(rpc_url);
+        vm.selectFork(forkId);
 
         DeployLoyaltyProgram deployer = new DeployLoyaltyProgram();
         (loyaltyProgram, loyaltyCard6551Account) = deployer.run();
