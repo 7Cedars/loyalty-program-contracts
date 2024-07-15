@@ -132,9 +132,9 @@ A blockchain with an ERC-6551 registry (v.0.3.1) deployed at address 0x000000006
    
   Where <PATH_TO_RPC> is the url to your rpc provider, for example: https://eth-sepolia.g.alchemy.com/v2/... or http://localhost:8545 for a local anvil chain. 
 
-  Note that tests will not ru on a chain that does not have an ERC-6551 registry deployed. Due to compiler conflicts, it is not possible to deterministically deploy the erc6511 registry inside the test suite itself.    
+  Note that tests will not run on a chain that does not have an ERC-6551 registry deployed. Due to compiler conflicts, it is not possible to deterministically deploy the erc6511 registry inside the test suite itself.    
 
-1. run make
+4. run make
     ```
     make
     ```

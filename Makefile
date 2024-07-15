@@ -43,11 +43,11 @@ optSepoliaForkedTest:
 	@forge test --no-match-contract ContinueOn  $(OPT_SEPOLIA_FORKED_TEST_ARGS)
 
 optSepoliaForkedDeployTest:
-	@forge script script/DeployLoyaltyCard6551Account.s.sol:DeployLoyaltyCard6551Account $(OPT_SEPOLIA_FORKED_TEST_ARGS)
-	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(OPT_SEPOLIA_FORKED_TEST_ARGS)
+# @forge script script/DeployLoyaltyCard6551Account.s.sol:DeployLoyaltyCard6551Account $(OPT_SEPOLIA_FORKED_TEST_ARGS) -vvvv 
+	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(OPT_SEPOLIA_FORKED_TEST_ARGS) -vvvv 
 	
 optSepoliaForkedDeploy: 
-	@forge script script/DeployLoyaltyCard6551Account.s.sol:DeployLoyaltyCard6551Account $(OPT_SEPOLIA_FORKED_DEPLOY_ARGS)
+#	@forge script script/DeployLoyaltyCard6551Account.s.sol:DeployLoyaltyCard6551Account $(OPT_SEPOLIA_FORKED_DEPLOY_ARGS)
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(OPT_SEPOLIA_FORKED_DEPLOY_ARGS)
 
 ###############################
@@ -59,7 +59,10 @@ ANVIL_TEST_ARGS := --rpc-url http://localhost:8545
 anvilForkedTest: 
 	@forge test --no-match-contract ContinueOn  $(ANVIL_TEST_ARGS)
 
-# NB: DO NOT FORGET TO INITIATE REGISTRY, see https://docs.tokenbound.org/guides/deploy-registry for details. 
+# NB: DO NOT FORGET TO INITIATE REGISTRY, see https://docs.tokenbound.org/guides/deploy-registry for details.
+
 anvilDeploy:
 	@forge script script/DeployLoyaltyCard6551Account.s.sol:DeployLoyaltyCard6551Account $(ANVIL_ARGS_0)
 	@forge script script/DeployLoyaltyProgram.s.sol:DeployLoyaltyProgram $(ANVIL_ARGS_1)
+
+#
